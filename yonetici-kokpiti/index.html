@@ -407,8 +407,10 @@ input,select,textarea,button,.btn,.btn.primary,.btn.danger{font-size:1.1rem}
 .choice button,.nace-rol button,.stack-opts button,.sh-isaret{font-size:1.1rem}
 .sh-isaret{flex:0 0 30px;width:30px;height:30px}
 input,select,textarea{min-height:48px}
+input[type="number"]{-moz-appearance:textfield}
+input[type="number"]::-webkit-outer-spin-button,input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .btn{min-height:48px}
-.btn.sm{min-height:42px;padding:.45rem .8rem}
+.btn.sm{min-height:48px;padding:.45rem .9rem}
 .choice button{min-height:48px}
 .chk{min-height:48px;align-items:center}
 @media (min-width:900px){
@@ -456,6 +458,27 @@ input,select,textarea{min-height:48px}
 .sh-ozet-satir .s{font-size:1.1rem;color:var(--ink-3)}
 .sh-ozet-satir .c{font-size:1.15rem;font-weight:600}
 .sh-ozet-satir button{justify-self:start}
+/* ————— Katlanır kart: bölüm başına tek odak ————— */
+.kart-bas{display:flex;align-items:center;gap:.6rem;width:100%;min-height:52px;padding:.2rem 0;margin:0;
+  background:none;border:0;color:inherit;font:inherit;text-align:start;cursor:pointer}
+.kart-bas .kart-baslik{flex:1 1 auto;min-width:0;font-size:1.2rem;font-weight:650;line-height:1.3}
+.kart-bas .kart-ok{flex:none;transition:transform 140ms cubic-bezier(.2,.6,.3,1)}
+.card[data-acik="1"] .kart-bas .kart-ok{transform:rotate(90deg)}
+.kart-govde{display:none}
+.card[data-acik="1"] .kart-govde{display:block;animation:kartAc 140ms cubic-bezier(.2,.6,.3,1)}
+@keyframes kartAc{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.kart-ozet{font-size:1.1rem;color:var(--ink-3);margin:.1rem 0 0}
+.card[data-acik="1"] .kart-ozet{display:none}
+
+/* birincil eylem başparmak bölgesinde */
+.adim-sonraki{position:sticky;bottom:calc(76px + env(safe-area-inset-bottom));z-index:20;
+  background:var(--surface);border:1px solid var(--accent-line);border-radius:14px;padding:.7rem;margin-top:1rem}
+.adim-sonraki .btn{width:100%;justify-content:center}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:1ms !important;animation-iteration-count:1 !important;transition-duration:1ms !important}
+}
+
 /* ————— Dar ekranda uzun metin taşmasın ————— */
 .tablewrap td,.tablewrap td::before,.kv,.kv dt,.kv dd,.gl dt,.gl dd,.mono,.prog-inst,.note,.small,.hint,
 .nace-kart,.timeline .t,.reasons li,.bos{overflow-wrap:anywhere;word-break:break-word}
@@ -469,6 +492,9 @@ input,select,textarea{min-height:48px}
 .prog .prog-head{gap:.6rem}
 .prog-nums{gap:.5rem}
 .tile{cursor:pointer}
+.prog-meta{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:.35rem;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.prog-meta::-webkit-scrollbar{display:none}
+.prog-meta .badge{flex:0 0 auto}
 .tile .n{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .tile.acildi .n{display:block;-webkit-line-clamp:unset}
 .tile.acildi{outline:2px solid var(--accent-line);outline-offset:-2px}
@@ -499,30 +525,30 @@ input,select,textarea{min-height:48px}
 
 /* ————— Kabuk: önce telefon, sonra masaüstü ————— */
 .uygulama{display:block;min-height:100vh;min-height:100dvh}
-.rail{position:fixed;top:0;bottom:0;left:0;width:320px;width:min(320px,86vw);height:100vh;height:100dvh;transform:translateX(-102%);
+.rail{display:none;position:fixed;top:0;bottom:0;left:0;width:320px;width:min(320px,86vw);height:100vh;height:100dvh;transform:translateX(-102%);
   transition:transform var(--gecis);box-shadow:var(--sh-3);z-index:100;padding:calc(var(--u)*2) calc(var(--u)*1.5)}
 .uygulama[data-menu="acik"] .rail{transform:none}
 .uygulama[data-menu="acik"] .perde{display:block;opacity:1}
-.btn.menu-ac{display:inline-flex}
+.btn.menu-ac{display:none}
 
-.ustcubuk{position:-webkit-sticky;position:sticky;top:0;z-index:35;display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto;
+.ustcubuk{position:-webkit-sticky;position:sticky;top:0;z-index:35;display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;
   align-items:center;gap:.35rem;padding:.4rem .5rem;flex-wrap:nowrap;height:56px;
   padding-top:calc(.4rem + env(safe-area-inset-top))}
 .ustcubuk-baslik{min-width:0;flex:initial}
 .ustcubuk-baslik .kirinti{display:none}
 .ustcubuk-baslik h2{margin:0;font-size:1.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ustcubuk-arac{display:contents}
-.ustcubuk .btn.sm,.ustcubuk .ara-dugme{width:44px;min-width:44px;max-width:44px;height:44px;min-height:44px;
+.ustcubuk .btn.sm,.ustcubuk .ara-dugme{width:48px;min-width:48px;max-width:48px;height:48px;min-height:48px;
   padding:0;justify-content:center;border-radius:999px;flex:none}
 .ustcubuk .dugme-metni,.ara-dugme span:not([aria-hidden]),.ara-dugme kbd{display:none}
 .ustcubuk .btn .ph{margin:0}
 .arac-grubu{grid-column:1 / -1;order:1;padding-bottom:.5rem}
 
-.bolum-cubugu{display:flex;gap:.4rem;overflow-x:auto;padding:.25rem .5rem;background:var(--surface);
+.bolum-cubugu{display:flex;gap:.35rem;overflow-x:auto;padding:.15rem .5rem;background:var(--surface);
   border-bottom:1px solid var(--line);scrollbar-width:none;position:-webkit-sticky;position:sticky;top:56px;z-index:30;align-items:center;
   -webkit-overflow-scrolling:touch}
 .bolum-cubugu::-webkit-scrollbar{display:none}
-.bolum-cubugu button{flex:0 0 auto;min-height:44px;padding:.25rem .85rem;border-radius:999px;border:1px solid var(--line-2);
+.bolum-cubugu button{flex:0 0 auto;min-height:48px;padding:.25rem .85rem;border-radius:999px;border:1px solid var(--line-2);
   background:var(--surface-2);color:var(--ink-2);font:inherit;font-size:1.05rem;font-weight:560;cursor:pointer;white-space:nowrap}
 .bolum-cubugu button[aria-current="page"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 
@@ -535,8 +561,8 @@ dialog[open]{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;max-width:
 
 .altbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
   gap:2px;background:var(--surface);background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:saturate(1.4) blur(12px);
-  border-top:1px solid var(--line);padding:.3rem .25rem calc(.3rem + env(safe-area-inset-bottom))}
-.altbar button{display:grid;justify-items:center;gap:.1rem;min-height:52px;padding:.25rem .1rem;border:0;background:none;
+  border-top:1px solid var(--line);padding:.15rem .25rem calc(.15rem + env(safe-area-inset-bottom))}
+.altbar button{display:grid;justify-items:center;gap:.05rem;min-height:50px;padding:.15rem .1rem;border:0;background:none;
   color:var(--ink-3);font:inherit;cursor:pointer;border-radius:12px}
 .altbar .no{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--surface-3);
   font-size:.95rem;font-weight:700;color:var(--ink-2);line-height:1}
@@ -570,11 +596,18 @@ dialog[open]{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;max-width:
 
 @media (min-width:900px){
   .prog .reasons,.prog .prog-aciklama,.prog .kilit-notu{display:block}
+  .kart-govde,.card[data-acik="0"] .kart-govde{display:block}
+  .kart-bas{cursor:default;min-height:0;pointer-events:none}
+  .kart-bas .kart-ok{display:none}
+  .kart-ozet{display:none}
+  .adim-sonraki{position:static;background:none;border:0;padding:0}
+  .adim-sonraki .btn{width:auto}
   .tile{cursor:default}
+  .prog-meta{flex-wrap:wrap;overflow:visible}
   .tile .n{display:block;-webkit-line-clamp:unset}
   .tile.acildi{outline:0}
   .uygulama{display:grid;grid-template-columns:var(--rail-w) minmax(0,1fr)}
-  .rail{position:-webkit-sticky;position:sticky;top:0;height:100vh;transform:none;box-shadow:none;width:auto;z-index:40}
+  .rail{display:flex;position:-webkit-sticky;position:sticky;top:0;height:100vh;transform:none;box-shadow:none;width:auto;z-index:40}
   .btn.menu-ac{display:none}
   .altbar,.bolum-cubugu{display:none}
   .yolharita{display:flex}
@@ -3853,21 +3886,23 @@ function listeHtml(baslik, dizi) {
 }
 
 const SAYFA_ADIMI = 10;
-const listeSayfasi = { siralama: SAYFA_ADIMI, pano: SAYFA_ADIMI };
+const listeSayfasi = {};
+
+function sayfaAdimi() { return window.innerWidth < 900 ? 4 : SAYFA_ADIMI; }
 
 function listeyiSinirla(liste, anahtar) {
-  const sinir = listeSayfasi[anahtar] || SAYFA_ADIMI;
+  const sinir = listeSayfasi[anahtar] || sayfaAdimi();
   return { gorunen: liste.slice(0, sinir), kalan: Math.max(0, liste.length - sinir), toplam: liste.length };
 }
 
 function dahaFazlaHtml(anahtar, dilim, birim) {
   if (!dilim.kalan) {
-    return dilim.toplam > SAYFA_ADIMI
+    return dilim.toplam > sayfaAdimi()
       ? '<div class="liste-alt"><p class="small muted">' + dilim.toplam + " " + kacis(birim) + ' listelendi.</p>' +
-        '<button class="btn no-print" type="button" data-listekisalt="' + anahtar + '">İlk ' + SAYFA_ADIMI + ' satıra dön</button></div>'
+        '<button class="btn no-print" type="button" data-listekisalt="' + anahtar + '">İlk ' + sayfaAdimi() + ' satıra dön</button></div>'
       : "";
   }
-  const adim = Math.min(SAYFA_ADIMI, dilim.kalan);
+  const adim = Math.min(sayfaAdimi(), dilim.kalan);
   return '<div class="liste-alt"><p class="small muted">' + dilim.gorunen.length + " / " + dilim.toplam + " " + kacis(birim) + " gösteriliyor.</p>" +
     '<button class="btn primary no-print" type="button" data-dahafazla="' + anahtar + '">' + adim + ' satır daha göster</button>' +
     '<button class="btn no-print" type="button" data-listehepsi="' + anahtar + '">Hepsini göster (' + dilim.toplam + ")</button></div>";
@@ -4178,8 +4213,10 @@ function tahsisUyarisiHtml() {
     '<p class="small muted">Tahsis edilen toplam: <strong>' + tl(toplamTahsis) + "</strong>. Tahsis edilmemiş havuz: <strong>" + tl(kalan) + "</strong>. Tahsis edilmemiş maliyet hiçbir hibe üretmez ve tamamen özkaynaktan karşılanır.</p>";
 }
 function parametreAlani(id, etiket, ipucu) {
-  const sinir = PARAMETRE_SINIRI[id] || AZAMI_ODUL_TAVANI;
-  return '<div><label for="par-' + id + '">' + kacis(etiket) + '</label><input type="number" inputmode="numeric" min="0" max="' + sinir + '" step="1" id="par-' + id + '" data-parametre="' + id + '" value="' + (durum.parametre[id] || 0) + '"><p class="hint">' + kacis(ipucu) + " Üst sınır " + tl(sinir) + ".</p></div>";
+  const sinir = Object.prototype.hasOwnProperty.call(PARAMETRE_SINIRI, id) ? PARAMETRE_SINIRI[id] : AZAMI_ODUL_TAVANI;
+  const simdiki = durum.parametre[id] || 0;
+  const okunur = simdiki > 0 ? tl(simdiki) : "girilmedi";
+  return '<div><label for="par-' + id + '">' + kacis(etiket) + '</label><input type="number" inputmode="numeric" min="0" max="' + sinir + '" step="1" id="par-' + id + '" data-parametre="' + id + '" value="' + simdiki + '"><p class="hint"><strong>' + kacis(okunur) + "</strong>. " + kacis(ipucu) + " Üst sınır " + tl(sinir) + ".</p></div>";
 }
 
 const KURULUS_SARTI = p => p.sirketKuruldu === "evet";
@@ -5385,6 +5422,72 @@ function bolumCubuguYenile(aktifSekme) {
   }
 }
 
+const kartDurumlari = {};
+
+function kartOzeti(govde) {
+  const sayilar = govde.querySelectorAll(".tile .v, .fayda-buyuk .v");
+  if (sayilar.length) {
+    const ilk = sayilar[0].textContent.trim();
+    return sayilar.length > 1 ? ilk + " · " + sayilar.length + " ölçüt" : ilk;
+  }
+  const satir = govde.querySelectorAll(".tablewrap tbody tr");
+  if (satir.length) return satir.length + " satır";
+  const kart = govde.querySelectorAll(".prog, .sh-ozet-satir, .chk, .stack-row");
+  if (kart.length) return kart.length + " kayıt";
+  const metin = govde.textContent.replace(/\s+/g, " ").trim();
+  return metin.slice(0, 60) + (metin.length > 60 ? "…" : "");
+}
+
+function kartlariKatla(panelId) {
+  const panel = document.getElementById("panel-" + panelId);
+  if (!panel) return;
+  const durumlar = kartDurumlari[panelId] || (kartDurumlari[panelId] = {});
+  let sira = -1;
+  Array.prototype.forEach.call(panel.querySelectorAll(":scope > .card"), function (kart) {
+    const baslik = kart.firstElementChild;
+    if (!baslik || (baslik.tagName !== "H2" && baslik.tagName !== "H3")) return;
+    sira += 1;
+    const anahtar = "k" + sira;
+    if (kart.getAttribute("data-katlandi") === "1") return;
+    const govde = document.createElement("div");
+    govde.className = "kart-govde";
+    while (baslik.nextSibling) govde.appendChild(baslik.nextSibling);
+    const dugme = document.createElement("button");
+    dugme.type = "button";
+    dugme.className = "kart-bas";
+    dugme.setAttribute("data-kartac", anahtar);
+    dugme.setAttribute("data-panel", panelId);
+    const yazi = document.createElement("span");
+    yazi.className = "kart-baslik";
+    yazi.textContent = baslik.textContent;
+    dugme.appendChild(yazi);
+    dugme.insertAdjacentHTML("beforeend", ikonHtml("caret-right", "kart-ok"));
+    const ozet = document.createElement("p");
+    ozet.className = "kart-ozet";
+    ozet.textContent = kartOzeti(govde);
+    baslik.textContent = "";
+    baslik.appendChild(dugme);
+    baslik.insertAdjacentElement("afterend", ozet);
+    ozet.insertAdjacentElement("afterend", govde);
+    const acik = durumlar[anahtar] === undefined ? sira === 0 : durumlar[anahtar];
+    durumlar[anahtar] = acik;
+    kart.setAttribute("data-acik", acik ? "1" : "0");
+    kart.setAttribute("data-katlandi", "1");
+    dugme.setAttribute("aria-expanded", String(acik));
+  });
+}
+
+function kartAcKapa(panelId, anahtar) {
+  const durumlar = kartDurumlari[panelId] || (kartDurumlari[panelId] = {});
+  const dugme = document.querySelector('#panel-' + panelId + ' [data-kartac="' + anahtar + '"]');
+  if (!dugme) return;
+  const kart = dugme.closest(".card");
+  const acik = kart.getAttribute("data-acik") !== "1";
+  kart.setAttribute("data-acik", acik ? "1" : "0");
+  dugme.setAttribute("aria-expanded", String(acik));
+  durumlar[anahtar] = acik;
+}
+
 function tablolariEtiketle(kok) {
   const alan = kok || document;
   Array.prototype.forEach.call(alan.querySelectorAll(".tablewrap table"), function (tablo) {
@@ -5429,6 +5532,7 @@ function ustcubukYenile() {
   altBarYenile(durum.aktifSekme);
   bolumCubuguYenile(durum.aktifSekme);
   tablolariEtiketle(document.getElementById("panel-" + durum.aktifSekme));
+  kartlariKatla(durum.aktifSekme);
   const sec = document.getElementById("senaryoSecici");
   if (sec) {
     const yeni = SENARYOLAR.map(x => '<option value="' + x.id + '"' + (durum.senaryo === x.id ? " selected" : "") + ">" + kacis(x.ad) + "</option>").join("");
@@ -6528,7 +6632,7 @@ function olaylariBagla() {
     const gorunum = e.target.closest("[data-gorunum]");
     if (gorunum) {
       durum.gorunum = gorunum.getAttribute("data-gorunum");
-      listeSayfasi.pano = SAYFA_ADIMI;
+      listeSayfasi.pano = sayfaAdimi();
       tumunuGuncelle(["pano"]);
       bildir("Görünüm değiştirildi: " + (KAYITLI_GORUNUMLER.find(g => g.id === durum.gorunum) || {}).ad);
       return;
@@ -6548,7 +6652,7 @@ function olaylariBagla() {
     const dahaFazla = e.target.closest("[data-dahafazla]");
     if (dahaFazla) {
       const anahtar = dahaFazla.getAttribute("data-dahafazla");
-      listeSayfasi[anahtar] = (listeSayfasi[anahtar] || SAYFA_ADIMI) + SAYFA_ADIMI;
+      listeSayfasi[anahtar] = (listeSayfasi[anahtar] || sayfaAdimi()) + sayfaAdimi();
       ciz([anahtar]);
       return;
     }
@@ -6560,11 +6664,13 @@ function olaylariBagla() {
     }
     const listeKisalt = e.target.closest("[data-listekisalt]");
     if (listeKisalt) {
-      listeSayfasi[listeKisalt.getAttribute("data-listekisalt")] = SAYFA_ADIMI;
+      listeSayfasi[listeKisalt.getAttribute("data-listekisalt")] = sayfaAdimi();
       ciz([listeKisalt.getAttribute("data-listekisalt")]);
       window.scrollTo(0, 0);
       return;
     }
+    const kartAc = e.target.closest("[data-kartac]");
+    if (kartAc) { kartAcKapa(kartAc.getAttribute("data-panel"), kartAc.getAttribute("data-kartac")); return; }
     const satirAc = e.target.closest("[data-satirac]");
     if (satirAc) {
       const satir = satirAc.closest("tr");
@@ -6648,10 +6754,10 @@ function olaylariBagla() {
       bildir(hedef.checked ? "Notlar pakete eklenecek. Kişisel veri içermediğinden emin olun." : "Notlar paket dışında bırakıldı.");
       return;
     }
-    if (hedef.id === "fKurum") { cizSiralama.kurum = hedef.value; listeSayfasi.siralama = SAYFA_ADIMI; ciz(["siralama"]); urlYaz(false); return; }
-    if (hedef.id === "fUyum") { cizSiralama.uyumFiltre = hedef.value; listeSayfasi.siralama = SAYFA_ADIMI; ciz(["siralama"]); urlYaz(false); return; }
-    if (hedef.id === "fKategori") { cizSiralama.kategori = hedef.value; listeSayfasi.siralama = SAYFA_ADIMI; ciz(["siralama"]); urlYaz(false); return; }
-    if (hedef.id === "fDurum") { cizSiralama.durumFiltre = hedef.value; listeSayfasi.siralama = SAYFA_ADIMI; ciz(["siralama"]); urlYaz(false); return; }
+    if (hedef.id === "fKurum") { cizSiralama.kurum = hedef.value; listeSayfasi.siralama = sayfaAdimi(); ciz(["siralama"]); urlYaz(false); return; }
+    if (hedef.id === "fUyum") { cizSiralama.uyumFiltre = hedef.value; listeSayfasi.siralama = sayfaAdimi(); ciz(["siralama"]); urlYaz(false); return; }
+    if (hedef.id === "fKategori") { cizSiralama.kategori = hedef.value; listeSayfasi.siralama = sayfaAdimi(); ciz(["siralama"]); urlYaz(false); return; }
+    if (hedef.id === "fDurum") { cizSiralama.durumFiltre = hedef.value; listeSayfasi.siralama = sayfaAdimi(); ciz(["siralama"]); urlYaz(false); return; }
   });
 
   document.querySelector("main").addEventListener("input", e => {
