@@ -447,6 +447,31 @@ input,select,textarea{min-height:48px}
 .sh-ozet-satir .s{font-size:1.1rem;color:var(--ink-3)}
 .sh-ozet-satir .c{font-size:1.15rem;font-weight:600}
 .sh-ozet-satir button{justify-self:start}
+/* ————— Telefonda özet kart: ayrıntı, Ayrıntı panelinde durur ————— */
+.prog .reasons,.prog .prog-aciklama,.prog .kilit-notu{display:none}
+.prog .prog-head{gap:.6rem}
+.prog-nums{gap:.5rem}
+.tile{cursor:pointer}
+.tile .n{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tile.acildi .n{display:block;-webkit-line-clamp:unset}
+.tile.acildi{outline:2px solid var(--accent-line);outline-offset:-2px}
+
+/* gap desteklenmeyen tarayıcılarda kritik kaplar dağılmasın */
+.ustcubuk>*{margin-right:.35rem}
+.altbar button{margin:0 1px}
+.arac-satiri>*,.choice>*,.filterbar>*{margin:0 .5rem .5rem 0}
+@supports (gap:1px){
+  .ustcubuk>*{margin-right:0}
+  .altbar button{margin:0}
+  .arac-satiri>*,.choice>*,.filterbar>*{margin:0}
+}
+
+/* ————— Liste sayfalama ————— */
+.liste-alt{display:grid;gap:.6rem;margin:.9rem 0 1.2rem;padding:1rem;border:1px dashed var(--line-2);border-radius:14px;background:var(--surface-2)}
+.liste-alt p{margin:0}
+.liste-alt .btn{width:100%;justify-content:center}
+@media (min-width:720px){.liste-alt{grid-auto-flow:column;justify-content:start;align-items:center}.liste-alt .btn{width:auto}}
+
 /* ————— Phosphor ikonları ————— */
 .ph{width:1.3em;height:1.3em;flex:none;display:inline-block;vertical-align:-.28em;fill:currentColor;pointer-events:none}
 .rail nav button .ikon{width:1.5rem;height:1.5rem}
@@ -521,8 +546,16 @@ dialog[open]{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;max-width:
 .tablewrap td::before{content:attr(data-etiket);color:var(--ink-3);font-weight:600;font-size:1.05rem}
 .tablewrap td.num{text-align:start;white-space:normal}
 .tablewrap td:empty{display:none}
+.tablewrap tr:not(.satir-acildi) td[data-ikincil]{display:none}
+.satir-ac{display:inline-block;margin-top:.45rem;min-height:40px;padding:.3rem .85rem;border-radius:999px;
+  border:1px solid var(--line-2);background:var(--surface-2);color:var(--ink-2);font:inherit;font-size:1.05rem;cursor:pointer}
+.tablewrap tr.satir-acildi .satir-ac{background:var(--accent-soft);border-color:var(--accent-line);color:var(--ink)}
 
 @media (min-width:900px){
+  .prog .reasons,.prog .prog-aciklama,.prog .kilit-notu{display:block}
+  .tile{cursor:default}
+  .tile .n{display:block;-webkit-line-clamp:unset}
+  .tile.acildi{outline:0}
   .uygulama{display:grid;grid-template-columns:var(--rail-w) minmax(0,1fr)}
   .rail{position:-webkit-sticky;position:sticky;top:0;height:100vh;transform:none;box-shadow:none;width:auto;z-index:40}
   .btn.menu-ac{display:none}
@@ -547,6 +580,8 @@ dialog[open]{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;max-width:
   .tablewrap tr:hover{background:var(--surface-2)}
   .tablewrap td{display:table-cell;padding:calc(var(--u)*1.25) calc(var(--u)*1.5);border-bottom:1px solid var(--line)}
   .tablewrap td::before{content:none}
+  .tablewrap tr:not(.satir-acildi) td[data-ikincil]{display:table-cell}
+  .satir-ac{display:none}
   .tablewrap td.num{text-align:start;white-space:nowrap}
   .prog-nums{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
@@ -723,7 +758,7 @@ dialog[open]{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;max-width:
 </dialog>
 <div class="toast" id="toast" role="status" hidden></div>
 <p class="live" id="canliDurum" role="status" aria-live="polite"></p>
-<script data-vendor="echarts">/*! Apache ECharts 6.1.0 | (c) 2017-2026 The Apache Software Foundation | Licensed under the Apache License, Version 2.0 | https://www.apache.org/licenses/LICENSE-2.0 | source: https://registry.npmjs.org/echarts/-/echarts-6.1.0.tgz | dist/echarts.min.js sha256 b66b25aeb4df84e33199dc21694014d336d222cbd9deb0e5a7c14bd6aa0d0fd0 | This product includes software developed at The Apache Software Foundation (https://www.apache.org/). */
+<script type="text/plain" id="echartsKaynak" data-vendor="echarts">/*! Apache ECharts 6.1.0 | (c) 2017-2026 The Apache Software Foundation | Licensed under the Apache License, Version 2.0 | https://www.apache.org/licenses/LICENSE-2.0 | source: https://registry.npmjs.org/echarts/-/echarts-6.1.0.tgz | dist/echarts.min.js sha256 b66b25aeb4df84e33199dc21694014d336d222cbd9deb0e5a7c14bd6aa0d0fd0 | This product includes software developed at The Apache Software Foundation (https://www.apache.org/). */
 
 /*
 * Licensed to the Apache Software Foundation (ASF) under one
@@ -3788,6 +3823,27 @@ function listeHtml(baslik, dizi) {
   return "<h4>" + kacis(baslik) + "</h4><ul>" + dizi.map(x => "<li>" + kacis(x) + "</li>").join("") + "</ul>";
 }
 
+const SAYFA_ADIMI = 10;
+const listeSayfasi = { siralama: SAYFA_ADIMI, pano: SAYFA_ADIMI };
+
+function listeyiSinirla(liste, anahtar) {
+  const sinir = listeSayfasi[anahtar] || SAYFA_ADIMI;
+  return { gorunen: liste.slice(0, sinir), kalan: Math.max(0, liste.length - sinir), toplam: liste.length };
+}
+
+function dahaFazlaHtml(anahtar, dilim, birim) {
+  if (!dilim.kalan) {
+    return dilim.toplam > SAYFA_ADIMI
+      ? '<div class="liste-alt"><p class="small muted">' + dilim.toplam + " " + kacis(birim) + ' listelendi.</p>' +
+        '<button class="btn no-print" type="button" data-listekisalt="' + anahtar + '">İlk ' + SAYFA_ADIMI + ' satıra dön</button></div>'
+      : "";
+  }
+  const adim = Math.min(SAYFA_ADIMI, dilim.kalan);
+  return '<div class="liste-alt"><p class="small muted">' + dilim.gorunen.length + " / " + dilim.toplam + " " + kacis(birim) + " gösteriliyor.</p>" +
+    '<button class="btn primary no-print" type="button" data-dahafazla="' + anahtar + '">' + adim + ' satır daha göster</button>' +
+    '<button class="btn no-print" type="button" data-listehepsi="' + anahtar + '">Hepsini göster (' + dilim.toplam + ")</button></div>";
+}
+
 function programKartiHtml(s, sira) {
   const p = s.program;
   const tarih = (p.tarihler || []).filter(t => t.tarih).map(t => {
@@ -3802,17 +3858,17 @@ function programKartiHtml(s, sira) {
         '<div class="prog-inst">' + kacis(p.kurum) + " · " + kacis(KATEGORI_ETIKET[p.kategori]) + "</div></div>" +
       '<button class="btn sm no-print" data-detay="' + p.id + '" type="button">Ayrıntı</button>' +
     "</div>" +
-    '<p class="small muted">' + kacis(p.kisa) + "</p>" +
+    '<p class="small muted prog-aciklama">' + kacis(p.kisa) + "</p>" +
     '<div class="prog-meta">' + durumRozeti(s.durum) + " " + rozet(UYUM_ETIKETLERI[s.uyum.seviye].sinif, UYUM_ETIKETLERI[s.uyum.seviye].ad) + " " + tarih + "</div>" +
-    '<p class="small muted">' + kacis(s.uyum.aciklama) + "</p>" +
+    '<p class="small muted prog-aciklama">' + kacis(s.uyum.aciklama) + "</p>" +
     '<div class="prog-nums">' +
       '<div><div class="k">İlan edilen tavan</div><div class="v">' + kacis(p.tavan ? tl(p.tavan) : "Sabit tutar yok") + "</div></div>" +
       '<div><div class="k">Gerçekçi değer</div><div class="v">' + (s.gercekci.hesaplanabilir && s.gercekciTutar ? tl(s.gercekciTutar) : "0 TL") + "</div></div>" +
     "</div>" +
-    '<p class="small muted">' + kacis(s.gercekci.aciklama || "") + "</p>" +
+    '<p class="small muted prog-aciklama">' + kacis(s.gercekci.aciklama || "") + "</p>" +
     (s.gerekce.length ? '<ul class="reasons">' + s.gerekce.map(g => "<li>" + kacis(g) + "</li>").join("") + "</ul>" : "") +
     (s.engeller.length ? '<div class="note stop small"><strong>Engeller:</strong> ' + s.engeller.map(kacis).join(" · ") + "</div>" : "") +
-    (s.kilitAcma ? '<div class="note small"><strong>Kilidi açan koşul:</strong> ' + kacis(s.kilitAcma) + "</div>" : "") +
+    (s.kilitAcma ? '<div class="note small kilit-notu"><strong>Kilidi açan koşul:</strong> ' + kacis(s.kilitAcma) + "</div>" : "") +
     (sira ? '<div class="score-bar"><i style="width:' + Math.max(2, s.puan) + '%"></i></div><p class="small muted">Öncelik puanı ' + s.puan.toFixed(1) + " / 100</p>" : "") +
     "</article>";
 }
@@ -4342,7 +4398,12 @@ function cizSiralama() {
     "</div>" +
     '<p class="small muted">Aktif faaliyet konuları: ' + (aktifSektorler().map(x => kacis((SEKTORLER.find(y => y.id === x) || {}).ad || x)).join(" · ") || "seçilmedi") +
     ". Faaliyet seçimi puanı doğrudan etkiler; eşleşmeyen program listeden çıkarılmaz.</p></div>" +
-    (filtreli.length ? filtreli.map((s, i) => programKartiHtml(s, i + 1)).join("") : '<div class="card"><p>Bu filtreyle eşleşen program yok.</p></div>');
+    (filtreli.length
+      ? (function () {
+          const dilim = listeyiSinirla(filtreli, "siralama");
+          return dilim.gorunen.map((s, i) => programKartiHtml(s, i + 1)).join("") + dahaFazlaHtml("siralama", dilim, "program");
+        })()
+      : '<div class="card"><p>Bu filtreyle eşleşen program yok.</p></div>');
 }
 
 function cizYigin() {
@@ -4472,6 +4533,7 @@ function cizPano() {
   const oz = panoOzetleri(sonuclar);
   const acik = sonuclar.filter(s => ["blocked", "excluded_by_strategy"].indexOf(s.durum) < 0)
     .filter(gorunum.filtre).slice().sort(gorunum.sirala);
+  const panoDilimi = listeyiSinirla(acik, "pano");
   document.getElementById("panel-pano").innerHTML =
     '<div class="bolum-bas"><div><h2>Başvuru işletim panosu</h2>' +
     '<p>Her programın başvuru durumunu buradan yürütün. Reddedildi olarak işaretlediğinizde alternatif yol otomatik açılır ve girdiğiniz hiçbir veri silinmez.</p></div></div>' +
@@ -4487,7 +4549,7 @@ function cizPano() {
       '<button type="button" data-gorunum="' + g.id + '" aria-pressed="' + (durum.gorunum === g.id) + '">' + kacis(g.ad) + "</button>").join("") + "</div></div>" +
     '<p class="small muted">Sıradaki tarih: ' + (oz.sonrakiTarih ? kacis(kisaAd(oz.sonrakiTarih.pr.id) + " · " + oz.sonrakiTarih.x.ad + " · " + tarihTr(oz.sonrakiTarih.x.tarih)) : "kayıtlı tarih yok") + "</p></div>" +
     (acik.length ? "" : '<div class="bos"><b>Bu görünümde satır yok</b>Filtreyi değiştirin veya uygunluk sihirbazındaki koşulları kapatın.</div>') +
-    acik.map(s => {
+    panoDilimi.gorunen.map(s => {
       const p = s.program;
       const mevcut = durum.pano[p.id] || "hazirlik";
       const fallbackHtml = mevcut === "red" || mevcut === "fallback"
@@ -4524,7 +4586,7 @@ function cizPano() {
         '<div><label for="not-' + p.id + '">Not (kişisel veri yazmayın)</label><input type="text" id="not-' + p.id + '" data-panonot="' + p.id + '" value="' + kacis(durum.panoNot[p.id] || "") + '" maxlength="180"></div>' +
         odulHtml +
         "</div>" + odulUyari + fallbackHtml + "</div>";
-    }).join("");
+    }).join("") + dahaFazlaHtml("pano", panoDilimi, "başvuru satırı");
 }
 
 function cizTakvim() {
@@ -4740,6 +4802,17 @@ function cizAnalitik() {
 
 const grafikOrnekleri = {};
 function echartsHazir() { return typeof window.echarts !== "undefined" && typeof window.echarts.init === "function"; }
+
+let echartsDegerlendirildi = false;
+function echartsYukle() {
+  if (echartsHazir()) return true;
+  if (echartsDegerlendirildi) return false;
+  echartsDegerlendirildi = true;
+  const kaynak = document.getElementById("echartsKaynak");
+  if (!kaynak || !kaynak.textContent) return false;
+  try { (new Function(kaynak.textContent))(); } catch (e) { bozukKaydiYokSay(); }
+  return echartsHazir();
+}
 function grafikTemasi() {
   const koyu = document.documentElement.getAttribute("data-theme") === "dark" ||
     (!document.documentElement.getAttribute("data-theme") && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -4806,6 +4879,7 @@ function tabloYap(basliklar, satirlar) {
 }
 
 function grafikleriKur() {
+  echartsYukle();
   const v = grafikVerisi();
   const tema = grafikTemasi();
   const eksenStil = { axisLine: { lineStyle: { color: tema.cizgi } }, axisLabel: { color: tema.ikincil }, splitLine: { lineStyle: { color: tema.cizgi } } };
@@ -5287,10 +5361,22 @@ function tablolariEtiketle(kok) {
   Array.prototype.forEach.call(alan.querySelectorAll(".tablewrap table"), function (tablo) {
     const basliklar = Array.prototype.map.call(tablo.querySelectorAll("thead th"), th => th.textContent.trim());
     if (!basliklar.length) return;
+    const genis = basliklar.length > 3;
     Array.prototype.forEach.call(tablo.querySelectorAll("tbody tr"), function (satir) {
       Array.prototype.forEach.call(satir.children, (hucre, i) => {
         if (basliklar[i]) hucre.setAttribute("data-etiket", basliklar[i]);
+        if (genis && i >= 3) hucre.setAttribute("data-ikincil", "1");
       });
+      if (genis && !satir.querySelector("[data-satirac]") && satir.children[0]) {
+        const etiket = (basliklar.length - 3) + " alan daha";
+        const dugme = document.createElement("button");
+        dugme.type = "button";
+        dugme.className = "satir-ac no-print";
+        dugme.setAttribute("data-satirac", "1");
+        dugme.setAttribute("data-varsayilan", etiket);
+        dugme.textContent = etiket;
+        satir.children[0].appendChild(dugme);
+      }
     });
   });
 }
@@ -6413,6 +6499,7 @@ function olaylariBagla() {
     const gorunum = e.target.closest("[data-gorunum]");
     if (gorunum) {
       durum.gorunum = gorunum.getAttribute("data-gorunum");
+      listeSayfasi.pano = SAYFA_ADIMI;
       tumunuGuncelle(["pano"]);
       bildir("Görünüm değiştirildi: " + (KAYITLI_GORUNUMLER.find(g => g.id === durum.gorunum) || {}).ad);
       return;
@@ -6429,6 +6516,40 @@ function olaylariBagla() {
     if (e.target.closest("#btnMcpIndir")) { mcpIndir(); return; }
     if (e.target.closest("#btnMcpKopyala")) { mcpKopyala(); return; }
     if (e.target.closest("#btnMcpTest")) { mcpTestBaslat(); return; }
+    const dahaFazla = e.target.closest("[data-dahafazla]");
+    if (dahaFazla) {
+      const anahtar = dahaFazla.getAttribute("data-dahafazla");
+      listeSayfasi[anahtar] = (listeSayfasi[anahtar] || SAYFA_ADIMI) + SAYFA_ADIMI;
+      ciz([anahtar]);
+      return;
+    }
+    const listeHepsi = e.target.closest("[data-listehepsi]");
+    if (listeHepsi) {
+      listeSayfasi[listeHepsi.getAttribute("data-listehepsi")] = 9999;
+      ciz([listeHepsi.getAttribute("data-listehepsi")]);
+      return;
+    }
+    const listeKisalt = e.target.closest("[data-listekisalt]");
+    if (listeKisalt) {
+      listeSayfasi[listeKisalt.getAttribute("data-listekisalt")] = SAYFA_ADIMI;
+      ciz([listeKisalt.getAttribute("data-listekisalt")]);
+      window.scrollTo(0, 0);
+      return;
+    }
+    const satirAc = e.target.closest("[data-satirac]");
+    if (satirAc) {
+      const satir = satirAc.closest("tr");
+      if (satir) {
+        const acildi = satir.classList.toggle("satir-acildi");
+        satirAc.textContent = acildi ? "Alanları gizle" : (satirAc.getAttribute("data-varsayilan") || "Daha fazla alan");
+      }
+      return;
+    }
+    const kutu = e.target.closest(".tile");
+    if (kutu && !e.target.closest("button, a, input, select, textarea")) {
+      kutu.classList.toggle("acildi");
+      return;
+    }
     const hizliSekme = e.target.closest("[data-sekme]");
     if (hizliSekme) { sekmeSec(hizliSekme.getAttribute("data-sekme")); return; }
     const senaryo = e.target.closest("[data-senaryo]");
@@ -6498,10 +6619,10 @@ function olaylariBagla() {
       bildir(hedef.checked ? "Notlar pakete eklenecek. Kişisel veri içermediğinden emin olun." : "Notlar paket dışında bırakıldı.");
       return;
     }
-    if (hedef.id === "fKurum") { cizSiralama.kurum = hedef.value; ciz(["siralama"]); urlYaz(false); return; }
-    if (hedef.id === "fUyum") { cizSiralama.uyumFiltre = hedef.value; ciz(["siralama"]); urlYaz(false); return; }
-    if (hedef.id === "fKategori") { cizSiralama.kategori = hedef.value; ciz(["siralama"]); urlYaz(false); return; }
-    if (hedef.id === "fDurum") { cizSiralama.durumFiltre = hedef.value; ciz(["siralama"]); urlYaz(false); return; }
+    if (hedef.id === "fKurum") { cizSiralama.kurum = hedef.value; listeSayfasi.siralama = SAYFA_ADIMI; ciz(["siralama"]); urlYaz(false); return; }
+    if (hedef.id === "fUyum") { cizSiralama.uyumFiltre = hedef.value; listeSayfasi.siralama = SAYFA_ADIMI; ciz(["siralama"]); urlYaz(false); return; }
+    if (hedef.id === "fKategori") { cizSiralama.kategori = hedef.value; listeSayfasi.siralama = SAYFA_ADIMI; ciz(["siralama"]); urlYaz(false); return; }
+    if (hedef.id === "fDurum") { cizSiralama.durumFiltre = hedef.value; listeSayfasi.siralama = SAYFA_ADIMI; ciz(["siralama"]); urlYaz(false); return; }
   });
 
   document.querySelector("main").addEventListener("input", e => {
