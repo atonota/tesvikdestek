@@ -5415,6 +5415,282 @@ function base64UrlCoz(jeton) {
   } catch (e) { return null; }
 }
 
+const IKILI_JETON_IMI = "2";
+function kurumSaglamasi(kurum) {
+  const metin = String(kurum);
+  let toplam = 0;
+  for (let i = 0; i < metin.length; i++) toplam = (toplam * 31 + metin.charCodeAt(i)) % 31;
+  return toplam;
+}
+const IKILI_UYUM_FILTRELERI = ["hepsi", "guclu", "zayif", "yok"];
+const IKILI_SORU_GENISLIKLERI = SORULAR.map(s => Math.max(1, Math.ceil(Math.log2(s.secenekler.length))));
+const IKILI_NACE_KODLARI = NACE_KAYITLARI.map(n => n.kod);
+const IKILI_SEKTOR_IDLERI = SEKTORLER.map(x => x.id);
+const IKILI_SEKME_IDLERI = SEKME_TANIMLARI.map(x => x.id);
+const IKILI_GORUNUM_IDLERI = KAYITLI_GORUNUMLER.map(x => x.id);
+const IKILI_KATEGORILER = Object.keys(KATEGORI_ETIKET);
+const IKILI_DURUMLAR = Object.keys(DURUM_ETIKET);
+const IKILI_PARAMETRE_ANAHTARLARI = Object.keys(VARSAYILAN_PARAMETRE);
+const IKILI_SORU_IDLERI = SORULAR.map(s => s.id);
+
+function IkiliYazici() { this.baytlar = []; this.tampon = 0; this.dolu = 0; }
+IkiliYazici.prototype.yaz = function (deger, genislik) {
+  for (let i = genislik - 1; i >= 0; i--) {
+    this.tampon = (this.tampon << 1) | ((deger >>> i) & 1);
+    if (++this.dolu === 8) { this.baytlar.push(this.tampon & 255); this.tampon = 0; this.dolu = 0; }
+  }
+};
+IkiliYazici.prototype.sayiYaz = function (deger) {
+  let v = Math.max(0, Math.floor(Number(deger) || 0));
+  const olcekli = v > 0 && v % 1000 === 0;
+  if (olcekli) v = v / 1000;
+  this.yaz(olcekli ? 1 : 0, 1);
+  const parcalar = [];
+  do { parcalar.push(v % 128); v = Math.floor(v / 128); } while (v > 0);
+  for (let i = parcalar.length - 1; i >= 0; i--) { this.yaz(i > 0 ? 1 : 0, 1); this.yaz(parcalar[i], 7); }
+};
+IkiliYazici.prototype.bitir = function () {
+  if (this.dolu > 0) { this.baytlar.push((this.tampon << (8 - this.dolu)) & 255); this.tampon = 0; this.dolu = 0; }
+  return new Uint8Array(this.baytlar);
+};
+
+function IkiliOkuyucu(baytlar) { this.baytlar = baytlar; this.imlec = 0; this.bozuk = false; }
+IkiliOkuyucu.prototype.oku = function (genislik) {
+  let deger = 0;
+  for (let i = 0; i < genislik; i++) {
+    const bayt = this.imlec >> 3;
+    if (bayt >= this.baytlar.length) { this.bozuk = true; return 0; }
+    deger = (deger << 1) | ((this.baytlar[bayt] >> (7 - (this.imlec & 7))) & 1);
+    this.imlec++;
+  }
+  return deger >>> 0;
+};
+IkiliOkuyucu.prototype.sayiOku = function () {
+  const olcekli = this.oku(1);
+  let deger = 0, adim = 0;
+  for (;;) {
+    const devam = this.oku(1), parca = this.oku(7);
+    if (this.bozuk) return 0;
+    deger = deger * 128 + parca;
+    if (++adim > 8) { this.bozuk = true; return 0; }
+    if (!devam) break;
+  }
+  return olcekli ? deger * 1000 : deger;
+};
+
+function ikiliB64Kodla(baytlar) {
+  let ham = "";
+  for (let i = 0; i < baytlar.length; i++) ham += String.fromCharCode(baytlar[i]);
+  return btoa(ham).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function ikiliB64Coz(metin) {
+  const d = String(metin).replace(/-/g, "+").replace(/_/g, "/");
+  const ham = atob(d + "===".slice((d.length + 3) % 4));
+  const baytlar = new Uint8Array(ham.length);
+  for (let i = 0; i < ham.length; i++) baytlar[i] = ham.charCodeAt(i);
+  return baytlar;
+}
+
+function ikiliSiraNo(liste, deger) { const i = liste.indexOf(deger); return i < 0 ? -1 : i; }
+function ikiliMaskeYaz(y, liste, secilenler, genislik) {
+  let maske = 0;
+  (secilenler || []).forEach(d => { const i = ikiliSiraNo(liste, d); if (i >= 0) maske |= (1 << (genislik - 1 - i)); });
+  y.yaz(maske, genislik);
+}
+function ikiliMaskeCoz(maske, liste, genislik) {
+  const sonuc = [];
+  for (let i = 0; i < genislik; i++) if ((maske >> (genislik - 1 - i)) & 1) sonuc.push(liste[i]);
+  return sonuc;
+}
+
+function ikiliJetonKodla() {
+  try {
+    const ref = referansDurum(durum.senaryo);
+    const senaryoNo = ikiliSiraNo(SENARYO_IDLERI, durum.senaryo);
+    const sekmeNo = ikiliSiraNo(IKILI_SEKME_IDLERI, durum.aktifSekme);
+    if (senaryoNo < 0 || sekmeNo < 0) return null;
+
+    const profilFarkli = IKILI_SORU_IDLERI.some(k => durum.profil[k] !== ref.profil[k]);
+    const parametreFarkli = IKILI_PARAMETRE_ANAHTARLARI.some(k => Number(durum.parametre[k] || 0) !== Number(ref.parametre[k] || 0));
+    const naceFarkli = JSON.stringify(durum.nace) !== JSON.stringify(ref.nace);
+    const yiginAnahtarlari = GIDER_IDLERI.filter(k => (durum.yigin[k] || []).length);
+    const kanitIsaretleri = KANIT_IDLERI.filter(k => durum.kanit[k]);
+    const panoGirdileri = PROGRAM_IDLERI.filter(k => durum.pano[k] && durum.pano[k] !== "hazirlik");
+    const odulGirdileri = PROGRAM_IDLERI.filter(k => Number(durum.odul[k]) > 0);
+    const f = siralamaFiltreleri();
+    const filtreFarkli = durum.gorunum !== ref.gorunum || f.fk !== "hepsi" || f.fd !== "hepsi" || f.fkr !== "hepsi" || f.fu !== "hepsi";
+    const soruNo = sihirbaz.ekran === "ozet" ? 0
+      : (sihirbaz.imlec && ikiliSiraNo(IKILI_SORU_IDLERI, sihirbaz.imlec) >= 0 ? ikiliSiraNo(IKILI_SORU_IDLERI, sihirbaz.imlec) + 1 : -1);
+
+    const y = new IkiliYazici();
+    y.yaz(senaryoNo, 6);
+    y.yaz(sekmeNo, 5);
+    y.yaz((profilFarkli ? 256 : 0) | (parametreFarkli ? 128 : 0) | (naceFarkli ? 64 : 0) |
+          (yiginAnahtarlari.length ? 32 : 0) | (kanitIsaretleri.length ? 16 : 0) | (panoGirdileri.length ? 8 : 0) |
+          (odulGirdileri.length ? 4 : 0) | (filtreFarkli ? 2 : 0) | (soruNo >= 0 ? 1 : 0), 9);
+
+    if (profilFarkli) SORULAR.forEach((s, i) => {
+      const no = Math.max(0, PROFIL_ENUMLARI[s.id].indexOf(durum.profil[s.id]));
+      y.yaz(no, IKILI_SORU_GENISLIKLERI[i]);
+    });
+    if (parametreFarkli) {
+      let maske = 0;
+      IKILI_PARAMETRE_ANAHTARLARI.forEach((k, i) => { if (Number(durum.parametre[k] || 0) > 0) maske |= (1 << (IKILI_PARAMETRE_ANAHTARLARI.length - 1 - i)); });
+      y.yaz(maske, IKILI_PARAMETRE_ANAHTARLARI.length);
+      IKILI_PARAMETRE_ANAHTARLARI.forEach(k => { if (Number(durum.parametre[k] || 0) > 0) y.sayiYaz(durum.parametre[k]); });
+    }
+    if (naceFarkli) {
+      y.yaz(ikiliSiraNo(IKILI_NACE_KODLARI, durum.nace.birincil) + 1, 4);
+      ikiliMaskeYaz(y, IKILI_NACE_KODLARI, durum.nace.ikincil, IKILI_NACE_KODLARI.length);
+      ikiliMaskeYaz(y, IKILI_NACE_KODLARI, durum.nace.uykuda, IKILI_NACE_KODLARI.length);
+      ikiliMaskeYaz(y, IKILI_SEKTOR_IDLERI, durum.nace.sektorler, IKILI_SEKTOR_IDLERI.length);
+    }
+    if (yiginAnahtarlari.length) {
+      ikiliMaskeYaz(y, GIDER_IDLERI, yiginAnahtarlari, GIDER_IDLERI.length);
+      yiginAnahtarlari.forEach(k => {
+        const liste = (durum.yigin[k] || []).filter(p => ikiliSiraNo(PROGRAM_IDLERI, p) >= 0).slice(0, 15);
+        y.yaz(liste.length, 4);
+        liste.forEach(p => y.yaz(ikiliSiraNo(PROGRAM_IDLERI, p), 6));
+      });
+    }
+    if (kanitIsaretleri.length) KANIT_IDLERI.forEach(k => y.yaz(durum.kanit[k] ? 1 : 0, 1));
+    if (panoGirdileri.length) {
+      const liste = panoGirdileri.filter(k => ikiliSiraNo(PANO_IDLERI, durum.pano[k]) >= 0).slice(0, 63);
+      y.yaz(liste.length, 6);
+      liste.forEach(k => { y.yaz(ikiliSiraNo(PROGRAM_IDLERI, k), 6); y.yaz(ikiliSiraNo(PANO_IDLERI, durum.pano[k]), 4); });
+    }
+    if (odulGirdileri.length) {
+      const liste = odulGirdileri.slice(0, 63);
+      y.yaz(liste.length, 6);
+      liste.forEach(k => { y.yaz(ikiliSiraNo(PROGRAM_IDLERI, k), 6); y.sayiYaz(durum.odul[k]); });
+    }
+    if (filtreFarkli) {
+      y.yaz(Math.max(0, ikiliSiraNo(IKILI_GORUNUM_IDLERI, durum.gorunum)), 3);
+      y.yaz(ikiliSiraNo(IKILI_KATEGORILER, f.fk) + 1, 4);
+      y.yaz(ikiliSiraNo(IKILI_DURUMLAR, f.fd) + 1, 4);
+      const kurumlar = kurumListesi();
+      const kurumNo = f.fkr === "hepsi" ? 0 : kurumlar.findIndex(k => kurumKodla(k) === f.fkr) + 1;
+      y.yaz(kurumNo, 5);
+      if (kurumNo > 0) y.yaz(kurumSaglamasi(kurumlar[kurumNo - 1]), 5);
+      y.yaz(Math.max(0, ikiliSiraNo(IKILI_UYUM_FILTRELERI, f.fu)), 3);
+    }
+    if (soruNo >= 0) y.yaz(soruNo, 6);
+
+    const jeton = IKILI_JETON_IMI + ikiliB64Kodla(y.bitir());
+    return jeton.length > URL_AZAMI_UZUNLUK ? null : jeton;
+  } catch (e) { return null; }
+}
+
+function ikiliJetonSorgusu(jeton) {
+  try {
+    const m = String(jeton == null ? "" : jeton);
+    if (m.charAt(0) !== IKILI_JETON_IMI || m.length < 2 || m.length > URL_AZAMI_UZUNLUK) return null;
+    if (!/^[A-Za-z0-9_-]+$/.test(m)) return null;
+    const o = new IkiliOkuyucu(ikiliB64Coz(m.slice(1)));
+    const alanlar = [];
+    const ekle = (a, d) => { if (d !== "" && d !== null && d !== undefined) alanlar.push(a + "=" + d); };
+
+    const senaryoNo = o.oku(6), sekmeNo = o.oku(5), maske = o.oku(9);
+    if (o.bozuk || senaryoNo >= SENARYO_IDLERI.length || sekmeNo >= IKILI_SEKME_IDLERI.length) return null;
+    ekle("v", "1");
+    ekle("s", IKILI_SEKME_IDLERI[sekmeNo]);
+    ekle("sn", SENARYO_IDLERI[senaryoNo]);
+
+    if (maske & 256) {
+      const parcalar = [];
+      for (let i = 0; i < SORULAR.length; i++) {
+        const no = o.oku(IKILI_SORU_GENISLIKLERI[i]);
+        const secenekler = PROFIL_ENUMLARI[SORULAR[i].id];
+        if (no >= secenekler.length) return null;
+        parcalar.push(SORULAR[i].id + ":" + secenekler[no]);
+      }
+      ekle("p", parcalar.join("~"));
+    }
+    if (maske & 128) {
+      const pm = o.oku(IKILI_PARAMETRE_ANAHTARLARI.length), parcalar = [];
+      for (let i = 0; i < IKILI_PARAMETRE_ANAHTARLARI.length; i++) {
+        const anahtar = IKILI_PARAMETRE_ANAHTARLARI[i];
+        if (!((pm >> (IKILI_PARAMETRE_ANAHTARLARI.length - 1 - i)) & 1)) { parcalar.push(anahtar + ":0"); continue; }
+        const deger = o.sayiOku();
+        const sinir = Object.prototype.hasOwnProperty.call(PARAMETRE_SINIRI, anahtar) ? PARAMETRE_SINIRI[anahtar] : AZAMI_ODUL_TAVANI;
+        if (o.bozuk || deger > sinir) return null;
+        parcalar.push(anahtar + ":" + deger);
+      }
+      ekle("pr", parcalar.join("~"));
+    }
+    if (maske & 64) {
+      const b = o.oku(4);
+      if (o.bozuk || b > IKILI_NACE_KODLARI.length) return null;
+      ekle("nb", b === 0 ? "" : IKILI_NACE_KODLARI[b - 1]);
+      ekle("ni", ikiliMaskeCoz(o.oku(IKILI_NACE_KODLARI.length), IKILI_NACE_KODLARI, IKILI_NACE_KODLARI.length).join("-"));
+      ekle("nu", ikiliMaskeCoz(o.oku(IKILI_NACE_KODLARI.length), IKILI_NACE_KODLARI, IKILI_NACE_KODLARI.length).join("-"));
+      ekle("nk", ikiliMaskeCoz(o.oku(IKILI_SEKTOR_IDLERI.length), IKILI_SEKTOR_IDLERI, IKILI_SEKTOR_IDLERI.length).join("-"));
+    }
+    if (maske & 32) {
+      const ym = o.oku(GIDER_IDLERI.length), parcalar = [];
+      for (let i = 0; i < GIDER_IDLERI.length; i++) {
+        if (!((ym >> (GIDER_IDLERI.length - 1 - i)) & 1)) continue;
+        const adet = o.oku(4), programlar = [];
+        for (let j = 0; j < adet; j++) {
+          const p = o.oku(6);
+          if (o.bozuk || p >= PROGRAM_IDLERI.length) return null;
+          programlar.push(PROGRAM_IDLERI[p]);
+        }
+        if (programlar.length) parcalar.push(GIDER_IDLERI[i] + ":" + programlar.join("-"));
+      }
+      ekle("yg", parcalar.join("~"));
+    }
+    if (maske & 16) {
+      const isaretli = [];
+      for (let i = 0; i < KANIT_IDLERI.length; i++) if (o.oku(1) === 1) isaretli.push(KANIT_IDLERI[i]);
+      if (o.bozuk) return null;
+      ekle("kn", isaretli.join("-"));
+    }
+    if (maske & 8) {
+      const adet = o.oku(6), parcalar = [];
+      for (let i = 0; i < adet; i++) {
+        const p = o.oku(6), d = o.oku(4);
+        if (o.bozuk || p >= PROGRAM_IDLERI.length || d >= PANO_IDLERI.length) return null;
+        parcalar.push(PROGRAM_IDLERI[p] + ":" + PANO_IDLERI[d]);
+      }
+      ekle("pn", parcalar.join("~"));
+    }
+    if (maske & 4) {
+      const adet = o.oku(6), parcalar = [];
+      for (let i = 0; i < adet; i++) {
+        const p = o.oku(6);
+        if (o.bozuk || p >= PROGRAM_IDLERI.length) return null;
+        const tutar = o.sayiOku();
+        if (o.bozuk) return null;
+        parcalar.push(PROGRAM_IDLERI[p] + ":" + tutar);
+      }
+      ekle("od", parcalar.join("~"));
+    }
+    if (maske & 2) {
+      const gv = o.oku(3), fk = o.oku(4), fd = o.oku(4), fkr = o.oku(5);
+      const kurumlar = kurumListesi();
+      if (o.bozuk || fkr > kurumlar.length) return null;
+      const kurumSaglama = fkr > 0 ? o.oku(5) : 0;
+      const fu = o.oku(3);
+      if (o.bozuk || gv >= IKILI_GORUNUM_IDLERI.length || fk > IKILI_KATEGORILER.length ||
+          fd > IKILI_DURUMLAR.length || fu >= IKILI_UYUM_FILTRELERI.length) return null;
+      ekle("gv", IKILI_GORUNUM_IDLERI[gv]);
+      ekle("fk", fk === 0 ? "hepsi" : IKILI_KATEGORILER[fk - 1]);
+      ekle("fd", fd === 0 ? "hepsi" : IKILI_DURUMLAR[fd - 1]);
+      const kurumAdayi = fkr === 0 ? null : kurumlar[fkr - 1];
+      ekle("fkr", kurumAdayi && kurumSaglamasi(kurumAdayi) === kurumSaglama ? kurumKodla(kurumAdayi) : "hepsi");
+      ekle("fu", IKILI_UYUM_FILTRELERI[fu]);
+    }
+    if (maske & 1) {
+      const soruNo = o.oku(6);
+      if (o.bozuk || soruNo > SORULAR.length) return null;
+      ekle("q", soruNo === 0 ? "ozet" : SORULAR[soruNo - 1].id);
+    }
+    if (o.bozuk || o.baytlar.length * 8 - o.imlec >= 8) return null;
+    return new URLSearchParams(alanlar.join("&"));
+  } catch (e) { return null; }
+}
+
 function referansDurum(senaryoId) {
   const temel = varsayilanDurum();
   const s = SENARYOLAR.find(x => x.id === senaryoId);
@@ -5491,7 +5767,10 @@ function urlAlanlari(tamKapsam) {
 }
 
 function uzunSorgu() { return urlAlanlari(true).join("&"); }
-function kisaJeton() { return base64UrlKodla(urlAlanlari(false).join("&")); }
+function kisaJeton() {
+  const ikili = ikiliJetonKodla();
+  return ikili || base64UrlKodla(urlAlanlari(false).join("&"));
+}
 
 function sorgudanHamDurum(sorgu) {
   const senaryoId = sorgu.get("sn");
@@ -5559,6 +5838,8 @@ function baslangicSorgusu() {
   const jeton = ham.get("id");
   if (jeton) {
     if (jeton.length > URL_AZAMI_UZUNLUK || !JETON_DESENI.test(jeton)) return { hata: "Bağlantıdaki kısa kod biçimi geçersiz." };
+    const ikiliSorgu = ikiliJetonSorgusu(jeton);
+    if (ikiliSorgu) return { sorgu: ikiliSorgu, kisa: true };
     const cozulen = base64UrlCoz(jeton);
     if (cozulen === null || cozulen.length > URL_AZAMI_UZUNLUK) return { hata: "Bağlantıdaki kısa kod çözülemedi." };
     let sorgu;
