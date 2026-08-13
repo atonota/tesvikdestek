@@ -331,43 +331,6 @@ footer.app p{max-width:100ch}
 
 .perde{position:fixed;inset:0;background:rgba(8,12,18,.55);z-index:90;display:none;opacity:0;transition:opacity var(--gecis)}
 .perde[hidden]{display:none}
-@media (max-width:1023px){
-  .uygulama{grid-template-columns:minmax(0,1fr)}
-  .rail{position:fixed;inset-block:0;inset-inline-start:0;width:min(300px,84vw);transform:translateX(-102%);
-    transition:transform var(--gecis);box-shadow:var(--sh-3);z-index:100}
-  .uygulama[data-menu="acik"] .rail{transform:none}
-  .btn.menu-ac{display:inline-flex}
-  .ustcubuk{padding:calc(var(--u)*1.5) calc(var(--u)*2)}
-  .ustcubuk-baslik{flex:1 1 auto;min-width:0}
-  .ustcubuk-arac{flex:1 1 100%;min-width:0;order:3;gap:calc(var(--u)*.75)}
-  .ustcubuk-arac>*{flex:0 1 auto;min-width:0}
-  .ara-dugme{flex:1 1 100%;order:-1}
-  #senaryoSecici{flex:1 1 100%;min-width:0 !important;width:100%}
-  .sayfa{padding:calc(var(--u)*2)}
-  .ara-dugme{min-width:0}
-  .ara-dugme kbd{display:none}
-  .uygulama[data-menu="acik"] .perde{display:block;opacity:1}
-}
-@media (max-width:520px){
-  body{font-size:14px}
-  .sayfa{padding:calc(var(--u)*1.5)}
-  .card{padding:calc(var(--u)*1.75)}
-  .tile .v{font-size:1.25rem}
-  .ustcubuk{padding:calc(var(--u)*1.25) calc(var(--u)*1.5);gap:calc(var(--u)*1)}
-  .ustcubuk-arac .btn{flex:1 1 calc(50% - var(--u)*.75);justify-content:center}
-  .prog-nums{grid-template-columns:1fr}
-  .nace-rol button{flex:1 1 calc(50% - var(--u)*.75);min-width:0}
-  .ustcubuk-baslik h2{font-size:1rem}
-  .grafik-tuval{height:260px}
-  .kv{grid-template-columns:1fr;gap:calc(var(--u)*.5)}
-  .kv dt{margin-top:calc(var(--u)*1)}
-  .drawer-head,.drawer-body{padding:calc(var(--u)*1.75)}
-  .gunluk li{flex-direction:column;gap:calc(var(--u)*.5)}
-}
-@media (prefers-reduced-motion:reduce){
-  *{animation-duration:.01ms !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
-  .rail{transition:none}
-}
 @media print{
   :root{--bg:#fff;--canvas:#fff;--surface:#fff;--surface-2:#fff;--surface-3:#fff;--rail-bg:#fff;--ink:#000;--ink-2:#1a1a1a;--ink-3:#3a3a3a;--ink-4:#555;--line:#999;--line-2:#777;--sh-1:none;--sh-2:none;--sh-3:none}
   .rail,.ustcubuk,.no-print,dialog,.toast,.menu-ac,.perde{display:none !important}
@@ -484,6 +447,112 @@ input,select,textarea{min-height:48px}
 .sh-ozet-satir .s{font-size:1.1rem;color:var(--ink-3)}
 .sh-ozet-satir .c{font-size:1.15rem;font-weight:600}
 .sh-ozet-satir button{justify-self:start}
+/* ————— Phosphor ikonları ————— */
+.ph{width:1.3em;height:1.3em;flex:none;display:inline-block;vertical-align:-.28em;fill:currentColor;pointer-events:none}
+.rail nav button .ikon{width:1.5rem;height:1.5rem}
+.rail nav button .ikon .ph{width:1.4rem;height:1.4rem}
+.altbar .ph{width:1.5rem;height:1.5rem}
+.sh-isaret .ph{width:1.15rem;height:1.15rem}
+.btn .ph{margin-inline-end:.1rem}
+
+/* ————— Kabuk: önce telefon, sonra masaüstü ————— */
+.uygulama{display:block;min-height:100vh;min-height:100dvh}
+.rail{position:fixed;inset-block:0;inset-inline-start:0;width:min(320px,86vw);height:100dvh;transform:translateX(-102%);
+  transition:transform var(--gecis);box-shadow:var(--sh-3);z-index:100;padding:calc(var(--u)*2) calc(var(--u)*1.5)}
+.uygulama[data-menu="acik"] .rail{transform:none}
+.uygulama[data-menu="acik"] .perde{display:block;opacity:1}
+.btn.menu-ac{display:inline-flex}
+
+.ustcubuk{position:sticky;top:0;z-index:35;display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto;
+  align-items:center;gap:.35rem;padding:.4rem .5rem;flex-wrap:nowrap;height:56px;
+  padding-top:calc(.4rem + env(safe-area-inset-top))}
+.ustcubuk-baslik{min-width:0;flex:initial}
+.ustcubuk-baslik .kirinti{display:none}
+.ustcubuk-baslik h2{margin:0;font-size:1.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ustcubuk-arac{display:contents}
+.ustcubuk .btn.sm,.ustcubuk .ara-dugme{width:44px;min-width:44px;max-width:44px;height:44px;min-height:44px;
+  padding:0;justify-content:center;border-radius:999px;flex:none}
+.ustcubuk .dugme-metni,.ara-dugme span:not([aria-hidden]),.ara-dugme kbd{display:none}
+.ustcubuk .btn .ph{margin:0}
+.arac-grubu{grid-column:1 / -1;order:1;padding-bottom:.5rem}
+
+.bolum-cubugu{display:flex;gap:.4rem;overflow-x:auto;padding:.25rem .5rem;background:var(--surface);
+  border-bottom:1px solid var(--line);scrollbar-width:none;position:sticky;top:56px;z-index:30;align-items:center;
+  -webkit-overflow-scrolling:touch}
+.bolum-cubugu::-webkit-scrollbar{display:none}
+.bolum-cubugu button{flex:0 0 auto;min-height:44px;padding:.25rem .85rem;border-radius:999px;border:1px solid var(--line-2);
+  background:var(--surface-2);color:var(--ink-2);font:inherit;font-size:1.05rem;font-weight:560;cursor:pointer;white-space:nowrap}
+.bolum-cubugu button[aria-current="page"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+.yolharita{display:none}
+.sayfa{padding:calc(var(--u)*1.5) calc(var(--u)*1.5) calc(84px + env(safe-area-inset-bottom))}
+.card{padding:calc(var(--u)*1.75)}
+.bolum-bas{margin-bottom:calc(var(--u)*1.25)}
+
+.altbar{position:fixed;inset-inline:0;bottom:0;z-index:60;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:2px;background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:saturate(1.4) blur(12px);
+  border-top:1px solid var(--line);padding:.3rem .25rem calc(.3rem + env(safe-area-inset-bottom))}
+.altbar button{display:grid;justify-items:center;gap:.1rem;min-height:52px;padding:.25rem .1rem;border:0;background:none;
+  color:var(--ink-3);font:inherit;cursor:pointer;border-radius:12px}
+.altbar .no{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--surface-3);
+  font-size:.95rem;font-weight:700;color:var(--ink-2);line-height:1}
+.altbar .ad{font-size:.9rem;font-weight:600;line-height:1.1;text-align:center;white-space:nowrap}
+.altbar button[aria-current="step"]{color:var(--accent)}
+.altbar button[aria-current="step"] .no{background:var(--accent);color:var(--accent-ink)}
+
+.grid.three,.grid.four{grid-template-columns:repeat(2,minmax(0,1fr));gap:calc(var(--u)*1.25)}
+.tile{padding:calc(var(--u)*1.5)}
+.tile .v{font-size:1.5rem}
+.tile .n{margin-top:.25rem}
+.prog-nums{grid-template-columns:1fr}
+
+.tablewrap{overflow:visible;border:0;background:none}
+.tablewrap table{min-width:0;display:block}
+.tablewrap thead{display:none}
+.tablewrap tbody,.tablewrap tr,.tablewrap td{display:block;width:100%}
+.tablewrap caption{text-align:start;padding:0 0 .4rem}
+.tablewrap tr{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:.5rem .9rem;margin-bottom:.6rem}
+.tablewrap tr:hover{background:var(--surface)}
+.tablewrap td{display:grid;grid-template-columns:minmax(0,40%) minmax(0,1fr);gap:.7rem;align-items:baseline;
+  padding:.4rem 0;border-bottom:1px solid var(--line)}
+.tablewrap tr td:last-child{border-bottom:0}
+.tablewrap td::before{content:attr(data-etiket);color:var(--ink-3);font-weight:600;font-size:1.05rem}
+.tablewrap td.num{text-align:start;white-space:normal}
+.tablewrap td:empty{display:none}
+
+@media (min-width:900px){
+  .uygulama{display:grid;grid-template-columns:var(--rail-w) minmax(0,1fr)}
+  .rail{position:sticky;top:0;height:100vh;transform:none;box-shadow:none;width:auto;z-index:40}
+  .btn.menu-ac{display:none}
+  .altbar,.bolum-cubugu{display:none}
+  .yolharita{display:flex}
+  .ustcubuk{display:flex;flex-wrap:wrap;gap:calc(var(--u)*2);padding:calc(var(--u)*1.5) calc(var(--u)*3)}
+  .ustcubuk-baslik{flex:1 1 240px}
+  .ustcubuk-baslik .kirinti{display:block}
+  .ustcubuk-arac{display:flex;gap:calc(var(--u)*1);align-items:center;flex-wrap:wrap}
+  .ara-dugme{width:auto;height:auto;min-width:220px;padding:calc(var(--u)*.75) calc(var(--u)*1.25);border-radius:var(--r-sm);justify-content:flex-start}
+  .ara-dugme span:not([aria-hidden]),.ara-dugme kbd{display:inline}
+  .sayfa{padding:calc(var(--u)*3)}
+  .card{padding:calc(var(--u)*2.5)}
+  .tile{padding:calc(var(--u)*2)}
+  .tile .n{display:block}
+  .grid.three,.grid.four{gap:calc(var(--u)*2)}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface)}
+  .tablewrap table{min-width:520px;display:table}
+  .tablewrap thead{display:table-header-group}
+  .tablewrap tbody{display:table-row-group}
+  .tablewrap tr{display:table-row;border:0;border-radius:0;padding:0;margin:0;background:none}
+  .tablewrap tr:hover{background:var(--surface-2)}
+  .tablewrap td{display:table-cell;padding:calc(var(--u)*1.25) calc(var(--u)*1.5);border-bottom:1px solid var(--line)}
+  .tablewrap td::before{content:none}
+  .tablewrap td.num{text-align:start;white-space:nowrap}
+  .prog-nums{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (min-width:1080px){
+  .grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+
 @media (min-width:720px){
   .sh-soru{font-size:1.85rem}
   .sh-secenekler{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
@@ -495,6 +564,39 @@ input,select,textarea{min-height:48px}
 </head>
 <body>
 <a class="skip" href="#icerik">İçeriğe geç</a>
+<!-- Phosphor Icons 2.1.1 (regular) | MIT License | Copyright (c) 2023 Phosphor Icons | https://github.com/phosphor-icons/core -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="display:none" aria-hidden="true" focusable="false">
+<symbol id="ph-house" viewBox="0 0 256 256" fill="currentColor"><path d="M219.31,108.68l-80-80a16,16,0,0,0-22.62,0l-80,80A15.87,15.87,0,0,0,32,120v96a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V160h32v56a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V120A15.87,15.87,0,0,0,219.31,108.68ZM208,208H160V152a8,8,0,0,0-8-8H104a8,8,0,0,0-8,8v56H48V120l80-80,80,80Z"/></symbol>
+<symbol id="ph-chart-line" viewBox="0 0 256 256" fill="currentColor"><path d="M232,208a8,8,0,0,1-8,8H32a8,8,0,0,1-8-8V48a8,8,0,0,1,16,0v94.37L90.73,98a8,8,0,0,1,10.07-.38l58.81,44.11L218.73,90a8,8,0,1,1,10.54,12l-64,56a8,8,0,0,1-10.07.38L96.39,114.29,40,163.63V200H224A8,8,0,0,1,232,208Z"/></symbol>
+<symbol id="ph-sliders" viewBox="0 0 256 256" fill="currentColor"><path d="M64,105V40a8,8,0,0,0-16,0v65a32,32,0,0,0,0,62v49a8,8,0,0,0,16,0V167a32,32,0,0,0,0-62Zm-8,47a16,16,0,1,1,16-16A16,16,0,0,1,56,152Zm80-95V40a8,8,0,0,0-16,0V57a32,32,0,0,0,0,62v97a8,8,0,0,0,16,0V119a32,32,0,0,0,0-62Zm-8,47a16,16,0,1,1,16-16A16,16,0,0,1,128,104Zm104,64a32.06,32.06,0,0,0-24-31V40a8,8,0,0,0-16,0v97a32,32,0,0,0,0,62v17a8,8,0,0,0,16,0V199A32.06,32.06,0,0,0,232,168Zm-32,16a16,16,0,1,1,16-16A16,16,0,0,1,200,184Z"/></symbol>
+<symbol id="ph-tag" viewBox="0 0 256 256" fill="currentColor"><path d="M243.31,136,144,36.69A15.86,15.86,0,0,0,132.69,32H40a8,8,0,0,0-8,8v92.69A15.86,15.86,0,0,0,36.69,144L136,243.31a16,16,0,0,0,22.63,0l84.68-84.68a16,16,0,0,0,0-22.63Zm-96,96L48,132.69V48h84.69L232,147.31ZM96,84A12,12,0,1,1,84,72,12,12,0,0,1,96,84Z"/></symbol>
+<symbol id="ph-shuffle" viewBox="0 0 256 256" fill="currentColor"><path d="M237.66,178.34a8,8,0,0,1,0,11.32l-24,24a8,8,0,0,1-11.32-11.32L212.69,192H200.94a72.12,72.12,0,0,1-58.59-30.15l-41.72-58.4A56.1,56.1,0,0,0,55.06,80H32a8,8,0,0,1,0-16H55.06a72.12,72.12,0,0,1,58.59,30.15l41.72,58.4A56.1,56.1,0,0,0,200.94,176h11.75l-10.35-10.34a8,8,0,0,1,11.32-11.32ZM143,107a8,8,0,0,0,11.16-1.86l1.2-1.67A56.1,56.1,0,0,1,200.94,80h11.75L202.34,90.34a8,8,0,0,0,11.32,11.32l24-24a8,8,0,0,0,0-11.32l-24-24a8,8,0,0,0-11.32,11.32L212.69,64H200.94a72.12,72.12,0,0,0-58.59,30.15l-1.2,1.67A8,8,0,0,0,143,107Zm-30,42a8,8,0,0,0-11.16,1.86l-1.2,1.67A56.1,56.1,0,0,1,55.06,176H32a8,8,0,0,0,0,16H55.06a72.12,72.12,0,0,0,58.59-30.15l1.2-1.67A8,8,0,0,0,113,149Z"/></symbol>
+<symbol id="ph-target" viewBox="0 0 256 256" fill="currentColor"><path d="M221.87,83.16A104.1,104.1,0,1,1,195.67,49l22.67-22.68a8,8,0,0,1,11.32,11.32l-96,96a8,8,0,0,1-11.32-11.32l27.72-27.72a40,40,0,1,0,17.87,31.09,8,8,0,1,1,16-.9,56,56,0,1,1-22.38-41.65L184.3,60.39a87.88,87.88,0,1,0,23.13,29.67,8,8,0,0,1,14.44-6.9Z"/></symbol>
+<symbol id="ph-list-numbers" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H104a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM104,72H216a8,8,0,0,0,0-16H104a8,8,0,0,0,0,16ZM216,184H104a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16ZM43.58,55.16,48,52.94V104a8,8,0,0,0,16,0V40a8,8,0,0,0-11.58-7.16l-16,8a8,8,0,0,0,7.16,14.32ZM79.77,156.72a23.73,23.73,0,0,0-9.6-15.95,24.86,24.86,0,0,0-34.11,4.7,23.63,23.63,0,0,0-3.57,6.46,8,8,0,1,0,15,5.47,7.84,7.84,0,0,1,1.18-2.13,8.76,8.76,0,0,1,12-1.59A7.91,7.91,0,0,1,63.93,159a7.64,7.64,0,0,1-1.57,5.78,1,1,0,0,0-.08.11L33.59,203.21A8,8,0,0,0,40,216H72a8,8,0,0,0,0-16H56l19.08-25.53A23.47,23.47,0,0,0,79.77,156.72Z"/></symbol>
+<symbol id="ph-stack" viewBox="0 0 256 256" fill="currentColor"><path d="M230.91,172A8,8,0,0,1,228,182.91l-96,56a8,8,0,0,1-8.06,0l-96-56A8,8,0,0,1,36,169.09l92,53.65,92-53.65A8,8,0,0,1,230.91,172ZM220,121.09l-92,53.65L36,121.09A8,8,0,0,0,28,134.91l96,56a8,8,0,0,0,8.06,0l96-56A8,8,0,1,0,220,121.09ZM24,80a8,8,0,0,1,4-6.91l96-56a8,8,0,0,1,8.06,0l96,56a8,8,0,0,1,0,13.82l-96,56a8,8,0,0,1-8.06,0l-96-56A8,8,0,0,1,24,80Zm23.88,0L128,126.74,208.12,80,128,33.26Z"/></symbol>
+<symbol id="ph-arrows-left-right" viewBox="0 0 256 256" fill="currentColor"><path d="M213.66,181.66l-32,32a8,8,0,0,1-11.32-11.32L188.69,184H48a8,8,0,0,1,0-16H188.69l-18.35-18.34a8,8,0,0,1,11.32-11.32l32,32A8,8,0,0,1,213.66,181.66Zm-139.32-64a8,8,0,0,0,11.32-11.32L67.31,88H208a8,8,0,0,0,0-16H67.31L85.66,53.66A8,8,0,0,0,74.34,42.34l-32,32a8,8,0,0,0,0,11.32Z"/></symbol>
+<symbol id="ph-kanban" viewBox="0 0 256 256" fill="currentColor"><path d="M216,48H40a8,8,0,0,0-8,8V208a16,16,0,0,0,16,16H88a16,16,0,0,0,16-16V160h48v16a16,16,0,0,0,16,16h40a16,16,0,0,0,16-16V56A8,8,0,0,0,216,48ZM88,208H48V128H88Zm0-96H48V64H88Zm64,32H104V64h48Zm56,32H168V128h40Zm0-64H168V64h40Z"/></symbol>
+<symbol id="ph-calendar-blank" viewBox="0 0 256 256" fill="currentColor"><path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Z"/></symbol>
+<symbol id="ph-check-square-offset" viewBox="0 0 256 256" fill="currentColor"><path d="M224,48V208a16,16,0,0,1-16,16H136a8,8,0,0,1,0-16h72V48H48v96a8,8,0,0,1-16,0V48A16,16,0,0,1,48,32H208A16,16,0,0,1,224,48ZM125.66,154.34a8,8,0,0,0-11.32,0L64,204.69,45.66,186.34a8,8,0,0,0-11.32,11.32l24,24a8,8,0,0,0,11.32,0l56-56A8,8,0,0,0,125.66,154.34Z"/></symbol>
+<symbol id="ph-sparkle" viewBox="0 0 256 256" fill="currentColor"><path d="M197.58,129.06,146,110l-19-51.62a15.92,15.92,0,0,0-29.88,0L78,110l-51.62,19a15.92,15.92,0,0,0,0,29.88L78,178l19,51.62a15.92,15.92,0,0,0,29.88,0L146,178l51.62-19a15.92,15.92,0,0,0,0-29.88ZM137,164.22a8,8,0,0,0-4.74,4.74L112,223.85,91.78,169A8,8,0,0,0,87,164.22L32.15,144,87,123.78A8,8,0,0,0,91.78,119L112,64.15,132.22,119a8,8,0,0,0,4.74,4.74L191.85,144ZM144,40a8,8,0,0,1,8-8h16V16a8,8,0,0,1,16,0V32h16a8,8,0,0,1,0,16H184V64a8,8,0,0,1-16,0V48H152A8,8,0,0,1,144,40ZM248,88a8,8,0,0,1-8,8h-8v8a8,8,0,0,1-16,0V96h-8a8,8,0,0,1,0-16h8V72a8,8,0,0,1,16,0v8h8A8,8,0,0,1,248,88Z"/></symbol>
+<symbol id="ph-notepad" viewBox="0 0 256 256" fill="currentColor"><path d="M168,128a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,128Zm-8,24H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16ZM216,40V200a32,32,0,0,1-32,32H72a32,32,0,0,1-32-32V40a8,8,0,0,1,8-8H72V24a8,8,0,0,1,16,0v8h32V24a8,8,0,0,1,16,0v8h32V24a8,8,0,0,1,16,0v8h24A8,8,0,0,1,216,40Zm-16,8H184v8a8,8,0,0,1-16,0V48H136v8a8,8,0,0,1-16,0V48H88v8a8,8,0,0,1-16,0V48H56V200a16,16,0,0,0,16,16H184a16,16,0,0,0,16-16Z"/></symbol>
+<symbol id="ph-book-open" viewBox="0 0 256 256" fill="currentColor"><path d="M232,48H160a40,40,0,0,0-32,16A40,40,0,0,0,96,48H24a8,8,0,0,0-8,8V200a8,8,0,0,0,8,8H96a24,24,0,0,1,24,24,8,8,0,0,0,16,0,24,24,0,0,1,24-24h72a8,8,0,0,0,8-8V56A8,8,0,0,0,232,48ZM96,192H32V64H96a24,24,0,0,1,24,24V200A39.81,39.81,0,0,0,96,192Zm128,0H160a39.81,39.81,0,0,0-24,8V88a24,24,0,0,1,24-24h64Z"/></symbol>
+<symbol id="ph-link-simple" viewBox="0 0 256 256" fill="currentColor"><path d="M165.66,90.34a8,8,0,0,1,0,11.32l-64,64a8,8,0,0,1-11.32-11.32l64-64A8,8,0,0,1,165.66,90.34ZM215.6,40.4a56,56,0,0,0-79.2,0L106.34,70.45a8,8,0,0,0,11.32,11.32l30.06-30a40,40,0,0,1,56.57,56.56l-30.07,30.06a8,8,0,0,0,11.31,11.32L215.6,119.6a56,56,0,0,0,0-79.2ZM138.34,174.22l-30.06,30.06a40,40,0,1,1-56.56-56.57l30.05-30.05a8,8,0,0,0-11.32-11.32L40.4,136.4a56,56,0,0,0,79.2,79.2l30.06-30.07a8,8,0,0,0-11.32-11.31Z"/></symbol>
+<symbol id="ph-magnifying-glass" viewBox="0 0 256 256" fill="currentColor"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"/></symbol>
+<symbol id="ph-share-network" viewBox="0 0 256 256" fill="currentColor"><path d="M176,160a39.89,39.89,0,0,0-28.62,12.09l-46.1-29.63a39.8,39.8,0,0,0,0-28.92l46.1-29.63a40,40,0,1,0-8.66-13.45l-46.1,29.63a40,40,0,1,0,0,55.82l46.1,29.63A40,40,0,1,0,176,160Zm0-128a24,24,0,1,1-24,24A24,24,0,0,1,176,32ZM64,152a24,24,0,1,1,24-24A24,24,0,0,1,64,152Zm112,72a24,24,0,1,1,24-24A24,24,0,0,1,176,224Z"/></symbol>
+<symbol id="ph-gear" viewBox="0 0 256 256" fill="currentColor"><path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm88-29.84q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.21,107.21,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.71,107.71,0,0,0-26.25-10.87,8,8,0,0,0-7.06,1.49L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.21,107.21,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06Zm-16.1-6.5a73.93,73.93,0,0,1,0,8.68,8,8,0,0,0,1.74,5.48l14.19,17.73a91.57,91.57,0,0,1-6.23,15L187,173.11a8,8,0,0,0-5.1,2.64,74.11,74.11,0,0,1-6.14,6.14,8,8,0,0,0-2.64,5.1l-2.51,22.58a91.32,91.32,0,0,1-15,6.23l-17.74-14.19a8,8,0,0,0-5-1.75h-.48a73.93,73.93,0,0,1-8.68,0,8,8,0,0,0-5.48,1.74L100.45,215.8a91.57,91.57,0,0,1-15-6.23L82.89,187a8,8,0,0,0-2.64-5.1,74.11,74.11,0,0,1-6.14-6.14,8,8,0,0,0-5.1-2.64L46.43,170.6a91.32,91.32,0,0,1-6.23-15l14.19-17.74a8,8,0,0,0,1.74-5.48,73.93,73.93,0,0,1,0-8.68,8,8,0,0,0-1.74-5.48L40.2,100.45a91.57,91.57,0,0,1,6.23-15L69,82.89a8,8,0,0,0,5.1-2.64,74.11,74.11,0,0,1,6.14-6.14A8,8,0,0,0,82.89,69L85.4,46.43a91.32,91.32,0,0,1,15-6.23l17.74,14.19a8,8,0,0,0,5.48,1.74,73.93,73.93,0,0,1,8.68,0,8,8,0,0,0,5.48-1.74L155.55,40.2a91.57,91.57,0,0,1,15,6.23L173.11,69a8,8,0,0,0,2.64,5.1,74.11,74.11,0,0,1,6.14,6.14,8,8,0,0,0,5.1,2.64l22.58,2.51a91.32,91.32,0,0,1,6.23,15l-14.19,17.74A8,8,0,0,0,199.87,123.66Z"/></symbol>
+<symbol id="ph-list" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"/></symbol>
+<symbol id="ph-x" viewBox="0 0 256 256" fill="currentColor"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></symbol>
+<symbol id="ph-caret-left" viewBox="0 0 256 256" fill="currentColor"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"/></symbol>
+<symbol id="ph-caret-right" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></symbol>
+<symbol id="ph-check" viewBox="0 0 256 256" fill="currentColor"><path d="M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z"/></symbol>
+<symbol id="ph-warning" viewBox="0 0 256 256" fill="currentColor"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM222.93,203.8a8.5,8.5,0,0,1-7.48,4.2H40.55a8.5,8.5,0,0,1-7.48-4.2,7.59,7.59,0,0,1,0-7.72L120.52,44.21a8.75,8.75,0,0,1,15,0l87.45,151.87A7.59,7.59,0,0,1,222.93,203.8ZM120,144V104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,180Z"/></symbol>
+<symbol id="ph-info" viewBox="0 0 256 256" fill="currentColor"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"/></symbol>
+<symbol id="ph-printer" viewBox="0 0 256 256" fill="currentColor"><path d="M214.67,72H200V40a8,8,0,0,0-8-8H64a8,8,0,0,0-8,8V72H41.33C27.36,72,16,82.77,16,96v80a8,8,0,0,0,8,8H56v32a8,8,0,0,0,8,8H192a8,8,0,0,0,8-8V184h32a8,8,0,0,0,8-8V96C240,82.77,228.64,72,214.67,72ZM72,48H184V72H72ZM184,208H72V160H184Zm40-40H200V152a8,8,0,0,0-8-8H64a8,8,0,0,0-8,8v16H32V96c0-4.41,4.19-8,9.33-8H214.67c5.14,0,9.33,3.59,9.33,8Zm-24-52a12,12,0,1,1-12-12A12,12,0,0,1,200,116Z"/></symbol>
+<symbol id="ph-download-simple" viewBox="0 0 256 256" fill="currentColor"><path d="M224,144v64a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H208V144a8,8,0,0,1,16,0Zm-101.66,5.66a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,124.69V32a8,8,0,0,0-16,0v92.69L93.66,98.34a8,8,0,0,0-11.32,11.32Z"/></symbol>
+<symbol id="ph-upload-simple" viewBox="0 0 256 256" fill="currentColor"><path d="M224,144v64a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H208V144a8,8,0,0,1,16,0ZM93.66,77.66,120,51.31V144a8,8,0,0,0,16,0V51.31l26.34,26.35a8,8,0,0,0,11.32-11.32l-40-40a8,8,0,0,0-11.32,0l-40,40A8,8,0,0,0,93.66,77.66Z"/></symbol>
+<symbol id="ph-arrow-counter-clockwise" viewBox="0 0 256 256" fill="currentColor"><path d="M224,128a96,96,0,0,1-94.71,96H128A95.38,95.38,0,0,1,62.1,197.8a8,8,0,0,1,11-11.63A80,80,0,1,0,71.43,71.39a3.07,3.07,0,0,1-.26.25L44.59,96H72a8,8,0,0,1,0,16H24a8,8,0,0,1-8-8V56a8,8,0,0,1,16,0V85.8L60.25,60A96,96,0,0,1,224,128Z"/></symbol>
+</svg>
 <div class="uygulama" id="uygulamaKabuk" data-rail="genis" data-menu="kapali">
   <aside class="rail" id="rail" aria-label="Bölüm gezinmesi">
     <div class="rail-marka">
@@ -512,30 +614,31 @@ input,select,textarea{min-height:48px}
   </aside>
   <div class="icerik">
     <header class="ustcubuk">
-      <button class="btn sm menu-ac no-print" id="btnMenu" type="button" aria-expanded="false" aria-controls="rail">Menü</button>
+      <button class="btn sm menu-ac no-print" id="btnMenu" type="button" aria-expanded="false" aria-controls="rail" aria-label="Bölüm menüsü"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-list" xlink:href="#ph-list"></use></svg><span class="dugme-metni">Menü</span></button>
       <div class="ustcubuk-baslik">
         <div class="kirinti" id="kirinti">ARSAM</div>
         <h2 id="sayfaBasligi">Kokpit</h2>
       </div>
       <div class="ustcubuk-arac no-print">
         <button class="ara-dugme" id="btnKomut" type="button" aria-haspopup="dialog">
-          <span aria-hidden="true">⌕</span><span>Program, kurum, NACE, kanıt ara</span><kbd>Ctrl K</kbd>
+          <svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-magnifying-glass" xlink:href="#ph-magnifying-glass"></use></svg><span>Program, kurum, NACE, kanıt ara</span><kbd>Ctrl K</kbd>
         </button>
-        <button class="btn sm primary" id="btnPaylas" type="button" aria-haspopup="dialog">Paylaş</button>
-        <button class="btn sm arac-ac" id="btnAracMenu" type="button" aria-expanded="false" aria-controls="aracGrubu">Araçlar</button>
+        <button class="btn sm primary" id="btnPaylas" type="button" aria-haspopup="dialog" aria-label="Bu görünümü paylaş"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-share-network" xlink:href="#ph-share-network"></use></svg><span class="dugme-metni">Paylaş</span></button>
+        <button class="btn sm arac-ac" id="btnAracMenu" type="button" aria-expanded="false" aria-controls="aracGrubu" aria-label="Araçlar"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-gear" xlink:href="#ph-gear"></use></svg><span class="dugme-metni">Araçlar</span></button>
         <div class="arac-grubu" id="aracGrubu">
           <label class="live" for="senaryoSecici">Senaryo</label>
           <select id="senaryoSecici" style="width:auto;min-width:190px"></select>
           <button class="btn sm" id="btnTema" type="button">Tema</button>
-          <button class="btn sm" id="btnYazdir" type="button">Yazdır</button>
-          <button class="btn sm" id="btnDisaAktar" type="button">Dışa aktar</button>
-          <button class="btn sm" id="btnIceAktar" type="button">İçe aktar</button>
-          <button class="btn sm danger" id="btnSifirla" type="button">Sıfırla</button>
+          <button class="btn sm" id="btnYazdir" type="button"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-printer" xlink:href="#ph-printer"></use></svg>Yazdır</button>
+          <button class="btn sm" id="btnDisaAktar" type="button"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-download-simple" xlink:href="#ph-download-simple"></use></svg>Dışa aktar</button>
+          <button class="btn sm" id="btnIceAktar" type="button"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-upload-simple" xlink:href="#ph-upload-simple"></use></svg>İçe aktar</button>
+          <button class="btn sm danger" id="btnSifirla" type="button"><svg class="ph" aria-hidden="true" focusable="false"><use href="#ph-arrow-counter-clockwise" xlink:href="#ph-arrow-counter-clockwise"></use></svg>Sıfırla</button>
         </div>
         <input type="file" id="dosyaSec" accept="application/json,.json" hidden>
       </div>
     </header>
     <nav class="yolharita no-print" id="yolHarita" aria-label="Kullanıcı yolculuğu adımları"></nav>
+    <nav class="bolum-cubugu no-print" id="bolumCubugu" aria-label="Bu adımdaki bölümler"></nav>
     <main id="icerik" class="sayfa">
       <section id="panel-sonuc" aria-labelledby="sekme-sonuc" tabindex="-1"></section>
       <section id="panel-kokpit" aria-labelledby="sekme-kokpit" tabindex="-1" hidden></section>
@@ -560,6 +663,7 @@ input,select,textarea{min-height:48px}
     </footer>
   </div>
   <div class="perde no-print" id="menuPerdesi" aria-hidden="true" hidden></div>
+  <nav class="altbar no-print" id="altBar" aria-label="Ana adımlar"></nav>
 </div>
 <dialog class="drawer" id="detayDrawer" aria-labelledby="detayBaslik">
   <div class="drawer-inner">
@@ -3620,32 +3724,32 @@ function bildir(mesaj) {
 }
 
 const YOLCULUK = [
-  { id: "tanim", no: 1, ad: "Durumu tanımla", soru: "Şirket bugün hangi durumda?", giris: "senaryo" },
-  { id: "sonuc", no: 2, ad: "Sonucu gör", soru: "Bu durumda ne kadar fayda, ne zaman?", giris: "sonuc" },
-  { id: "plan", no: 3, ad: "Planla", soru: "Hangi gider hangi programdan finanse edilecek?", giris: "yigin" },
-  { id: "yurut", no: 4, ad: "Yürüt", soru: "Başvurular hangi aşamada, kanıtlar hazır mı?", giris: "pano" },
-  { id: "dayanak", no: 5, ad: "Dayanağı göster", soru: "Bu sonuç hangi resmî kaynağa dayanıyor?", giris: "kaynak" }
+  { id: "tanim", no: 1, ad: "Durumu tanımla", kisaAd: "Tanımla", soru: "Şirket bugün hangi durumda?", giris: "senaryo" },
+  { id: "sonuc", no: 2, ad: "Sonucu gör", kisaAd: "Sonuç", soru: "Bu durumda ne kadar fayda, ne zaman?", giris: "sonuc" },
+  { id: "plan", no: 3, ad: "Planla", kisaAd: "Planla", soru: "Hangi gider hangi programdan finanse edilecek?", giris: "yigin" },
+  { id: "yurut", no: 4, ad: "Yürüt", kisaAd: "Yürüt", soru: "Başvurular hangi aşamada, kanıtlar hazır mı?", giris: "pano" },
+  { id: "dayanak", no: 5, ad: "Dayanağı göster", kisaAd: "Dayanak", soru: "Bu sonuç hangi resmî kaynağa dayanıyor?", giris: "kaynak" }
 ];
 function yolculukAdimi(id) { return YOLCULUK.find(x => x.id === id) || YOLCULUK[0]; }
 function adimGrupAdi(id) { const a = yolculukAdimi(id); return a.no + " · " + a.ad; }
 
 const SEKME_TANIMLARI = [
-  { id: "senaryo", adim: "tanim", ad: "Senaryolar", ikon: "◐", ipucu: "Hazır durum setleri; biri uygulanır ve sonuç sayfası açılır" },
-  { id: "sihirbaz", adim: "tanim", ad: "Uygunluk sihirbazı", ikon: "◎", ipucu: "Karar değiştiren sorular ve hesap varsayımları" },
-  { id: "nace", adim: "tanim", ad: "Faaliyet ve NACE", ikon: "◈", ipucu: "Birincil ve ikincil faaliyet kodları" },
-  { id: "sonuc", adim: "sonuc", ad: "Senaryo sonucu", ikon: "◆", ipucu: "Toplam fayda, başvuru ve tahsilat tarihçesi, sorumlu roller" },
-  { id: "kokpit", adim: "sonuc", ad: "Yönetici kokpiti", ikon: "◧", ipucu: "Yönetici özeti ve sıradaki tek eylem" },
-  { id: "siralama", adim: "sonuc", ad: "Öneri sırası", ikon: "≡", ipucu: "Ağırlıklı program sıralaması" },
-  { id: "analitik", adim: "sonuc", ad: "Görsel analitik", ikon: "◍", ipucu: "Uygunluk, para gerçeği, takvim ve nakit grafikleri" },
-  { id: "yigin", adim: "plan", ad: "Finansman yığını", ikon: "▤", ipucu: "Gider kalemi atamaları ve çift finansman denetimi" },
-  { id: "uyum", adim: "plan", ad: "Birlikte kullanım", ikon: "⇄", ipucu: "Programlar arası mevzuat ilişkisi" },
-  { id: "takvim", adim: "plan", ad: "Takvim", ikon: "◷", ipucu: "Tarihli eylem sırası" },
-  { id: "pano", adim: "yurut", ad: "Başvuru panosu", ikon: "▦", ipucu: "Başvuru aşamaları, kabul tutarları ve alternatif yollar" },
-  { id: "kanit", adim: "yurut", ad: "Kanıt listesi", ikon: "☑", ipucu: "Belge ve kanıt tamamlanma durumu" },
-  { id: "gunluk", adim: "yurut", ad: "Karar günlüğü", ikon: "◉", ipucu: "Yerel olay kaydı" },
-  { id: "kaynak", adim: "dayanak", ad: "Kaynaklar", ikon: "◊", ipucu: "Resmî bağlantılar, güncellik ve sürüm bilgisi" },
-  { id: "sozluk", adim: "dayanak", ad: "Sözlük", ikon: "◌", ipucu: "Terim açıklamaları" },
-  { id: "ai", adim: "dayanak", ad: "Yapay zekâ ve MCP", ikon: "◇", ipucu: "Bağlam paketi, öneri kuyruğu ve köprü sözleşmesi" }
+  { id: "senaryo", adim: "tanim", ad: "Senaryolar", ikon: "shuffle", ipucu: "Hazır durum setleri; biri uygulanır ve sonuç sayfası açılır" },
+  { id: "sihirbaz", adim: "tanim", ad: "Uygunluk sihirbazı", ikon: "sliders", ipucu: "Karar değiştiren sorular ve hesap varsayımları" },
+  { id: "nace", adim: "tanim", ad: "Faaliyet ve NACE", ikon: "tag", ipucu: "Birincil ve ikincil faaliyet kodları" },
+  { id: "sonuc", adim: "sonuc", ad: "Senaryo sonucu", ikon: "target", ipucu: "Toplam fayda, başvuru ve tahsilat tarihçesi, sorumlu roller" },
+  { id: "kokpit", adim: "sonuc", ad: "Yönetici kokpiti", ikon: "house", ipucu: "Yönetici özeti ve sıradaki tek eylem" },
+  { id: "siralama", adim: "sonuc", ad: "Öneri sırası", ikon: "list-numbers", ipucu: "Ağırlıklı program sıralaması" },
+  { id: "analitik", adim: "sonuc", ad: "Görsel analitik", ikon: "chart-line", ipucu: "Uygunluk, para gerçeği, takvim ve nakit grafikleri" },
+  { id: "yigin", adim: "plan", ad: "Finansman yığını", ikon: "stack", ipucu: "Gider kalemi atamaları ve çift finansman denetimi" },
+  { id: "uyum", adim: "plan", ad: "Birlikte kullanım", ikon: "arrows-left-right", ipucu: "Programlar arası mevzuat ilişkisi" },
+  { id: "takvim", adim: "plan", ad: "Takvim", ikon: "calendar-blank", ipucu: "Tarihli eylem sırası" },
+  { id: "pano", adim: "yurut", ad: "Başvuru panosu", ikon: "kanban", ipucu: "Başvuru aşamaları, kabul tutarları ve alternatif yollar" },
+  { id: "kanit", adim: "yurut", ad: "Kanıt listesi", ikon: "check-square-offset", ipucu: "Belge ve kanıt tamamlanma durumu" },
+  { id: "gunluk", adim: "yurut", ad: "Karar günlüğü", ikon: "notepad", ipucu: "Yerel olay kaydı" },
+  { id: "kaynak", adim: "dayanak", ad: "Kaynaklar", ikon: "link-simple", ipucu: "Resmî bağlantılar, güncellik ve sürüm bilgisi" },
+  { id: "sozluk", adim: "dayanak", ad: "Sözlük", ikon: "book-open", ipucu: "Terim açıklamaları" },
+  { id: "ai", adim: "dayanak", ad: "Yapay zekâ ve MCP", ikon: "sparkle", ipucu: "Bağlam paketi, öneri kuyruğu ve köprü sözleşmesi" }
 ];
 
 const SEKMELER = SEKME_TANIMLARI.map(s => Object.assign({ grup: adimGrupAdi(s.adim) }, s));
@@ -3662,6 +3766,12 @@ function adimGecisHtml(adimId) {
   return '<div class="adim-sonraki no-print"><span class="small muted">Yolculukta sıradaki adım:</span>' +
     '<button class="btn primary sm" type="button" data-sekme="' + sonraki.giris + '">' +
     kacis(sonraki.no + " · " + sonraki.ad + " — " + sonraki.soru) + "</button></div>";
+}
+
+function ikonHtml(ad, sinif) {
+  if (!ad) return "";
+  const kimlik = "#ph-" + ad;
+  return '<svg class="ph' + (sinif ? " " + sinif : "") + '" aria-hidden="true" focusable="false"><use href="' + kimlik + '" xlink:href="' + kimlik + '"></use></svg>';
 }
 
 function rozet(sinif, metin) {
@@ -3903,7 +4013,7 @@ function sihirbazSoruEkraniHtml() {
       const kullanilabilir = secenekKullanilabilir(soru.id, o.v, durum.profil);
       return '<button type="button" data-soru="' + soru.id + '" data-deger="' + o.v + '" aria-pressed="' + (secili === o.v) + '"' +
         (kullanilabilir ? "" : ' disabled aria-disabled="true" title="Bu seçenek mevcut koşullarda geçerli değil"') +
-        '><span class="sh-isaret" aria-hidden="true">✓</span><span>' + kacis(o.ad) + "</span></button>";
+        '><span class="sh-isaret" aria-hidden="true">' + ikonHtml("check") + '</span><span>' + kacis(o.ad) + "</span></button>";
     }).join("") + "</div>" +
     '<div class="sh-alt">' +
       (sira > 0 ? '<button class="btn" type="button" data-shgeri="1">Geri</button>' : "") +
@@ -5132,10 +5242,49 @@ function sekmeleriKur() {
       const say = sekmeSayaci(s.id);
       return '<li><button type="button" id="sekme-' + s.id + '" data-sekme="' + s.id + '" title="' + kacis(s.ipucu) + '"' +
         (durum.aktifSekme === s.id ? ' aria-current="page"' : "") + '>' +
-        '<span class="ikon" aria-hidden="true">' + s.ikon + "</span><span>" + kacis(s.ad) + "</span>" +
+        '<span class="ikon" aria-hidden="true">' + ikonHtml(s.ikon) + "</span><span>" + kacis(s.ad) + "</span>" +
         (say ? '<span class="say">' + say + "</span>" : "") + "</button></li>";
     }).join("") + "</ul></div>").join("");
   ustcubukYenile();
+}
+
+function altBarYenile(aktifSekme) {
+  const kap = document.getElementById("altBar");
+  if (!kap) return;
+  const aktifAdim = sekmeBul(aktifSekme).adim;
+  kap.innerHTML = YOLCULUK.map(a =>
+    '<button type="button" data-sekme="' + a.giris + '"' + (a.id === aktifAdim ? ' aria-current="step"' : "") +
+    ' aria-label="' + kacis(a.no + ". adım: " + a.ad) + '">' +
+    '<span class="no" aria-hidden="true">' + a.no + '</span><span class="ad">' + kacis(a.kisaAd || a.ad) + "</span></button>").join("");
+}
+
+function bolumCubuguYenile(aktifSekme) {
+  const kap = document.getElementById("bolumCubugu");
+  if (!kap) return;
+  const aktifAdim = sekmeBul(aktifSekme).adim;
+  const bolumler = adimSekmeleri(aktifAdim);
+  kap.innerHTML = bolumler.map(s => {
+    const say = sekmeSayaci(s.id);
+    return '<button type="button" data-sekme="' + s.id + '"' + (s.id === aktifSekme ? ' aria-current="page"' : "") + ">" +
+      kacis(s.ad) + (say ? ' <span class="say">' + say + "</span>" : "") + "</button>";
+  }).join("");
+  const etkin = kap.querySelector('[aria-current="page"]');
+  if (etkin && typeof etkin.scrollIntoView === "function") {
+    etkin.scrollIntoView({ block: "nearest", inline: "center" });
+  }
+}
+
+function tablolariEtiketle(kok) {
+  const alan = kok || document;
+  alan.querySelectorAll(".tablewrap table").forEach(tablo => {
+    const basliklar = Array.prototype.map.call(tablo.querySelectorAll("thead th"), th => th.textContent.trim());
+    if (!basliklar.length) return;
+    tablo.querySelectorAll("tbody tr").forEach(satir => {
+      Array.prototype.forEach.call(satir.children, (hucre, i) => {
+        if (basliklar[i]) hucre.setAttribute("data-etiket", basliklar[i]);
+      });
+    });
+  });
 }
 
 function yolHaritasiYenile(aktifSekme) {
@@ -5154,6 +5303,9 @@ function ustcubukYenile() {
   document.getElementById("sayfaBasligi").textContent = s.ad;
   document.getElementById("kirinti").textContent = "ARSAM · " + s.grup;
   yolHaritasiYenile(durum.aktifSekme);
+  altBarYenile(durum.aktifSekme);
+  bolumCubuguYenile(durum.aktifSekme);
+  tablolariEtiketle(document.getElementById("panel-" + durum.aktifSekme));
   const sec = document.getElementById("senaryoSecici");
   if (sec) {
     const yeni = SENARYOLAR.map(x => '<option value="' + x.id + '"' + (durum.senaryo === x.id ? " selected" : "") + ">" + kacis(x.ad) + "</option>").join("");
@@ -6362,6 +6514,14 @@ function olaylariBagla() {
     if (b) sekmeSec(b.getAttribute("data-sekme"));
   });
   document.getElementById("yolHarita").addEventListener("click", e => {
+    const b = e.target.closest("[data-sekme]");
+    if (b) sekmeSec(b.getAttribute("data-sekme"));
+  });
+  document.getElementById("altBar").addEventListener("click", e => {
+    const b = e.target.closest("[data-sekme]");
+    if (b) sekmeSec(b.getAttribute("data-sekme"));
+  });
+  document.getElementById("bolumCubugu").addEventListener("click", e => {
     const b = e.target.closest("[data-sekme]");
     if (b) sekmeSec(b.getAttribute("data-sekme"));
   });
