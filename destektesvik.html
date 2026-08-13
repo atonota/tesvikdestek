@@ -2925,6 +2925,32 @@ function senaryoFaydasi(sonuclar) {
   return { siniflar, nakitToplam, digerToplam };
 }
 
+const SIFIR_NEDENLERI = [
+  { id: "kapali", ad: "Uygunluk kurulamıyor", cozum: "Bu satırlar bugünkü yapıyla veya strateji kararıyla kapalıdır. Uygunluk sihirbazındaki cevap değişmeden açılmaz.", sekme: "sihirbaz", sekmeAd: "Uygunluk sihirbazını aç" },
+  { id: "cagriKapali", ad: "Çağrı penceresi kapalı", cozum: "Son ilan edilmiş başvuru tarihi geçti. Sonraki çağrı ilanı beklenir; bu satır gerçekçi toplama 0 TL girer.", sekme: "takvim", sekmeAd: "Takvimi aç" },
+  { id: "resmiGorus", ad: "Resmî görüş bekliyor", cozum: "Kurumdan yazılı sınıflandırma veya teyit gelmeden tutar üretilmez. Tahmin üretmek yerine bilinçli olarak 0 TL yazılır.", sekme: "kaynak", sekmeAd: "Açık doğrulama konularını gör" },
+  { id: "parasalDegil", ad: "Zaten nakit destek değil", cozum: "Ağ, referans, pilot, kefalet, tescil ve katılımcıya yapılan ödemelerin şirket kasasına giren bir tutarı yoktur. 0 TL burada doğru cevaptır.", sekme: null, sekmeAd: "" },
+  { id: "yigin", ad: "Gider kalemi atanmadı", cozum: "Bu programa finansman yığınında hiçbir gider kalemi atanmadı. Atama yapılmadan hangi giderin destekleneceği belli olmaz.", sekme: "yigin", sekmeAd: "Finansman yığınını aç" },
+  { id: "varsayim", ad: "Hesap varsayımı girilmedi", cozum: "Tutar, girilen gider ve kadro varsayımlarından hesaplanır. Bu alanlar 0 olduğu sürece sonuç da 0 TL kalır.", sekme: "sihirbaz", sekmeAd: "Varsayımları gir" }
+];
+
+function sifirNedeni(s) {
+  if (["blocked", "excluded_by_strategy"].indexOf(s.durum) >= 0) return "kapali";
+  if (s.durum === "call_closed_or_monitor") return "cagriKapali";
+  if (s.durum === "needs_official_confirmation") return "resmiGorus";
+  if (NAKIT_URETMEYEN_KATEGORILER.indexOf(s.program.kategori) >= 0) return "parasalDegil";
+  if (String(s.gercekci.aciklama || "").indexOf("kalem atanmadı") >= 0) return "yigin";
+  return "varsayim";
+}
+
+function sifirNedenDagilimi(sonuclar) {
+  const sifir = sonuclar.filter(s => s.gercekciTutar <= 0);
+  return SIFIR_NEDENLERI.map(n => ({
+    neden: n,
+    satirlar: sifir.filter(s => sifirNedeni(s) === n.id)
+  })).filter(x => x.satirlar.length);
+}
+
 function senaryoZamanCizelgesi(sonuclar) {
   return sonuclar
     .filter(s => s.gercekciTutar > 0 || ["eligible_now", "prepare_now_apply_after_formation"].indexOf(s.durum) >= 0)
@@ -3755,6 +3781,7 @@ function cizSonuc() {
   const senaryo = SENARYOLAR.find(x => x.id === durum.senaryo) || SENARYOLAR[0];
   const fayda = senaryoFaydasi(sonuclar);
   const cizelge = senaryoZamanCizelgesi(sonuclar);
+  const nedenler = sifirNedenDagilimi(sonuclar);
   const farklar = profilFarklari(durum.profil);
   const acik = sonuclar.filter(s => s.durum === "eligible_now");
   const hazirlik = sonuclar.filter(s => s.durum === "prepare_now_apply_after_formation");
@@ -3807,7 +3834,9 @@ function cizSonuc() {
             "<td>" + (x.nakitAkisi
               ? kacis(tarihTr(x.tahsilat)) + '<div class="small muted">+' + x.ilkOdemeAy + " ay</div>"
               : '<span class="small muted">Şirket kasasına nakit girmez</span>') + "</td>" +
-            '<td class="num">' + (x.sonuc.gercekciTutar > 0 ? tl(x.sonuc.gercekciTutar) : "0 TL") + "</td></tr>";
+            '<td class="num">' + (x.sonuc.gercekciTutar > 0 ? tl(x.sonuc.gercekciTutar) : "0 TL") +
+            (x.sonuc.gercekci.aciklama ? '<div class="small muted" style="font-weight:400;text-align:left">' + kacis(x.sonuc.gercekci.aciklama) + "</div>" : "") +
+            "</td></tr>";
         }).join("") + "</tbody></table></div>" +
         '<p class="small muted">' + (ilkTahsilat
           ? "Bu senaryoda tutar üreten ilk tahsilat beklentisi: <strong>" + kacis(tarihTr(ilkTahsilat.tahsilat)) + "</strong> — " + kacis(ilkTahsilat.sonuc.program.ad) + ". " + kacis(ilkTahsilat.varsayim) + "."
@@ -3835,6 +3864,17 @@ function cizSonuc() {
         "<td>" + (x.sinif.nakit ? rozet("ok", "Evet") : rozet("mute", "Hayır")) + '</td><td class="num">' + x.satirlar.length + '</td><td class="num">' + tl(x.toplam) + "</td></tr>").join("") +
       '<tr><td><strong>Toplam gerçekçi fayda</strong></td><td>' + rozet("ok", "Toplam") + '</td><td class="num">' + fayda.siniflar.filter(x => x.sinif.nakit).reduce((a, x) => a + x.satirlar.length, 0) + '</td><td class="num"><strong>' + tl(fayda.nakitToplam) + "</strong></td></tr>" +
     "</tbody></table></div>" +
+    '<h4 style="margin-top:1rem">Neden ' + (fayda.nakitToplam > 0 ? "daha yüksek değil" : "0 TL") + "?</h4>" +
+    '<p class="small muted">Sıfır bir hata değildir: bu uygulama eksik bilgiden tahmin üretmez. Aşağıda hangi satırın hangi sebeple tutar üretmediği ve o sebebi kapatmak için nereye gidileceği yazılıdır.</p>' +
+    (nedenler.length
+      ? nedenler.map(x =>
+          '<div class="note ' + (x.neden.id === "parasalDegil" ? "" : "warn") + '"><strong>' + kacis(x.neden.ad) + " — " + x.satirlar.length + " satır.</strong> " +
+          kacis(x.neden.cozum) +
+          '<div class="small muted" style="margin-top:.35rem">' + kacis(x.satirlar.slice(0, 6).map(s => s.program.ad).join(" · ")) +
+          (x.satirlar.length > 6 ? " · ve " + (x.satirlar.length - 6) + " satır daha" : "") + "</div>" +
+          (x.neden.sekme ? '<div class="no-print" style="margin-top:.45rem"><button class="btn sm" type="button" data-sekme="' + x.neden.sekme + '">' + kacis(x.neden.sekmeAd) + "</button></div>" : "") +
+          "</div>").join("")
+      : '<p class="small muted">Tutar üretmeyen açık satır bulunmuyor.</p>') +
     '<div class="note warn"><strong>Sınır.</strong> Bu toplam bir gelir, tahsis veya taahhüt değildir. Kabul yazısı gelmeden hiçbir satır bütçeye yazılamaz; bugün imzalanmış kamu desteği ' + tl(t.guvence) + " tutarındadır. Tahsilat tarihleri kurum ortalamalarına dayalı planlama varsayımıdır.</div>" +
     adimGecisHtml("sonuc") + "</div>";
 }
