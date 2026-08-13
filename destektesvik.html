@@ -384,6 +384,22 @@ footer.app p{max-width:100ch}
 }
 .sayfa>section{scroll-margin-top:96px}
 .sayfa>section[hidden]{display:none}
+.yolharita{display:flex;gap:.4rem;align-items:stretch;overflow-x:auto;padding:.5rem clamp(.6rem,2vw,1.4rem);background:var(--surface);border-bottom:1px solid var(--line);scrollbar-width:thin}
+.yolharita button{flex:1 1 0;min-width:158px;display:flex;gap:.5rem;align-items:center;text-align:left;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:.42rem .55rem;color:var(--ink-2);font:inherit;cursor:pointer;transition:background var(--gecis),border-color var(--gecis)}
+.yolharita button:hover{border-color:var(--line-2);background:var(--surface-3)}
+.yolharita button[aria-current="step"]{background:var(--accent-soft);border-color:var(--accent-line);color:var(--ink)}
+.yolharita .no{display:grid;place-items:center;width:24px;height:24px;flex:0 0 24px;border-radius:50%;background:var(--surface-3);font-size:.75rem;font-weight:700;color:var(--ink-2)}
+.yolharita button[aria-current="step"] .no{background:var(--accent);color:var(--accent-ink)}
+.yolharita .yl{display:block;font-size:.8125rem;font-weight:600;line-height:1.25}
+.yolharita .ya{display:block;font-size:.6875rem;color:var(--ink-3);line-height:1.25}
+@media (max-width:760px){.yolharita{padding:.45rem .6rem}.yolharita button{min-width:auto;flex:0 0 auto}.yolharita .ya{display:none}}
+@media print{.yolharita{display:none}}
+.fayda-toplam{display:grid;gap:.6rem;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.fayda-buyuk{border:1px solid var(--accent-line);background:var(--accent-soft);border-radius:var(--r-lg);padding:.9rem 1rem}
+.fayda-buyuk .k{font-size:.75rem;color:var(--ink-2);text-transform:uppercase;letter-spacing:.04em}
+.fayda-buyuk .v{font-size:clamp(1.4rem,4vw,2.1rem);font-weight:700;line-height:1.15;margin-top:.2rem}
+.fayda-buyuk .n{font-size:.75rem;color:var(--ink-3);margin-top:.3rem}
+.adim-sonraki{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-top:.6rem}
 </style>
 </head>
 <body>
@@ -424,8 +440,10 @@ footer.app p{max-width:100ch}
         <input type="file" id="dosyaSec" accept="application/json,.json" hidden>
       </div>
     </header>
+    <nav class="yolharita no-print" id="yolHarita" aria-label="Kullanıcı yolculuğu adımları"></nav>
     <main id="icerik" class="sayfa">
-      <section id="panel-kokpit" aria-labelledby="sekme-kokpit" tabindex="-1"></section>
+      <section id="panel-sonuc" aria-labelledby="sekme-sonuc" tabindex="-1"></section>
+      <section id="panel-kokpit" aria-labelledby="sekme-kokpit" tabindex="-1" hidden></section>
       <section id="panel-analitik" aria-labelledby="sekme-analitik" tabindex="-1" hidden></section>
       <section id="panel-sihirbaz" aria-labelledby="sekme-sihirbaz" tabindex="-1" hidden></section>
       <section id="panel-nace" aria-labelledby="sekme-nace" tabindex="-1" hidden></section>
@@ -2802,6 +2820,118 @@ function kacis(s) {
 }
 function programBul(id) { return PROGRAMLAR.find(p => p.id === id); }
 
+function gunEkle(iso, gun) {
+  if (!gecerliIsoTarih(iso)) return null;
+  const d = new Date(iso + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + gun);
+  return d.toISOString().slice(0, 10);
+}
+function ayEkle(iso, ay) {
+  if (!gecerliIsoTarih(iso)) return null;
+  const d = new Date(iso + "T00:00:00Z");
+  const gun = d.getUTCDate();
+  d.setUTCDate(1);
+  d.setUTCMonth(d.getUTCMonth() + ay);
+  const ayinSonGunu = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+  d.setUTCDate(Math.min(gun, ayinSonGunu));
+  return d.toISOString().slice(0, 10);
+}
+
+const VARSAYILAN_SURE_VARSAYIMI = { degerlendirmeAy: 3, ilkOdemeAy: 3 };
+const KURUM_SURE_VARSAYIMI = {
+  "TÜBİTAK": { degerlendirmeAy: 5, ilkOdemeAy: 3 },
+  "KOSGEB": { degerlendirmeAy: 3, ilkOdemeAy: 2 },
+  "Ticaret Bakanlığı": { degerlendirmeAy: 4, ilkOdemeAy: 4 },
+  "Sanayi ve Teknoloji Bakanlığı": { degerlendirmeAy: 4, ilkOdemeAy: 3 },
+  "Avrupa Birliği": { degerlendirmeAy: 6, ilkOdemeAy: 4 },
+  "Sosyal Güvenlik Kurumu": { degerlendirmeAy: 1, ilkOdemeAy: 1 },
+  "Türkiye İş Kurumu": { degerlendirmeAy: 1, ilkOdemeAy: 1 },
+  "Hazine ve Maliye Bakanlığı": { degerlendirmeAy: 2, ilkOdemeAy: 2 },
+  "Kredi Garanti Fonu": { degerlendirmeAy: 1, ilkOdemeAy: 1 },
+  "Türk Eximbank": { degerlendirmeAy: 2, ilkOdemeAy: 1 },
+  "Türkiye Kalkınma ve Yatırım Bankası": { degerlendirmeAy: 3, ilkOdemeAy: 2 },
+  "Türk Patent ve Marka Kurumu": { degerlendirmeAy: 6, ilkOdemeAy: 0 },
+  "İstanbul Kalkınma Ajansı": { degerlendirmeAy: 4, ilkOdemeAy: 3 },
+  "İstanbul Büyükşehir Belediyesi": { degerlendirmeAy: 2, ilkOdemeAy: 1 },
+  "Emlak Konut GYO": { degerlendirmeAy: 2, ilkOdemeAy: 1 },
+  "Türkiye Teknoloji Geliştirme Vakfı": { degerlendirmeAy: 3, ilkOdemeAy: 2 },
+  "Sivil toplum ve meslek kuruluşları": { degerlendirmeAy: 2, ilkOdemeAy: 1 }
+};
+function kurumSuresi(kurum) {
+  const ad = String(kurum || "");
+  if (KURUM_SURE_VARSAYIMI[ad]) return KURUM_SURE_VARSAYIMI[ad];
+  const onEk = Object.keys(KURUM_SURE_VARSAYIMI).find(k => ad.indexOf(k) === 0);
+  return onEk ? KURUM_SURE_VARSAYIMI[onEk] : VARSAYILAN_SURE_VARSAYIMI;
+}
+
+const NAKIT_URETMEYEN_KATEGORILER = ["ag", "kefalet", "katilimciya_odeme"];
+const KURULUS_SONRASI_HAZIRLIK_GUNU = 30;
+const SUREKLI_BASVURU_HAZIRLIK_GUNU = 45;
+
+function programTakvimi(sonuc) {
+  const p = sonuc.program;
+  const sure = kurumSuresi(p.kurum);
+  const ilanli = (p.tarihler || [])
+    .filter(t => t.kritik && gecerliIsoTarih(t.tarih) && gunFarki(t.tarih) >= 0)
+    .sort((a, b) => a.tarih < b.tarih ? -1 : 1)[0];
+  let basvuru, kaynak, kaynakAdi;
+  if (ilanli) {
+    basvuru = ilanli.tarih;
+    kaynak = "ilan";
+    kaynakAdi = "İlan edilmiş tarih: " + ilanli.ad;
+  } else if (sonuc.durum === "prepare_now_apply_after_formation" || durum.profil.sirketKuruldu !== "evet") {
+    basvuru = gunEkle(KURULUS_HEDEFI, KURULUS_SONRASI_HAZIRLIK_GUNU);
+    kaynak = "tahmin";
+    kaynakAdi = "Kuruluş hedefi " + tarihTr(KURULUS_HEDEFI) + " artı " + KURULUS_SONRASI_HAZIRLIK_GUNU + " gün dosya hazırlığı";
+  } else {
+    basvuru = gunEkle(bugunIso(), SUREKLI_BASVURU_HAZIRLIK_GUNU);
+    kaynak = "tahmin";
+    kaynakAdi = "Sürekli başvuru; bugünden " + SUREKLI_BASVURU_HAZIRLIK_GUNU + " gün dosya hazırlığı";
+  }
+  const karar = ayEkle(basvuru, sure.degerlendirmeAy);
+  const nakitAkisi = NAKIT_URETMEYEN_KATEGORILER.indexOf(p.kategori) < 0;
+  const tahsilat = nakitAkisi ? ayEkle(karar, sure.ilkOdemeAy) : null;
+  return {
+    basvuru, karar, tahsilat, nakitAkisi, kaynak, kaynakAdi,
+    degerlendirmeAy: sure.degerlendirmeAy, ilkOdemeAy: sure.ilkOdemeAy,
+    varsayim: p.kurum + " için " + sure.degerlendirmeAy + " ay değerlendirme, " + sure.ilkOdemeAy + " ay ilk ödeme varsayımı"
+  };
+}
+
+const FAYDA_SINIFLARI = [
+  { id: "nakitHibe", ad: "Geri ödemesiz nakit hibe", kategoriler: ["hibe"], nakit: true,
+    aciklama: "Kabul hâlinde şirket kasasına giren, geri ödenmeyen tutar." },
+  { id: "vergiSgk", ad: "Ödenmeyen vergi ve SGK", kategoriler: ["vergi_sgk"], nakit: true,
+    aciklama: "Kasadan çıkmayan para. Gelir değildir; gider azaltır." },
+  { id: "finansmanMaliyeti", ad: "Faiz ve kâr payı desteği", kategoriler: ["finansman_maliyeti"], nakit: true,
+    aciklama: "Yalnız borçlanma yapılırsa doğar; anapara yükümlülüğü ayrıca sürer." },
+  { id: "geriOdemeli", ad: "Geri ödemeli destek ve kredi", kategoriler: ["geri_odemeli", "kredi"], nakit: false,
+    aciklama: "Nakit girer ama borçtur. Toplam faydaya eklenmez." },
+  { id: "ozsermaye", ad: "Özsermaye yatırımı", kategoriler: ["ozsermaye"], nakit: false,
+    aciklama: "Hisse karşılığıdır; kurucu payını seyreltir. Toplam faydaya eklenmez." },
+  { id: "digerFayda", ad: "Ayni hizmet, kefalet, ağ ve katılımcı ödemesi", kategoriler: ["ayni", "kefalet", "ag", "katilimciya_odeme"], nakit: false,
+    aciklama: "Parasal değeri şirket kasasına girmez; toplam faydaya eklenmez." }
+];
+
+function senaryoFaydasi(sonuclar) {
+  const siniflar = FAYDA_SINIFLARI.map(sinif => {
+    const satirlar = sonuclar
+      .filter(s => sinif.kategoriler.indexOf(s.program.kategori) >= 0 && s.gercekciTutar > 0)
+      .sort((a, b) => b.gercekciTutar - a.gercekciTutar);
+    return { sinif, satirlar, toplam: satirlar.reduce((a, s) => a + s.gercekciTutar, 0) };
+  });
+  const nakitToplam = siniflar.filter(x => x.sinif.nakit).reduce((a, x) => a + x.toplam, 0);
+  const digerToplam = siniflar.filter(x => !x.sinif.nakit).reduce((a, x) => a + x.toplam, 0);
+  return { siniflar, nakitToplam, digerToplam };
+}
+
+function senaryoZamanCizelgesi(sonuclar) {
+  return sonuclar
+    .filter(s => s.gercekciTutar > 0 || ["eligible_now", "prepare_now_apply_after_formation"].indexOf(s.durum) >= 0)
+    .map(s => Object.assign({ sonuc: s }, programTakvimi(s)))
+    .sort((a, b) => (a.basvuru < b.basvuru ? -1 : a.basvuru > b.basvuru ? 1 : b.sonuc.gercekciTutar - a.sonuc.gercekciTutar));
+}
+
 const UYGULAMA_KIMLIGI = "DestekTesvik";
 const SEMA_SURUMU = 2;
 const AZAMI_NOT_UZUNLUGU = 180;
@@ -2873,7 +3003,7 @@ function varsayilanDurum() {
     pano: {}, panoNot: {}, odul: {}, yigin: {}, kanit: {},
     nace: varsayilanNace(), gunluk: [], oneriler: [],
     gorunum: "hepsi", notlariPaylas: false,
-    senaryo: "s1", aktifSekme: "kokpit"
+    senaryo: "s1", aktifSekme: "sonuc"
   };
   return d;
 }
@@ -3331,23 +3461,50 @@ function bildir(mesaj) {
   bildir.zaman = setTimeout(() => { t.hidden = true; }, 4200);
 }
 
-const SEKMELER = [
-  { id: "kokpit", ad: "Kokpit", grup: "Genel bakış", ikon: "◧", ipucu: "Yönetici özeti ve sıradaki tek eylem" },
-  { id: "analitik", ad: "Görsel analitik", grup: "Genel bakış", ikon: "◍", ipucu: "Uygunluk, para gerçeği, takvim ve nakit grafikleri" },
-  { id: "sihirbaz", ad: "Uygunluk sihirbazı", grup: "Karar girdileri", ikon: "◎", ipucu: "Karar değiştiren sorular ve hesap varsayımları" },
-  { id: "nace", ad: "Faaliyet ve NACE", grup: "Karar girdileri", ikon: "◈", ipucu: "Birincil ve ikincil faaliyet kodları" },
-  { id: "senaryo", ad: "Senaryolar", grup: "Karar girdileri", ikon: "◐", ipucu: "Hazır durum setleri" },
-  { id: "siralama", ad: "Öneri sırası", grup: "Portföy", ikon: "≡", ipucu: "Ağırlıklı program sıralaması" },
-  { id: "yigin", ad: "Finansman yığını", grup: "Portföy", ikon: "▤", ipucu: "Gider kalemi atamaları ve çift finansman denetimi" },
-  { id: "uyum", ad: "Birlikte kullanım", grup: "Portföy", ikon: "⇄", ipucu: "Programlar arası mevzuat ilişkisi" },
-  { id: "pano", ad: "Başvuru panosu", grup: "Yürütme", ikon: "▦", ipucu: "Başvuru aşamaları, kabul tutarları ve alternatif yollar" },
-  { id: "takvim", ad: "Takvim", grup: "Yürütme", ikon: "◷", ipucu: "Tarihli eylem sırası" },
-  { id: "kanit", ad: "Kanıt listesi", grup: "Yürütme", ikon: "☑", ipucu: "Belge ve kanıt tamamlanma durumu" },
-  { id: "ai", ad: "Yapay zekâ ve MCP", grup: "Entegrasyon", ikon: "◇", ipucu: "Bağlam paketi, öneri kuyruğu ve köprü sözleşmesi" },
-  { id: "gunluk", ad: "Karar günlüğü", grup: "Entegrasyon", ikon: "◉", ipucu: "Yerel olay kaydı" },
-  { id: "sozluk", ad: "Sözlük", grup: "Başvuru", ikon: "◌", ipucu: "Terim açıklamaları" },
-  { id: "kaynak", ad: "Kaynaklar", grup: "Başvuru", ikon: "◊", ipucu: "Resmî bağlantılar, güncellik ve sürüm bilgisi" }
+const YOLCULUK = [
+  { id: "tanim", no: 1, ad: "Durumu tanımla", soru: "Şirket bugün hangi durumda?", giris: "senaryo" },
+  { id: "sonuc", no: 2, ad: "Sonucu gör", soru: "Bu durumda ne kadar fayda, ne zaman?", giris: "sonuc" },
+  { id: "plan", no: 3, ad: "Planla", soru: "Hangi gider hangi programdan finanse edilecek?", giris: "yigin" },
+  { id: "yurut", no: 4, ad: "Yürüt", soru: "Başvurular hangi aşamada, kanıtlar hazır mı?", giris: "pano" },
+  { id: "dayanak", no: 5, ad: "Dayanağı göster", soru: "Bu sonuç hangi resmî kaynağa dayanıyor?", giris: "kaynak" }
 ];
+function yolculukAdimi(id) { return YOLCULUK.find(x => x.id === id) || YOLCULUK[0]; }
+function adimGrupAdi(id) { const a = yolculukAdimi(id); return a.no + " · " + a.ad; }
+
+const SEKME_TANIMLARI = [
+  { id: "senaryo", adim: "tanim", ad: "Senaryolar", ikon: "◐", ipucu: "Hazır durum setleri; biri uygulanır ve sonuç sayfası açılır" },
+  { id: "sihirbaz", adim: "tanim", ad: "Uygunluk sihirbazı", ikon: "◎", ipucu: "Karar değiştiren sorular ve hesap varsayımları" },
+  { id: "nace", adim: "tanim", ad: "Faaliyet ve NACE", ikon: "◈", ipucu: "Birincil ve ikincil faaliyet kodları" },
+  { id: "sonuc", adim: "sonuc", ad: "Senaryo sonucu", ikon: "◆", ipucu: "Toplam fayda, başvuru ve tahsilat tarihçesi, sorumlu roller" },
+  { id: "kokpit", adim: "sonuc", ad: "Yönetici kokpiti", ikon: "◧", ipucu: "Yönetici özeti ve sıradaki tek eylem" },
+  { id: "siralama", adim: "sonuc", ad: "Öneri sırası", ikon: "≡", ipucu: "Ağırlıklı program sıralaması" },
+  { id: "analitik", adim: "sonuc", ad: "Görsel analitik", ikon: "◍", ipucu: "Uygunluk, para gerçeği, takvim ve nakit grafikleri" },
+  { id: "yigin", adim: "plan", ad: "Finansman yığını", ikon: "▤", ipucu: "Gider kalemi atamaları ve çift finansman denetimi" },
+  { id: "uyum", adim: "plan", ad: "Birlikte kullanım", ikon: "⇄", ipucu: "Programlar arası mevzuat ilişkisi" },
+  { id: "takvim", adim: "plan", ad: "Takvim", ikon: "◷", ipucu: "Tarihli eylem sırası" },
+  { id: "pano", adim: "yurut", ad: "Başvuru panosu", ikon: "▦", ipucu: "Başvuru aşamaları, kabul tutarları ve alternatif yollar" },
+  { id: "kanit", adim: "yurut", ad: "Kanıt listesi", ikon: "☑", ipucu: "Belge ve kanıt tamamlanma durumu" },
+  { id: "gunluk", adim: "yurut", ad: "Karar günlüğü", ikon: "◉", ipucu: "Yerel olay kaydı" },
+  { id: "kaynak", adim: "dayanak", ad: "Kaynaklar", ikon: "◊", ipucu: "Resmî bağlantılar, güncellik ve sürüm bilgisi" },
+  { id: "sozluk", adim: "dayanak", ad: "Sözlük", ikon: "◌", ipucu: "Terim açıklamaları" },
+  { id: "ai", adim: "dayanak", ad: "Yapay zekâ ve MCP", ikon: "◇", ipucu: "Bağlam paketi, öneri kuyruğu ve köprü sözleşmesi" }
+];
+
+const SEKMELER = SEKME_TANIMLARI.map(s => Object.assign({ grup: adimGrupAdi(s.adim) }, s));
+
+function sekmeBul(id) { return SEKMELER.find(s => s.id === id) || SEKMELER[0]; }
+function adimSekmeleri(adimId) { return SEKMELER.filter(s => s.adim === adimId); }
+function sonrakiAdim(adimId) {
+  const i = YOLCULUK.findIndex(x => x.id === adimId);
+  return i >= 0 && i < YOLCULUK.length - 1 ? YOLCULUK[i + 1] : null;
+}
+function adimGecisHtml(adimId) {
+  const sonraki = sonrakiAdim(adimId);
+  if (!sonraki) return "";
+  return '<div class="adim-sonraki no-print"><span class="small muted">Yolculukta sıradaki adım:</span>' +
+    '<button class="btn primary sm" type="button" data-sekme="' + sonraki.giris + '">' +
+    kacis(sonraki.no + " · " + sonraki.ad + " — " + sonraki.soru) + "</button></div>";
+}
 
 function rozet(sinif, metin) {
   return '<span class="badge ' + sinif + '">' + kacis(metin) + "</span>";
@@ -3412,6 +3569,7 @@ function cizKokpit() {
   '<div class="bolum-bas"><div><h2>Yönetici kokpiti</h2>' +
   '<p>Bugün elde ne var, neye başvurulabilir ve sıradaki tek eylem nedir. Kabul yazısı ve resmî tutarı girilmemiş hiçbir destek gelir sayılmaz.</p></div>' +
   '<div class="arac-satiri no-print" style="margin:0">' +
+  '<button class="btn sm primary" type="button" data-sekme="sonuc">Senaryo sonucu</button>' +
   '<button class="btn sm" type="button" data-sekme="analitik">Grafiklere git</button>' +
   '<button class="btn sm" type="button" data-sekme="pano">Panoya git</button>' +
   '<button class="btn sm" type="button" data-sekme="nace">Faaliyet kodları</button></div></div>' +
@@ -3552,11 +3710,133 @@ function parametreAlani(id, etiket, ipucu) {
   return '<div><label for="par-' + id + '">' + kacis(etiket) + '</label><input type="number" inputmode="numeric" min="0" max="' + sinir + '" step="1" id="par-' + id + '" data-parametre="' + id + '" value="' + (durum.parametre[id] || 0) + '"><p class="hint">' + kacis(ipucu) + " Üst sınır " + tl(sinir) + ".</p></div>";
 }
 
+function soruEtiketi(soruId, deger) {
+  const s = SORULAR.find(x => x.id === soruId);
+  if (!s) return null;
+  const o = s.secenekler.find(x => x.v === deger);
+  return { soru: s.soru, cevap: o ? o.ad : deger, grup: s.grup };
+}
+
+function profilFarklari(profil) {
+  return Object.keys(VARSAYILAN_PROFIL)
+    .filter(k => profil[k] !== VARSAYILAN_PROFIL[k])
+    .map(k => soruEtiketi(k, profil[k]))
+    .filter(Boolean);
+}
+
+function senaryoOzetiHtml(s) {
+  const farklar = profilFarklari(Object.assign({}, VARSAYILAN_PROFIL, s.profil || {}));
+  if (!farklar.length) return '<p class="small muted">Bu senaryo bugünkü kuruluş öncesi durumu temsil eder; hiçbir varsayım eklenmez.</p>';
+  return '<div class="prog-meta">' + farklar.map(f => rozet("acc", f.cevap)).join(" ") + "</div>";
+}
+
 function cizSenaryo() {
   document.getElementById("panel-senaryo").innerHTML =
-    '<div class="card"><h2>Hazır senaryolar</h2><p class="lead">Bir senaryo seçmek sihirbaz cevaplarını topluca değiştirir. Seçtikten sonra tek tek düzenleyebilirsiniz.</p></div>' +
-    SENARYOLAR.map(s => '<div class="card"><div class="split"><div><h3>' + kacis(s.ad) + "</h3><p class=\"small muted\">" + kacis(s.ozet) + "</p></div>" +
-      '<button class="btn ' + (durum.senaryo === s.id ? "primary" : "") + '" type="button" data-senaryo="' + s.id + '">' + (durum.senaryo === s.id ? "Seçili" : "Uygula") + "</button></div></div>").join("");
+    '<div class="bolum-bas"><div><h2>1 · Durumu tanımla — hazır senaryolar</h2>' +
+    '<p>Bir senaryo, uygunluk sihirbazındaki tüm cevapları tek hamlede kurar. Uygula düğmesi senaryoyu uygular ve doğrudan sonuç sayfasını açar: ne kadar fayda doğar, hangi tarihte başvurulur, tahsilat yaklaşık ne zaman olur ve kim sorumludur.</p></div>' +
+    '<div class="arac-satiri no-print" style="margin:0">' +
+    '<button class="btn sm" type="button" data-sekme="sihirbaz">Cevapları tek tek düzenle</button>' +
+    '<button class="btn sm" type="button" data-sekme="sonuc">Uygulanan senaryonun sonucu</button></div></div>' +
+    SENARYOLAR.map(s => {
+      const secili = durum.senaryo === s.id;
+      return '<div class="card' + (secili ? " sik" : "") + '"><div class="split"><div><h3>' + kacis(s.ad) + "</h3>" +
+        '<p class="small muted">' + kacis(s.ozet) + "</p>" + senaryoOzetiHtml(s) + "</div>" +
+        '<div class="no-print" style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">' +
+        (secili ? rozet("ok", "Uygulanmış senaryo") : "") +
+        '<button class="btn ' + (secili ? "" : "primary") + '" type="button" data-senaryo="' + s.id + '">' +
+        (secili ? "Sonucu yeniden aç" : "Uygula ve sonucu gör") + "</button></div></div></div>";
+    }).join("") +
+    '<div class="card">' + adimGecisHtml("tanim") + "</div>";
+}
+
+function cizSonuc() {
+  const sonuclar = degerlendir();
+  const t = toplamlar(sonuclar);
+  const senaryo = SENARYOLAR.find(x => x.id === durum.senaryo) || SENARYOLAR[0];
+  const fayda = senaryoFaydasi(sonuclar);
+  const cizelge = senaryoZamanCizelgesi(sonuclar);
+  const farklar = profilFarklari(durum.profil);
+  const acik = sonuclar.filter(s => s.durum === "eligible_now");
+  const hazirlik = sonuclar.filter(s => s.durum === "prepare_now_apply_after_formation");
+  const ilkTahsilat = cizelge.filter(x => x.nakitAkisi && x.tahsilat && x.sonuc.gercekciTutar > 0)
+    .slice().sort((a, b) => a.tahsilat < b.tahsilat ? -1 : 1)[0];
+  const roller = [];
+  cizelge.forEach(x => {
+    const rol = SAHIP_ROLLERI[x.sonuc.program.id] || "Yönetim";
+    let g = roller.find(r => r.rol === rol);
+    if (!g) { g = { rol, satir: 0, tutar: 0, programlar: [] }; roller.push(g); }
+    g.satir += 1;
+    g.tutar += x.sonuc.gercekciTutar;
+    g.programlar.push(x.sonuc.program.ad);
+  });
+  roller.sort((a, b) => b.tutar - a.tutar || b.satir - a.satir);
+
+  document.getElementById("panel-sonuc").innerHTML =
+    '<div class="bolum-bas"><div><h2>2 · Sonucu gör — ' + kacis(senaryo.ad) + "</h2>" +
+    "<p>" + kacis(senaryo.ozet) + "</p></div>" +
+    '<div class="arac-satiri no-print" style="margin:0">' +
+    '<button class="btn sm" type="button" data-sekme="senaryo">Senaryoyu değiştir</button>' +
+    '<button class="btn sm" type="button" data-sekme="siralama">Program sırasını aç</button>' +
+    '<button class="btn sm" type="button" data-sekme="pano">Yürütmeye geç</button></div></div>' +
+
+    '<div class="card"><h3>Bu senaryo neyi varsayıyor</h3>' +
+    (farklar.length
+      ? '<div class="tablewrap"><table><caption class="live">Kuruluş öncesi temel duruma göre değişen cevaplar</caption><thead><tr><th>Konu</th><th>Soru</th><th>Bu senaryodaki cevap</th></tr></thead><tbody>' +
+        farklar.map(f => "<tr><td>" + kacis(f.grup) + "</td><td>" + kacis(f.soru) + "</td><td><strong>" + kacis(f.cevap) + "</strong></td></tr>").join("") +
+        "</tbody></table></div>"
+      : '<p class="small muted">Bu senaryo bugünkü gerçek durumu temsil eder: şirket yok, kurum kaydı yok, kabul edilmiş destek yok.</p>') +
+    '<p class="small muted">Cevaplar sonuç sayfasını anında değiştirir. Tek tek düzenlemek için uygunluk sihirbazını açın.</p></div>' +
+
+    '<div class="card"><h3>Bu senaryoda kaç kapı açıldı</h3><div class="grid four">' +
+      '<div class="tile ' + (acik.length ? "good" : "stop") + '"><div class="k">Bugün başvurulabilir</div><div class="v">' + acik.length + '</div><div class="n">Bugünkü koşullarla dosya açılabilecek program sayısı</div></div>' +
+      '<div class="tile acc"><div class="k">Kuruluştan sonra başvurulabilir</div><div class="v">' + hazirlik.length + '</div><div class="n">Hazırlık bugün başlar, başvuru tescil sonrası yapılır</div></div>' +
+      '<div class="tile"><div class="k">Tutar üretilemeyen açık satır</div><div class="v">' + t.hesaplanamaz + '</div><div class="n">Resmî görüş veya varsayım girilmeden 0 TL sayılır</div></div>' +
+      '<div class="tile ' + (t.guvence > 0 ? "good" : "stop") + '"><div class="k">Bugün imzalanmış destek</div><div class="v">' + tl(t.guvence) + '</div><div class="n">Yalnız kabul yazısı ve tutarı girilmiş satırlar</div></div>' +
+    "</div></div>" +
+
+    '<div class="card"><h3>Tarihçe — başvuru, karar ve yaklaşık tahsilat</h3>' +
+    '<p class="lead">Satırlar başvuru tarihine göre sıralanır. İlan edilmiş çağrı tarihi olan satırlarda başvuru tarihi resmîdir; diğerlerinde dosya hazırlık süresine göre planlanır. Karar ve tahsilat tarihlerinin tamamı yönetsel planlama varsayımıdır ve hiçbir kurumun taahhüdü değildir.</p>' +
+    (cizelge.length
+      ? '<div class="tablewrap"><table><caption class="live">Senaryo zaman çizelgesi</caption><thead><tr><th>Program</th><th>Sorumlu rol</th><th>Başvuru</th><th>Karar (tahmini)</th><th>Tahsilat (tahmini)</th><th>Gerçekçi tutar</th></tr></thead><tbody>' +
+        cizelge.map(x => {
+          const p = x.sonuc.program;
+          return "<tr><td><strong>" + kacis(p.ad) + '</strong><div class="small muted">' + kacis(p.kurum) + " · " + kacis(KATEGORI_ETIKET[p.kategori]) + "</div></td>" +
+            "<td>" + kacis(SAHIP_ROLLERI[p.id] || "Yönetim") + "</td>" +
+            "<td>" + kacis(tarihTr(x.basvuru)) + '<div class="small muted">' + (x.kaynak === "ilan" ? "İlan edilmiş" : "Planlanan") + "</div></td>" +
+            "<td>" + kacis(tarihTr(x.karar)) + '<div class="small muted">+' + x.degerlendirmeAy + " ay</div></td>" +
+            "<td>" + (x.nakitAkisi
+              ? kacis(tarihTr(x.tahsilat)) + '<div class="small muted">+' + x.ilkOdemeAy + " ay</div>"
+              : '<span class="small muted">Şirket kasasına nakit girmez</span>') + "</td>" +
+            '<td class="num">' + (x.sonuc.gercekciTutar > 0 ? tl(x.sonuc.gercekciTutar) : "0 TL") + "</td></tr>";
+        }).join("") + "</tbody></table></div>" +
+        '<p class="small muted">' + (ilkTahsilat
+          ? "Bu senaryoda tutar üreten ilk tahsilat beklentisi: <strong>" + kacis(tarihTr(ilkTahsilat.tahsilat)) + "</strong> — " + kacis(ilkTahsilat.sonuc.program.ad) + ". " + kacis(ilkTahsilat.varsayim) + "."
+          : "Bu senaryoda hiçbir satır tutar üretmediği için tahsilat beklentisi kurulmaz.") + "</p>"
+      : '<div class="bos"><b>Bu senaryoda açılabilecek başvuru satırı yok</b>Uygunluk sihirbazındaki koşulları kapatın veya başka bir senaryo uygulayın.</div>') +
+    "</div>" +
+
+    '<div class="card"><h3>Kim sorumlu</h3>' +
+    (roller.length
+      ? '<div class="tablewrap"><table><caption class="live">Sorumlu rol dağılımı</caption><thead><tr><th>Sorumlu rol</th><th>Satır</th><th>Gerçekçi tutar</th><th>Programlar</th></tr></thead><tbody>' +
+        roller.map(r => "<tr><td><strong>" + kacis(r.rol) + '</strong></td><td class="num">' + r.satir + '</td><td class="num">' + tl(r.tutar) + "</td><td>" + kacis(r.programlar.join(", ")) + "</td></tr>").join("") +
+        "</tbody></table></div>"
+      : '<p class="small muted">Bu senaryoda sorumluluk atanacak açık satır bulunmuyor.</p>') +
+    '<p class="small muted">Sorumlu rol, başvuru dosyasını kimin yürüteceğini gösterir. Nihai karar ve imza yetkisi her hâlükârda yönetimdedir.</p></div>' +
+
+    '<div class="card"><h3>Toplam fayda</h3>' +
+    '<p class="lead">Bu bölüm senaryonun parasal sonucudur. Yalnız girilen varsayımlarla hesaplanabilen tutarlar toplanır; resmî doğrulama bekleyen ve kapalı satırlar 0 TL girer.</p>' +
+    '<div class="fayda-toplam">' +
+      '<div class="fayda-buyuk"><div class="k">Toplam gerçekçi fayda</div><div class="v">' + tl(fayda.nakitToplam) + '</div><div class="n">Geri ödemesiz hibe, ödenmeyen vergi ve SGK ile finansman maliyeti desteğinin toplamı. Borç ve hisse karşılığı tutarlar bu toplama girmez</div></div>' +
+      '<div class="fayda-buyuk" style="background:var(--surface-2);border-color:var(--line)"><div class="k">Borç ve parasal olmayan destek</div><div class="v">' + tl(fayda.digerToplam) + '</div><div class="n">Geri ödemeli destek, kredi, özsermaye, kefalet ve ayni hizmetler. Fayda değil, ayrı yükümlülük veya ayni katkıdır</div></div>' +
+      '<div class="fayda-buyuk" style="background:var(--surface-2);border-color:var(--line)"><div class="k">İyimser tavan</div><div class="v">' + tl(t.iyimser) + '</div><div class="n">Kapalı olmayan hibe satırlarının ilan edilen üst sınırları. Gelir değildir, erişilebilir tavandır</div></div>' +
+    "</div>" +
+    '<div class="tablewrap" style="margin-top:.7rem"><table><caption class="live">Fayda türüne göre kırılım</caption><thead><tr><th>Fayda türü</th><th>Toplama girer mi</th><th>Satır</th><th>Tutar</th></tr></thead><tbody>' +
+      fayda.siniflar.map(x => "<tr><td><strong>" + kacis(x.sinif.ad) + '</strong><div class="small muted">' + kacis(x.sinif.aciklama) + "</div></td>" +
+        "<td>" + (x.sinif.nakit ? rozet("ok", "Evet") : rozet("mute", "Hayır")) + '</td><td class="num">' + x.satirlar.length + '</td><td class="num">' + tl(x.toplam) + "</td></tr>").join("") +
+      '<tr><td><strong>Toplam gerçekçi fayda</strong></td><td>' + rozet("ok", "Toplam") + '</td><td class="num">' + fayda.siniflar.filter(x => x.sinif.nakit).reduce((a, x) => a + x.satirlar.length, 0) + '</td><td class="num"><strong>' + tl(fayda.nakitToplam) + "</strong></td></tr>" +
+    "</tbody></table></div>" +
+    '<div class="note warn"><strong>Sınır.</strong> Bu toplam bir gelir, tahsis veya taahhüt değildir. Kabul yazısı gelmeden hiçbir satır bütçeye yazılamaz; bugün imzalanmış kamu desteği ' + tl(t.guvence) + " tutarındadır. Tahsilat tarihleri kurum ortalamalarına dayalı planlama varsayımıdır.</div>" +
+    adimGecisHtml("sonuc") + "</div>";
 }
 
 function cizSiralama() {
@@ -3786,7 +4066,8 @@ function cizTakvim() {
       const fark = gunFarki(t.tarih);
       return '<li class="' + (t.tip === "hard" ? "hard" : "soft") + '"><div class="d">' + tarihTr(t.tarih) + " · " + (fark === 0 ? "bugün" : fark > 0 ? fark + " gün sonra" : Math.abs(fark) + " gün önce") + '</div><div class="t">' + kacis(t.baslik) + '</div><div class="small muted">' + kacis(t.eylem) + "</div></li>";
     }).join("") + "</ul></div>" +
-    '<div class="card"><h3>İhracat hazırlığı</h3><p class="small">İhracat, kuruluştan yaklaşık 12 ay sonra başlar. Öncelikli pazarlar Almanya, Hollanda, Fransa ve Birleşik Krallık ile diaspora müşterileridir. Hizmet ihracatı desteklerinin tamamı, yabancı müşteriye kesilmiş fatura ve tahsilat kaydı olmadan teoriktir.</p></div>';
+    '<div class="card"><h3>İhracat hazırlığı</h3><p class="small">İhracat, kuruluştan yaklaşık 12 ay sonra başlar. Öncelikli pazarlar Almanya, Hollanda, Fransa ve Birleşik Krallık ile diaspora müşterileridir. Hizmet ihracatı desteklerinin tamamı, yabancı müşteriye kesilmiş fatura ve tahsilat kaydı olmadan teoriktir.</p>' +
+    adimGecisHtml("plan") + "</div>";
 }
 
 function cizKanit() {
@@ -4460,10 +4741,12 @@ function cizGunluk() {
     "<li>Günlük bir onay makamı değildir; kurum kararı yerine geçmez.</li>" +
     "<li>Tasarım gereği gizli anahtar, jeton veya kişisel kimlik bilgisi yazılmaz.</li>" +
     "<li>Kayıtlar dışa aktarma dosyasına dâhildir ve içe aktarmada şema denetiminden geçer.</li>" +
-    "<li>Sınır aşıldığında en eski kayıtlar düşer.</li></ul></div>";
+    "<li>Sınır aşıldığında en eski kayıtlar düşer.</li></ul>" +
+    adimGecisHtml("yurut") + "</div>";
 }
 
 const CIZICILER = {
+  sonuc: cizSonuc,
   kokpit: cizKokpit, analitik: cizAnalitik, sihirbaz: cizSihirbaz, nace: cizNace, senaryo: cizSenaryo,
   siralama: cizSiralama, yigin: cizYigin, uyum: cizUyum, pano: cizPano, takvim: cizTakvim,
   kanit: cizKanit, ai: cizAi, gunluk: cizGunluk, sozluk: cizSozluk, kaynak: cizKaynak
@@ -4498,10 +4781,22 @@ function sekmeleriKur() {
   ustcubukYenile();
 }
 
+function yolHaritasiYenile(aktifSekme) {
+  const kap = document.getElementById("yolHarita");
+  if (!kap) return;
+  const aktifAdim = sekmeBul(aktifSekme).adim;
+  kap.innerHTML = YOLCULUK.map(a =>
+    '<button type="button" data-sekme="' + a.giris + '"' + (a.id === aktifAdim ? ' aria-current="step"' : "") +
+    ' title="' + kacis(a.soru) + '">' +
+    '<span class="no" aria-hidden="true">' + a.no + "</span>" +
+    '<span><span class="yl">' + kacis(a.ad) + '</span><span class="ya">' + kacis(a.soru) + "</span></span></button>").join("");
+}
+
 function ustcubukYenile() {
   const s = SEKMELER.find(x => x.id === durum.aktifSekme) || SEKMELER[0];
   document.getElementById("sayfaBasligi").textContent = s.ad;
   document.getElementById("kirinti").textContent = "ARSAM · " + s.grup;
+  yolHaritasiYenile(durum.aktifSekme);
   const sec = document.getElementById("senaryoSecici");
   if (sec) {
     const yeni = SENARYOLAR.map(x => '<option value="' + x.id + '"' + (durum.senaryo === x.id ? " selected" : "") + ">" + kacis(x.ad) + "</option>").join("");
@@ -4532,10 +4827,11 @@ function sekmeSec(id, sessiz) {
   }
   ustcubukYenile();
   menuKapat();
+  window.scrollTo(0, 0);
   if (id === "analitik") window.setTimeout(() => { grafikleriKur(); grafikleriBoyutlandir(); }, 30);
   if (sessiz) return;
   const p = document.getElementById("panel-" + id);
-  if (p) p.focus();
+  if (p) p.focus({ preventScroll: true });
   bildir(SEKMELER.find(s => s.id === id).ad + " bölümü açıldı.");
 }
 
@@ -4615,7 +4911,11 @@ function senaryoUygula(id) {
   naceProfilSenkron();
   gunlugeYaz("senaryo", "Senaryo uygulandı: " + s.ad + ".");
   tumunuGuncelle();
-  bildir(s.ad + " senaryosu uygulandı.");
+  sekmeSec("sonuc", true);
+  const panel = document.getElementById("panel-sonuc");
+  if (panel) panel.focus({ preventScroll: true });
+  window.scrollTo(0, 0);
+  bildir(s.ad + " senaryosu uygulandı; sonuç sayfası açıldı.");
 }
 
 function disaAktar() {
@@ -5090,6 +5390,10 @@ function olaylariBagla() {
     window.setTimeout(grafikleriBoyutlandir, 220);
   });
   document.getElementById("railGezinme").addEventListener("click", e => {
+    const b = e.target.closest("[data-sekme]");
+    if (b) sekmeSec(b.getAttribute("data-sekme"));
+  });
+  document.getElementById("yolHarita").addEventListener("click", e => {
     const b = e.target.closest("[data-sekme]");
     if (b) sekmeSec(b.getAttribute("data-sekme"));
   });
