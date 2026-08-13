@@ -400,6 +400,96 @@ footer.app p{max-width:100ch}
 .fayda-buyuk .v{font-size:clamp(1.4rem,4vw,2.1rem);font-weight:700;line-height:1.15;margin-top:.2rem}
 .fayda-buyuk .n{font-size:.75rem;color:var(--ink-3);margin-top:.3rem}
 .adim-sonraki{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-top:.6rem}
+
+/* Mobile-first typography floor: hiçbir metin 1.1rem altına inmez */
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{font-size:1.15rem;line-height:1.6}
+h1{font-size:1.45rem;line-height:1.25}
+h2{font-size:1.35rem;line-height:1.3}
+h3{font-size:1.2rem;line-height:1.35}
+h4{font-size:1.12rem;line-height:1.4}
+.lead,legend,.timeline .t,.prog-title,.bos b,.palet-sonuc .ana,.gl dd,.nace-kod{font-size:1.15rem;line-height:1.55}
+.small,.hint,small,.prog-inst,.reasons,.kv,.note.small,.chk,.chk span small,.timeline .d,.gunluk,.gunluk time,
+.mono,.grafik-bas p,.grafik-oz,.grafik-yedek summary,.palet-sonuc .alt,.palet-alt,.palet-tur,footer.app,
+table,th,td,label,textarea,.drawer-body h4,.bolum-bas p,.tile .k,.tile .n,.prog-nums .k,.badge,.btn.sm,
+.rail-marka h1,.rail-marka span,.rail-grup>p,.rail nav button .say,.rail-durum,.rail-durum b,
+.ustcubuk-baslik .kirinti,.ara-dugme kbd,.yolharita .yl,.yolharita .ya,.fayda-buyuk .k,.fayda-buyuk .n{
+  font-size:1.1rem;line-height:1.5
+}
+.tile .v{font-size:1.75rem;line-height:1.2}
+.tile .v.v-kisa,.tile .v.mono.v-kisa{font-size:1.2rem;line-height:1.35}
+.prog-nums .v{font-size:1.2rem}
+.prog-nums .v.v-metin{font-size:1.1rem;font-weight:560;line-height:1.45}
+.note,.note.small,.note strong,.note.ok,.note.warn,.note.stop,.stack-opts label,.stack-row label,
+.rank,.reasons li,.gl dt,.kv strong,.bos{font-size:1.1rem;line-height:1.5}
+.rank{min-width:1.9rem;height:1.9rem;display:inline-grid;place-items:center}
+.ustcubuk-baslik h2{font-size:1.3rem}
+.rail-grup>p,.ustcubuk-baslik .kirinti{letter-spacing:.02em}
+.badge{padding:.24rem .6rem}
+.rail nav button .say{min-width:1.9rem;text-align:center}
+input,select,textarea,button,.btn,.btn.primary,.btn.danger{font-size:1.1rem}
+.rail nav button,.rail nav button span,.rail nav button .ikon,.yolharita .no,.sh-isaret,
+.ustcubuk-arac .ara-dugme,.ustcubuk-arac .ara-dugme span{font-size:1.1rem}
+.rail nav button .ikon{width:1.6rem;display:inline-grid;place-items:center}
+.choice button,.nace-rol button,.stack-opts button,.sh-isaret{font-size:1.1rem}
+.sh-isaret{flex:0 0 30px;width:30px;height:30px}
+input,select,textarea{min-height:48px}
+.btn{min-height:48px}
+.btn.sm{min-height:42px;padding:.45rem .8rem}
+.choice button{min-height:48px}
+.chk{min-height:48px;align-items:center}
+@media (min-width:900px){
+  body{font-size:1.1rem}
+  .btn,input,select,textarea{min-height:44px}
+  .btn.sm{min-height:38px}
+}
+
+/* Üst çubuk — mobilde ikincil araçlar katlanır */
+.arac-grubu{display:none;grid-template-columns:1fr;gap:.5rem;width:100%;padding:.6rem 0 .2rem}
+.uygulama[data-arac="acik"] .arac-grubu{display:grid}
+.arac-grubu .btn,.arac-grubu select{width:100%}
+@media (min-width:900px){
+  .arac-ac{display:none}
+  .arac-grubu{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;width:auto;padding:0}
+  .arac-grubu .btn,.arac-grubu select{width:auto}
+}
+
+/* Çok adımlı sihirbaz — önce mobil */
+.sh{display:grid;gap:1rem}
+.sh-ust{display:grid;gap:.6rem}
+.sh-sayac{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;flex-wrap:wrap}
+.sh-sayac b{font-size:1.1rem;font-weight:640}
+.sh-sayac span{font-size:1.1rem;color:var(--ink-3)}
+.sh-ilerleme{height:10px;border-radius:999px;background:var(--surface-3);overflow:hidden}
+.sh-ilerleme i{display:block;height:100%;background:var(--accent);border-radius:999px;transition:width var(--gecis)}
+.sh-soru{font-size:1.55rem;font-weight:640;line-height:1.28;margin:.2rem 0 0}
+.sh-neden{font-size:1.1rem;color:var(--ink-3);line-height:1.55;margin:.35rem 0 0}
+.sh-secenekler{display:grid;gap:.7rem;margin-top:.2rem}
+.sh-secenekler button{display:flex;align-items:center;gap:.75rem;width:100%;min-height:60px;text-align:left;
+  padding:.85rem 1rem;border-radius:16px;border:1.5px solid var(--line-2);background:var(--surface-2);
+  color:var(--ink);font:inherit;font-size:1.18rem;font-weight:560;cursor:pointer;
+  transition:background var(--gecis),border-color var(--gecis),transform var(--gecis)}
+.sh-secenekler button:hover{border-color:var(--accent-line);background:var(--surface-3)}
+.sh-secenekler button:active{transform:scale(.99)}
+.sh-secenekler button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+.sh-isaret{display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;border-radius:50%;
+  border:2px solid var(--line-2);font-size:1.1rem;color:transparent}
+.sh-secenekler button[aria-pressed="true"] .sh-isaret{border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
+.sh-alt{display:grid;gap:.6rem;margin-top:.4rem}
+.sh-alt .btn{width:100%;justify-content:center}
+.sh-atlanan{font-size:1.1rem;color:var(--ink-3)}
+.sh-ozet-satir{display:grid;gap:.15rem;padding:.7rem 0;border-bottom:1px solid var(--line)}
+.sh-ozet-satir:last-child{border-bottom:0}
+.sh-ozet-satir .s{font-size:1.1rem;color:var(--ink-3)}
+.sh-ozet-satir .c{font-size:1.15rem;font-weight:600}
+.sh-ozet-satir button{justify-self:start}
+@media (min-width:720px){
+  .sh-soru{font-size:1.85rem}
+  .sh-secenekler{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  .sh-alt{grid-auto-flow:column;justify-content:start}
+  .sh-alt .btn{width:auto}
+  .sh-ozet-satir{grid-template-columns:1fr auto;align-items:center}
+}
 </style>
 </head>
 <body>
@@ -430,14 +520,17 @@ footer.app p{max-width:100ch}
         <button class="ara-dugme" id="btnKomut" type="button" aria-haspopup="dialog">
           <span aria-hidden="true">⌕</span><span>Program, kurum, NACE, kanıt ara</span><kbd>Ctrl K</kbd>
         </button>
-        <label class="live" for="senaryoSecici">Senaryo</label>
-        <select id="senaryoSecici" style="width:auto;min-width:190px"></select>
         <button class="btn sm primary" id="btnPaylas" type="button" aria-haspopup="dialog">Paylaş</button>
-        <button class="btn sm" id="btnTema" type="button">Tema</button>
-        <button class="btn sm" id="btnYazdir" type="button">Yazdır</button>
-        <button class="btn sm" id="btnDisaAktar" type="button">Dışa aktar</button>
-        <button class="btn sm" id="btnIceAktar" type="button">İçe aktar</button>
-        <button class="btn sm danger" id="btnSifirla" type="button">Sıfırla</button>
+        <button class="btn sm arac-ac" id="btnAracMenu" type="button" aria-expanded="false" aria-controls="aracGrubu">Araçlar</button>
+        <div class="arac-grubu" id="aracGrubu">
+          <label class="live" for="senaryoSecici">Senaryo</label>
+          <select id="senaryoSecici" style="width:auto;min-width:190px"></select>
+          <button class="btn sm" id="btnTema" type="button">Tema</button>
+          <button class="btn sm" id="btnYazdir" type="button">Yazdır</button>
+          <button class="btn sm" id="btnDisaAktar" type="button">Dışa aktar</button>
+          <button class="btn sm" id="btnIceAktar" type="button">İçe aktar</button>
+          <button class="btn sm danger" id="btnSifirla" type="button">Sıfırla</button>
+        </div>
         <input type="file" id="dosyaSec" accept="application/json,.json" hidden>
       </div>
     </header>
@@ -3292,6 +3385,7 @@ function yukle() {
 }
 function durumuBenimse(yeni) {
   durum.profil = yeni.profil;
+  if (typeof profilKosullariUygula === "function") profilKosullariUygula(durum.profil);
   durum.parametre = yeni.parametre;
   durum.pano = yeni.pano;
   durum.panoNot = yeni.panoNot;
@@ -3645,9 +3739,9 @@ function cizKokpit() {
       '<div class="tile"><div class="k">Azami başabaş öncesi net nakit yakımı</div><div class="v">' + tl(FINANS.azamiNetYakim) + '</div><div class="n">40 milyonun tamamı harcanabilir eş finansman değildir</div></div>' +
       '<div class="tile"><div class="k">Operasyonel başabaş</div><div class="v">' + FINANS.basabas + '</div><div class="n">Doğrulanmış senaryo</div></div>' +
       kurulusKutusu +
-      '<div class="tile acc"><div class="k">Faaliyet ve NACE</div><div class="v mono" style="font-size:1rem">' + kacis(naceOzet) + '</div><div class="n">Kuruluş öncesi öneri; mali müşavir, oda ve vergi dairesi teyidiyle kesinleşir</div></div>' +
+      '<div class="tile acc"><div class="k">Faaliyet ve NACE</div><div class="v mono v-kisa">' + kacis(naceOzet) + '</div><div class="n">Kuruluş öncesi öneri; mali müşavir, oda ve vergi dairesi teyidiyle kesinleşir</div></div>' +
       '<div class="tile ' + (ihlal.length ? "stop" : "good") + '"><div class="k">Yığın çakışması</div><div class="v">' + ihlal.length + '</div><div class="n">Aynı gideri iki programa yazma denetimi</div></div>' +
-      '<div class="tile"><div class="k">Kayıtlı görünüm</div><div class="v" style="font-size:1rem">' + kacis((KAYITLI_GORUNUMLER.find(g => g.id === durum.gorunum) || {}).ad || "Tüm portföy") + '</div><div class="n">Başvuru panosunda etkin filtre</div></div>' +
+      '<div class="tile"><div class="k">Kayıtlı görünüm</div><div class="v v-kisa">' + kacis((KAYITLI_GORUNUMLER.find(g => g.id === durum.gorunum) || {}).ad || "Tüm portföy") + '</div><div class="n">Başvuru panosunda etkin filtre</div></div>' +
     "</div></div>" +
 
   '<div class="card"><h2>İki ayrı senaryo — birbirine karıştırılmaz</h2>' +
@@ -3720,44 +3814,161 @@ function enBuyukEngel(sonuclar) {
     : "Uygun duruma gelmiş program bulunmuyor; sihirbazdaki koşullar kapatılmadan başvuru sırası kurulamaz.";
 }
 
-function cizSihirbaz() {
-  const gruplar = [];
-  SORULAR.forEach(s => {
-    let g = gruplar.find(x => x.ad === s.grup);
-    if (!g) { g = { ad: s.grup, sorular: [] }; gruplar.push(g); }
-    g.sorular.push(s);
-  });
-  document.getElementById("panel-sihirbaz").innerHTML =
-    '<div class="card"><h2>Uygunluk sihirbazı</h2><p class="lead">Yalnız karar değiştiren sorular sorulur. Her seçim, öneri sırasını ve uygunluk durumlarını anında yeniden hesaplar.</p></div>' +
-    gruplar.map(g => '<div class="card"><h3>' + kacis(g.ad) + "</h3>" + g.sorular.map(s => {
-      const secili = durum.profil[s.id];
-      return '<fieldset><legend>' + kacis(s.soru) + "</legend>" +
-        '<p class="hint">' + kacis(s.neden) + "</p>" +
-        '<div class="choice" role="group" aria-label="' + kacis(s.soru) + '">' +
-        s.secenekler.map(o => '<button type="button" data-soru="' + s.id + '" data-deger="' + o.v + '" aria-pressed="' + (secili === o.v) + '">' + kacis(o.ad) + "</button>").join("") +
-        "</div></fieldset>";
-    }).join("") + "</div>").join("") +
+const VARSAYIM_ALANLARI = [
+  { id: "argeUygunMaliyet", ad: "Toplam savunulabilir Ar-Ge maliyeti (TL)", ipucu: "Tüm Ar-Ge projelerinin ortak havuzu. Tahsislerin toplamı bu tutarı aşamaz.", cekirdek: true, kosul: () => true },
+  { id: "argeTahsis1501", ad: "1501 projesine tahsis (TL)", ipucu: "1501 hibesi yalnız bu tutardan hesaplanır.", cekirdek: true, kosul: () => true },
+  { id: "argeTahsis1507", ad: "1507 projesine tahsis (TL)", ipucu: "Ayrı bir proje tanımlanmadıysa 0 bırakın. 3.500.000 TL proje bütçesi tavanına tabidir.", cekirdek: true, kosul: () => true },
+  { id: "siparisProjeButcesi", ad: "Siparişe dayalı proje bütçesi (TL)", ipucu: "Müşteri en az %40, kurum %40, tedarikçi %20 üstlenir.",
+    kosul: p => p.musteriNiyet === "imzali", kapaliNot: "İlişkisiz müşteriden imzalı niyet mektubu gelmeden bu bütçe sorulmaz." },
+  { id: "yurtDisiPazarlamaGideri", ad: "Yurt dışı reklam, tanıtım ve pazarlama gideri (TL)", ipucu: "Yalnız yurt dışına yönelik ve kapsama alım tarihinden sonraki gider.",
+    kosul: p => p.dysKayit === "var", kapaliNot: "Destek Yönetim Sistemi kaydı olmadan hizmet ihracatı kalemleri sorulmaz." },
+  { id: "barindirmaGideri", ad: "Barındırma (hosting) gideri (TL)", ipucu: "Pazarlama giderinden ayrı tutulur.",
+    kosul: p => p.dysKayit === "var", kapaliNot: "Destek Yönetim Sistemi kaydı olmadan hizmet ihracatı kalemleri sorulmaz." },
+  { id: "kosgebSinaiMulkiyetGideri", ad: "Sınai mülkiyet tescil gideri (TL)", ipucu: "İşletme geliştirme hibesinin sınai mülkiyet kalemi için fiilî gider.",
+    kosul: p => p.kosgebKayit === "var", kapaliNot: "KOSGEB veri tabanı kaydı olmadan KOSGEB kalemleri sorulmaz." },
+  { id: "kosgebBelgelendirmeGideri", ad: "Belgelendirme gideri (TL)", ipucu: "İşletme geliştirme hibesinin belgelendirme kalemi için fiilî gider.",
+    kosul: p => p.kosgebKayit === "var", kapaliNot: "KOSGEB veri tabanı kaydı olmadan KOSGEB kalemleri sorulmaz." },
+  { id: "kosgebTestGideri", ad: "Test ve analiz gideri (TL)", ipucu: "İşletme geliştirme hibesinin test kalemi için fiilî gider.",
+    kosul: p => p.kosgebKayit === "var", kapaliNot: "KOSGEB veri tabanı kaydı olmadan KOSGEB kalemleri sorulmaz." },
+  { id: "kosgebDanismanlikGideri", ad: "Dijital dönüşüm danışmanlığı gideri (TL)", ipucu: "İşletme geliştirme hibesinin danışmanlık kalemi için fiilî gider.",
+    kosul: p => p.kosgebKayit === "var", kapaliNot: "KOSGEB veri tabanı kaydı olmadan KOSGEB kalemleri sorulmaz." },
+  { id: "asgariUcretDestekliAyKadro", ad: "Asgari ücret desteğinden yararlanacak çalışan sayısı", ipucu: "Tüm kadroya otomatik uygulanacağı varsayılmaz.",
+    kosul: p => p.calisanSayisi !== "sifir", kapaliNot: "Sigortalı çalışan yokken istihdam teşviki tutarı doğmaz." },
+  { id: "isbasiEgitimKatilimci", ad: "İşbaşı eğitim katılımcı sayısı", ipucu: "Ödeme katılımcıya yapılır; şirket kasasına girmez.",
+    kosul: p => p.sirketKuruldu === "evet", kapaliNot: "İşbaşı eğitim sözleşmesi işveren dosyası ister." },
+  { id: "isbasiEgitimAy", ad: "İşbaşı eğitim süresi (ay)", ipucu: "Nakit tasarrufu hesabı için.",
+    kosul: p => p.sirketKuruldu === "evet", kapaliNot: "İşbaşı eğitim sözleşmesi işveren dosyası ister." }
+];
+
+const sihirbaz = { imlec: null, ekran: "soru" };
+
+function gorunurSorular(profil) {
+  return SORULAR.filter(s => !soruKilidi(s.id, profil).kilitli);
+}
+
+function sihirbazImleci() {
+  const liste = gorunurSorular(durum.profil);
+  if (!liste.length) return null;
+  return liste.find(s => s.id === sihirbaz.imlec) || liste[0];
+}
+
+function sihirbazIlerle(yon) {
+  const liste = gorunurSorular(durum.profil);
+  const simdiki = sihirbazImleci();
+  if (!simdiki) { sihirbaz.ekran = "ozet"; return; }
+  const i = liste.findIndex(s => s.id === simdiki.id);
+  const hedef = i + yon;
+  if (hedef < 0) { sihirbaz.imlec = liste[0].id; return; }
+  if (hedef >= liste.length) { sihirbaz.ekran = "ozet"; return; }
+  sihirbaz.imlec = liste[hedef].id;
+  sihirbaz.ekran = "soru";
+}
+
+function sihirbazaGit(soruId) {
+  sihirbaz.imlec = soruId;
+  sihirbaz.ekran = "soru";
+  sekmeSec("sihirbaz", true);
+  ciz(["sihirbaz"]);
+  urlYaz(false);
+}
+
+function acikVarsayimlar() { return VARSAYIM_ALANLARI.filter(v => v.kosul(durum.profil)); }
+function kapaliVarsayimlar() { return VARSAYIM_ALANLARI.filter(v => !v.kosul(durum.profil)); }
+
+function sihirbazSoruEkraniHtml() {
+  const liste = gorunurSorular(durum.profil);
+  const soru = sihirbazImleci();
+  if (!soru) {
+    return '<div class="card sh"><h2 class="sh-soru">Cevaplanacak soru kalmadı</h2>' +
+      '<p class="sh-neden">Mevcut koşullarda sorulabilecek soru yok. Özet ekranından varsayımları girebilir veya sonuca geçebilirsiniz.</p>' +
+      '<div class="sh-alt"><button class="btn primary" type="button" data-shozet="1">Özete git</button></div></div>';
+  }
+  const sira = liste.findIndex(s => s.id === soru.id);
+  const toplam = liste.length;
+  const yuzde = Math.round((sira + 1) / toplam * 100);
+  const k = soruKilidi(soru.id, durum.profil);
+  const atlanan = SORULAR.length - toplam;
+  const secili = durum.profil[soru.id];
+  return '<div class="card sh">' +
+    '<div class="sh-ust"><div class="sh-sayac"><b>Soru ' + (sira + 1) + " / " + toplam + "</b><span>" + kacis(soru.grup) + "</span></div>" +
+    '<div class="sh-ilerleme" role="progressbar" aria-valuenow="' + yuzde + '" aria-valuemin="0" aria-valuemax="100" aria-label="Sihirbaz ilerlemesi"><i style="width:' + yuzde + '%"></i></div></div>' +
+    '<h2 class="sh-soru">' + kacis(soru.soru) + "</h2>" +
+    '<p class="sh-neden">' + kacis(soru.neden) + "</p>" +
+    (k.yasakli.length ? '<div class="note small"><strong>Koşul.</strong> ' + kacis(k.sebep) + "</div>" : "") +
+    '<div class="sh-secenekler" role="group" aria-label="' + kacis(soru.soru) + '">' +
+    soru.secenekler.map(o => {
+      const kullanilabilir = secenekKullanilabilir(soru.id, o.v, durum.profil);
+      return '<button type="button" data-soru="' + soru.id + '" data-deger="' + o.v + '" aria-pressed="' + (secili === o.v) + '"' +
+        (kullanilabilir ? "" : ' disabled aria-disabled="true" title="Bu seçenek mevcut koşullarda geçerli değil"') +
+        '><span class="sh-isaret" aria-hidden="true">✓</span><span>' + kacis(o.ad) + "</span></button>";
+    }).join("") + "</div>" +
+    '<div class="sh-alt">' +
+      (sira > 0 ? '<button class="btn" type="button" data-shgeri="1">Geri</button>' : "") +
+      '<button class="btn" type="button" data-shileri="1">' + (sira + 1 === toplam ? "Özete geç" : "Şimdilik atla") + "</button>" +
+      '<button class="btn" type="button" data-shozet="1">Tüm cevapları gör</button>' +
+    "</div>" +
+    (atlanan ? '<p class="sh-atlanan">' + atlanan + " soru bugünkü koşullarda sorulmuyor: bir kayıt, belge veya statü ancak onu doğuran koşul gerçekleştikten sonra var olabilir. Koşul sağlandığında bu sorular akışa kendiliğinden girer.</p>" : "") +
+    "</div>";
+}
+
+function sihirbazOzetEkraniHtml() {
+  const liste = gorunurSorular(durum.profil);
+  const kilitli = SORULAR.filter(s => soruKilidi(s.id, durum.profil).kilitli);
+  const acik = acikVarsayimlar();
+  const kapali = kapaliVarsayimlar();
+  const cekirdek = acik.filter(v => v.cekirdek);
+  const kosullu = acik.filter(v => !v.cekirdek);
+  return '<div class="card sh">' +
+    '<div class="sh-sayac"><b>Cevap özeti</b><span>' + liste.length + " soru cevaplandı</span></div>" +
+    '<div class="sh-ilerleme"><i style="width:100%"></i></div>' +
+    liste.map(s => {
+      const o = s.secenekler.find(x => x.v === durum.profil[s.id]);
+      return '<div class="sh-ozet-satir"><div><div class="s">' + kacis(s.soru) + '</div><div class="c">' + kacis(o ? o.ad : "—") + "</div></div>" +
+        '<button class="btn sm" type="button" data-shgit="' + s.id + '">Değiştir</button></div>';
+    }).join("") +
+    "</div>" +
+    (kilitli.length
+      ? '<div class="card"><h3>Sorulmayan ' + kilitli.length + " soru</h3>" +
+        '<p class="lead">Bunlar tercih değil, koşul sonucudur. Kilidi açan koşul sağlandığında soru akışa girer.</p>' +
+        kilitli.map(s => {
+          const k = soruKilidi(s.id, durum.profil);
+          const o = s.secenekler.find(x => x.v === durum.profil[s.id]);
+          return '<div class="sh-ozet-satir"><div><div class="s">' + kacis(s.soru) + '</div><div class="c">' + kacis(o ? o.ad : "—") + " " + rozet("mute", "zorunlu değer") + '</div><div class="s">' + kacis(k.sebep) + "</div></div></div>";
+        }).join("") + "</div>"
+      : "") +
     '<div class="card"><h3>Ar-Ge maliyet havuzu ve proje tahsisleri</h3>' +
-    '<p class="lead">Tek bir Ar-Ge maliyet havuzu iki programa birden yazılamaz. Havuzu projelere bölün: her program yalnız kendi tahsisinden hesaplar. Varsayılan dağılımda havuzun tamamı 1501 projesine tahsis edilir ve 1507 tahsisi 0 TL\'dir.</p>' +
-    '<div class="note">1501 ve 1507 program düzeyinde birbirini dışlamaz. Gerçekten farklı iki proje ve iki ayrı gider defteri tanımlanırsa, kuruluş başına toplam iki proje önerisi kotası içinde ikisine birden başvurulabilir. Aynı gideri iki yere yazmak ise çift finansmandır.</div>' +
-    '<div class="grid two">' +
-      parametreAlani("argeUygunMaliyet", "Toplam savunulabilir Ar-Ge maliyeti (TL)", "Tüm Ar-Ge projelerinin ortak havuzu. Tahsislerin toplamı bu tutarı aşamaz.") +
-      parametreAlani("argeTahsis1501", "1501 projesine tahsis (TL)", "1501 hibesi yalnız bu tutardan hesaplanır.") +
-      parametreAlani("argeTahsis1507", "1507 projesine tahsis (TL)", "Ayrı bir proje tanımlanmadıysa 0 bırakın. 3.500.000 TL proje bütçesi tavanına tabidir.") +
-    "</div>" + tahsisUyarisiHtml() + "</div>" +
-    '<div class="card"><h3>Diğer hesaplama varsayımları</h3><p class="lead">Bu değerler gerçekçi tutar hesabında kullanılır. Hiçbiri resmî bir taahhüt değildir; değiştirdiğinizde tüm tutarlar yeniden hesaplanır. Girilen tutar, ilgili programın uygun gider tanımına ve oranına resmî olarak oturmuyorsa tutar üretilmez.</p>' +
-    '<div class="grid two">' +
-      parametreAlani("siparisProjeButcesi", "Siparişe dayalı proje bütçesi (TL)", "Müşteri en az %40, kurum %40, tedarikçi %20 üstlenir.") +
-      parametreAlani("yurtDisiPazarlamaGideri", "Yurt dışı reklam, tanıtım ve pazarlama gideri (TL)", "Yalnız yurt dışına yönelik ve kapsama alım tarihinden sonraki gider. Bilişim ve dijital aracılık sınıflarında farklı işlem görür.") +
-      parametreAlani("barindirmaGideri", "Barındırma (hosting) gideri (TL)", "Pazarlama giderinden ayrı tutulur; dijital aracılık sınıfında sektörel kalemlerden yalnız bu kalem açıktır.") +
-      parametreAlani("kosgebSinaiMulkiyetGideri", "Sınai mülkiyet tescil gideri (TL)", "İşletme geliştirme hibesinin sınai mülkiyet kalemi için fiilî gider.") +
-      parametreAlani("kosgebBelgelendirmeGideri", "Belgelendirme gideri (TL)", "İşletme geliştirme hibesinin belgelendirme kalemi için fiilî gider.") +
-      parametreAlani("kosgebTestGideri", "Test ve analiz gideri (TL)", "İşletme geliştirme hibesinin test kalemi için fiilî gider.") +
-      parametreAlani("kosgebDanismanlikGideri", "Dijital dönüşüm danışmanlığı gideri (TL)", "İşletme geliştirme hibesinin danışmanlık kalemi için fiilî gider.") +
-      parametreAlani("asgariUcretDestekliAyKadro", "Asgari ücret desteğinden yararlanacak çalışan sayısı", "Tüm kadroya otomatik uygulanacağı varsayılmaz.") +
-      parametreAlani("isbasiEgitimKatilimci", "İşbaşı eğitim katılımcı sayısı", "Ödeme katılımcıya yapılır; şirket kasasına girmez.") +
-      parametreAlani("isbasiEgitimAy", "İşbaşı eğitim süresi (ay)", "Nakit tasarrufu hesabı için.") +
+    '<p class="lead">Tek bir Ar-Ge maliyet havuzu iki programa birden yazılamaz. Havuzu projelere bölün: her program yalnız kendi tahsisinden hesaplar.</p>' +
+    '<div class="grid two">' + cekirdek.map(v => parametreAlani(v.id, v.ad, v.ipucu)).join("") + "</div>" +
+    tahsisUyarisiHtml() + "</div>" +
+    (kosullu.length
+      ? '<div class="card"><h3>Koşulların açtığı varsayımlar</h3>' +
+        '<p class="lead">Bu alanlar yalnız cevaplarınız onları anlamlı kıldığı için soruluyor.</p>' +
+        '<div class="grid two">' + kosullu.map(v => parametreAlani(v.id, v.ad, v.ipucu)).join("") + "</div></div>"
+      : "") +
+    (kapali.length
+      ? '<div class="card"><h3>Şu an sorulmayan ' + kapali.length + " varsayım</h3>" +
+        '<p class="lead">Koşulu sağlanmadığı için akışta yer almaz. Yine de bir bağlantıyla gelen değeri görmek veya düzeltmek isterseniz açabilirsiniz.</p>' +
+        '<details class="grafik-yedek"><summary>Kapalı varsayımları göster</summary>' +
+        kapali.map(v => '<div class="note small"><strong>' + kacis(v.ad) + ":</strong> " + kacis(v.kapaliNot || "") + "</div>" + parametreAlani(v.id, v.ad, v.ipucu)).join("") +
+        "</details></div>"
+      : "") +
+    '<div class="card"><div class="sh-alt">' +
+    '<button class="btn primary" type="button" data-sekme="sonuc">Sonucu gör</button>' +
+    '<button class="btn" type="button" data-shgit="' + (liste.length ? liste[0].id : "") + '">Baştan gözden geçir</button>' +
     "</div></div>";
+}
+
+function cizSihirbaz() {
+  const kilitliSayisi = kilitliSoruSayisi(durum.profil);
+  const toplam = gorunurSorular(durum.profil).length;
+  document.getElementById("panel-sihirbaz").innerHTML =
+    '<div class="bolum-bas"><div><h2>1 · Durumu tanımla</h2>' +
+    "<p>Tek seferde tek soru; dokununca kaydedilir ve akış ilerler. Bugün <strong>" + toplam +
+    "</strong> soru soruluyor, <strong>" + kilitliSayisi + "</strong> soru koşul gereği sorulmuyor.</p></div>" +
+    '<div class="arac-satiri no-print" style="margin:0">' +
+    '<button class="btn sm" type="button" data-sekme="senaryo">Hazır senaryo seç</button>' +
+    '<button class="btn sm" type="button" data-sekme="sonuc">Sonucu gör</button></div></div>' +
+    (sihirbaz.ekran === "ozet" ? sihirbazOzetEkraniHtml() : sihirbazSoruEkraniHtml());
 }
 function tahsisUyarisiHtml() {
   const d = tahsisleriDenkle(durum.parametre);
@@ -3769,6 +3980,74 @@ function tahsisUyarisiHtml() {
 function parametreAlani(id, etiket, ipucu) {
   const sinir = PARAMETRE_SINIRI[id] || AZAMI_ODUL_TAVANI;
   return '<div><label for="par-' + id + '">' + kacis(etiket) + '</label><input type="number" inputmode="numeric" min="0" max="' + sinir + '" step="1" id="par-' + id + '" data-parametre="' + id + '" value="' + (durum.parametre[id] || 0) + '"><p class="hint">' + kacis(ipucu) + " Üst sınır " + tl(sinir) + ".</p></div>";
+}
+
+const KURULUS_SARTI = p => p.sirketKuruldu === "evet";
+
+const SORU_KOSULLARI = {
+  nace: { gerek: KURULUS_SARTI, zorunlu: "yok",
+    sebep: "NACE kodu ticaret sicilinde tescille doğar. Tescil yokken tescilli kod da yoktur." },
+  kobiBeyani: { gerek: KURULUS_SARTI, zorunlu: "yok",
+    sebep: "KOBİ beyannamesi işletme adına verilir; tüzel kişilik olmadan düzenlenemez." },
+  eimzaProdis: { gerek: KURULUS_SARTI, zorunlu: "yok",
+    sebep: "TÜBİTAK kaydı kuruluş bazlıdır ve elektronik imza tüzel kişilik adına üretilir. Şirket yokken ikisi de var olamaz." },
+  kosgebKayit: { gerek: KURULUS_SARTI, zorunlu: "yok",
+    sebep: "KOSGEB veri tabanı kaydı işletme kaydıdır; tescil öncesi açılamaz." },
+  dysKayit: { gerek: KURULUS_SARTI, zorunlu: "yok",
+    sebep: "Destek Yönetim Sistemi kaydı firma adına yapılır; tescil öncesi yapılamaz." },
+  vergiSgkBorc: { gerek: KURULUS_SARTI, zorunlu: "yok",
+    sebep: "Mükellefiyet kuruluşla başlar. Şirket yokken vergi veya SGK borcu da oluşamaz." },
+  calisanSayisi: { gerek: KURULUS_SARTI, zorunlu: "sifir",
+    sebep: "Sigortalı çalışan işveren dosyasıyla bildirilir; işveren dosyası kuruluşla açılır." },
+  teknogirisimRozeti: { gerek: KURULUS_SARTI, zorunlu: "yok",
+    sebep: "Teknogirişim Rozeti teknoloji tabanlı şirkete verilir; başvuru tüzel kişilik ister." },
+  ihracatFaturasi: { gerek: KURULUS_SARTI, zorunlu: "yok",
+    sebep: "Fatura ancak mükellef bir işletme tarafından kesilir." },
+  teknopark: { yasakli: p => KURULUS_SARTI(p) ? [] : ["var"], zorunlu: "yok",
+    sebep: "Bölgeye giriş sözleşmesi tüzel kişiyle imzalanır. Kuruluş öncesinde en fazla değerlendirme aşamasında olunabilir." },
+  konsorsiyum: { gerek: KURULUS_SARTI, yasakli: p => p.universiteOrtak === "var" ? [] : ["var"], zorunlu: "yok",
+    sebep: p => KURULUS_SARTI(p)
+      ? "Dört taraflı yapay zekâ konsorsiyumu üniversite veya kamu araştırma merkezi ortağı olmadan kurulamaz. Önce üniversite ortağı sorusu evetlenmelidir."
+      : "Konsorsiyumda KOBİ tedarikçi rolünü şirket üstlenir; tüzel kişilik olmadan taraf olunamaz." },
+  musteriNiyet: { yasakli: p => KURULUS_SARTI(p) ? [] : ["imzali"], zorunlu: "gorusme",
+    sebep: "Niyet mektubu şirketle imzalanır. Kuruluş öncesinde en fazla görüşme aşamasında olunabilir." },
+  teminatKapasitesi: { yasakli: p => KURULUS_SARTI(p) ? [] : ["var"], zorunlu: "bilinmiyor",
+    sebep: "Kesin teminat mektubu tüzel kişi adına düzenlenir; tescil öncesi kapasite beyan edilemez." }
+};
+
+function soruKilidi(soruId, profil) {
+  const kosul = SORU_KOSULLARI[soruId];
+  if (!kosul) return { kilitli: false, yasakli: [], sebep: "", zorunlu: null };
+  const kilitli = typeof kosul.gerek === "function" && !kosul.gerek(profil);
+  const yasakli = kilitli ? [] : (typeof kosul.yasakli === "function" ? kosul.yasakli(profil) : []);
+  const sebep = typeof kosul.sebep === "function" ? kosul.sebep(profil) : kosul.sebep;
+  return { kilitli, yasakli, sebep, zorunlu: kosul.zorunlu };
+}
+
+function secenekKullanilabilir(soruId, deger, profil) {
+  const k = soruKilidi(soruId, profil);
+  if (k.kilitli) return deger === k.zorunlu;
+  return k.yasakli.indexOf(deger) < 0;
+}
+
+function profilKosullariUygula(profil) {
+  const degisen = [];
+  for (let tur = 0; tur < 3; tur++) {
+    let dokundu = false;
+    Object.keys(SORU_KOSULLARI).forEach(id => {
+      if (secenekKullanilabilir(id, profil[id], profil)) return;
+      const k = soruKilidi(id, profil);
+      profil[id] = k.zorunlu;
+      if (degisen.indexOf(id) < 0) degisen.push(id);
+      dokundu = true;
+    });
+    if (!dokundu) break;
+  }
+  return degisen;
+}
+
+function kilitliSoruSayisi(profil) {
+  return Object.keys(SORU_KOSULLARI).filter(id => soruKilidi(id, profil).kilitli).length;
 }
 
 function soruEtiketi(soruId, deger) {
@@ -4119,9 +4398,9 @@ function cizPano() {
       return '<div class="card"><div class="split"><div><h3>' + kacis(p.ad) + '</h3><div class="prog-inst">' + kacis(p.kurum) + " · sorumlu rol: " + kacis(bilgi.rol) + "</div></div>" +
         "<span>" + durumRozeti(s.durum) + " " + rozet(bilgi.tier.sinif, bilgi.tier.ad) + " " + rozet(UYUM_ETIKETLERI[s.uyum.seviye].sinif, UYUM_ETIKETLERI[s.uyum.seviye].ad) + "</span></div>" +
         '<div class="prog-nums">' +
-          '<div><div class="k">Sıradaki eylem</div><div class="v" style="font-size:.8125rem;font-weight:560">' + kacis(bilgi.sonrakiEylem) + "</div></div>" +
-          '<div><div class="k">Tarih</div><div class="v" style="font-size:.8125rem;font-weight:560">' + kacis(bilgi.tarih) + "</div></div>" +
-          '<div><div class="k">Kanıt hazırlığı</div><div class="v" style="font-size:.8125rem;font-weight:560">' + kacis(bilgi.kanit) + "</div></div>" +
+          '<div><div class="k">Sıradaki eylem</div><div class="v v-metin">' + kacis(bilgi.sonrakiEylem) + "</div></div>" +
+          '<div><div class="k">Tarih</div><div class="v v-metin">' + kacis(bilgi.tarih) + "</div></div>" +
+          '<div><div class="k">Kanıt hazırlığı</div><div class="v v-metin">' + kacis(bilgi.kanit) + "</div></div>" +
         "</div>" +
         (bilgi.uyari.length ? '<div class="note warn small"><strong>Birlikte kullanım uyarısı:</strong> ' + kacis(bilgi.uyari.join(", ")) + " ile aynı anda kullanılamaz.</div>" : "") +
         '<div class="grid two" style="margin-top:.5rem">' +
@@ -4983,6 +5262,7 @@ function senaryoUygula(id) {
   if (!s) return;
   durum.senaryo = id;
   durum.profil = Object.assign({}, VARSAYILAN_PROFIL, s.profil || {});
+  profilKosullariUygula(durum.profil);
   durum.parametre = tahsisleriDenkle(Object.assign({}, VARSAYILAN_PARAMETRE, s.parametre || {})).parametre;
   naceProfilSenkron();
   gunlugeYaz("senaryo", "Senaryo uygulandı: " + s.ad + ".");
@@ -5146,6 +5426,8 @@ function urlAlanlari(tamKapsam) {
   ekle("v", URL_SURUMU);
   ekle("s", durum.aktifSekme);
   ekle("sn", durum.senaryo);
+  if (sihirbaz.ekran === "ozet") ekle("q", "ozet");
+  else if (sihirbaz.imlec && urlGuvenliMi(sihirbaz.imlec)) ekle("q", sihirbaz.imlec);
 
   ekle("p", haritaKodla(durum.profil, (k, v) => !tamKapsam && ref.profil[k] === v));
   ekle("pr", haritaKodla(durum.parametre, (k, v) => tamKapsam ? !v : ref.parametre[k] === v));
@@ -5217,6 +5499,11 @@ function sorgudanFiltreUygula(sorgu) {
     if (urlGuvenliMi(v)) cizSiralama[eslesme[k]] = v;
   });
   if (sorgu.has("fkr")) cizSiralama.kurum = kurumCoz(sorgu.get("fkr"));
+  if (sorgu.has("q")) {
+    const q = sorgu.get("q");
+    if (q === "ozet") { sihirbaz.ekran = "ozet"; sihirbaz.imlec = null; }
+    else if (SORULAR.some(s => s.id === q)) { sihirbaz.ekran = "soru"; sihirbaz.imlec = q; }
+  }
 }
 
 function urlDurumuCoz(sorgu) {
@@ -5569,14 +5856,33 @@ function olaylariBagla() {
     if (soru) {
       const soruId = soru.getAttribute("data-soru"), deger = soru.getAttribute("data-deger");
       if (!PROFIL_ENUMLARI[soruId] || PROFIL_ENUMLARI[soruId].indexOf(deger) < 0) return;
+      if (!secenekKullanilabilir(soruId, deger, durum.profil)) {
+        bildir("Bu seçenek mevcut koşullarda geçerli değil: " + soruKilidi(soruId, durum.profil).sebep);
+        return;
+      }
       durum.profil[soruId] = deger;
+      const zincirleme = profilKosullariUygula(durum.profil);
       gunlugeYaz("profil", "Uygunluk cevabı güncellendi: " + soruId + " = " + deger + ".");
+      if (zincirleme.length) gunlugeYaz("profil_kosul", "Koşul gereği sabitlenen cevap sayısı: " + zincirleme.length + ".");
+      sihirbaz.imlec = soruId;
+      sihirbazIlerle(1);
       tumunuGuncelle();
-      const yeniden = document.querySelector('[data-soru="' + soruId + '"][data-deger="' + deger + '"]');
-      if (yeniden) yeniden.focus();
-      bildir("Cevap güncellendi; sıralama ve uygunluk yeniden hesaplandı.");
+      const odak = document.querySelector("#panel-sihirbaz .sh-secenekler button:not([disabled])") ||
+        document.querySelector("#panel-sihirbaz .sh-alt .btn");
+      if (odak) odak.focus();
+      bildir(zincirleme.length
+        ? "Cevap kaydedildi. " + zincirleme.length + " soru koşul gereği akıştan çıktı veya zorunlu değere sabitlendi."
+        : "Cevap kaydedildi; sıradaki soruya geçildi.");
       return;
     }
+    const shGeri = e.target.closest("[data-shgeri]");
+    if (shGeri) { sihirbazIlerle(-1); ciz(["sihirbaz"]); urlYaz(false); return; }
+    const shIleri = e.target.closest("[data-shileri]");
+    if (shIleri) { sihirbazIlerle(1); ciz(["sihirbaz"]); urlYaz(false); return; }
+    const shOzet = e.target.closest("[data-shozet]");
+    if (shOzet) { sihirbaz.ekran = "ozet"; ciz(["sihirbaz"]); urlYaz(false); window.scrollTo(0, 0); return; }
+    const shGit = e.target.closest("[data-shgit]");
+    if (shGit) { sihirbazaGit(shGit.getAttribute("data-shgit")); window.scrollTo(0, 0); return; }
     const naceRol = e.target.closest("[data-nacerol]");
     if (naceRol) { naceRolAta(naceRol.getAttribute("data-nacekod"), naceRol.getAttribute("data-nacerol")); return; }
     const sektor = e.target.closest("[data-sektor]");
@@ -5758,6 +6064,12 @@ function olaylariBagla() {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     if (mq.addEventListener) mq.addEventListener("change", () => { if (durum.aktifSekme === "analitik") grafikleriKur(); });
   }
+  document.getElementById("btnAracMenu").addEventListener("click", () => {
+    const kabuk = document.getElementById("uygulamaKabuk");
+    const acik = kabuk.getAttribute("data-arac") === "acik";
+    kabuk.setAttribute("data-arac", acik ? "kapali" : "acik");
+    document.getElementById("btnAracMenu").setAttribute("aria-expanded", String(!acik));
+  });
   document.getElementById("btnPaylas").addEventListener("click", paylasAc);
   document.getElementById("paylasKapatDugmesi").addEventListener("click", paylasKapat);
   document.getElementById("paylasDialog").addEventListener("click", e => { if (e.target.id === "paylasDialog") paylasKapat(); });
