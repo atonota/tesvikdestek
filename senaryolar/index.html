@@ -633,7 +633,8 @@ dialog[open]{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;max-width:
   .ara-dugme span:not([aria-hidden]),.ara-dugme kbd{display:inline}
   .yolharita .ya{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .yolharita button{min-width:0}
-  .sayfa{padding:calc(var(--u)*3)}
+  .sayfa{padding:calc(var(--u)*3);max-width:none}
+  .bolum-bas p,.lead,.card>p,.kart-govde>p,.note{max-width:100ch}
   .card{padding:calc(var(--u)*2.5)}
   .tile{padding:calc(var(--u)*2)}
   .tile .n{display:block}
@@ -655,7 +656,7 @@ dialog[open]{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;max-width:
   .tablewrap td::before{content:none}
   .tablewrap tr:not(.satir-acildi) td[data-ikincil]{display:table-cell}
   .satir-ac{display:none}
-  .tablewrap td.num{text-align:start;white-space:nowrap}
+  .tablewrap td.num{text-align:start;white-space:normal;overflow-wrap:anywhere}
   .prog-nums{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (min-width:1080px){
