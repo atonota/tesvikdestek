@@ -3207,8 +3207,9 @@ function durumNormalle(ham) {
 
   if (duzNesneMi(ham.parametre)) {
     Object.keys(ham.parametre).forEach(k => {
-      if (!guvenliAnahtar(k) || !(k in VARSAYILAN_PARAMETRE)) { uyari.push("parametre." + k); return; }
-      const n = sayiNormalle(ham.parametre[k], PARAMETRE_SINIRI[k] || AZAMI_ODUL_TAVANI);
+      if (!guvenliAnahtar(k) || !Object.prototype.hasOwnProperty.call(VARSAYILAN_PARAMETRE, k)) { uyari.push("parametre." + k); return; }
+      const sinir = Object.prototype.hasOwnProperty.call(PARAMETRE_SINIRI, k) ? PARAMETRE_SINIRI[k] : AZAMI_ODUL_TAVANI;
+      const n = sayiNormalle(ham.parametre[k], sinir);
       if (n === null) uyari.push("parametre." + k);
       else sonuc.parametre[k] = n;
     });
@@ -3285,10 +3286,11 @@ function durumNormalle(ham) {
         else uyari.push("nace.sektorler");
       });
     }
-    if (alinan.birincil) {
-      sonuc.nace.birincil = alinan.birincil;
-      sonuc.nace.ikincil = alinan.ikincil.filter(k => k !== alinan.birincil);
-      sonuc.nace.uykuda = alinan.uykuda.filter(k => k !== alinan.birincil && sonuc.nace.ikincil.indexOf(k) < 0);
+    const birincil = alinan.birincil || sonuc.nace.birincil;
+    if (birincil) {
+      sonuc.nace.birincil = birincil;
+      sonuc.nace.ikincil = alinan.ikincil.filter(k => k !== birincil);
+      sonuc.nace.uykuda = alinan.uykuda.filter(k => k !== birincil && sonuc.nace.ikincil.indexOf(k) < 0);
       sonuc.nace.sektorler = alinan.sektorler.length ? alinan.sektorler : sektorlerdenTuret(sonuc.nace);
     }
   } else if (ham.nace !== undefined) uyari.push("nace");
@@ -5428,14 +5430,15 @@ function kurumListesi() {
   PROGRAMLAR.forEach(p => { if (kurumlar.indexOf(p.kurum) < 0) kurumlar.push(p.kurum); });
   return kurumlar.sort();
 }
+const TURKCE_HARFLER = { "ç": "c", "ğ": "g", "ı": "i", "ö": "o", "ş": "s", "ü": "u", "Ç": "C", "Ğ": "G", "İ": "I", "Ö": "O", "Ş": "S", "Ü": "U" };
 function kurumKodla(kurum) {
-  const i = kurumListesi().indexOf(kurum);
-  return i < 0 ? "hepsi" : "k" + i;
+  if (!kurum || kurum === "hepsi") return "hepsi";
+  const kod = String(kurum).replace(/[çğıöşüÇĞİÖŞÜ]/g, c => TURKCE_HARFLER[c]).replace(/[^A-Za-z0-9]/g, "").slice(0, 28);
+  return kod || "hepsi";
 }
 function kurumCoz(kod) {
-  if (!/^k\d+$/.test(String(kod))) return "hepsi";
-  const kurum = kurumListesi()[Number(String(kod).slice(1))];
-  return kurum === undefined ? "hepsi" : kurum;
+  if (!kod || kod === "hepsi") return "hepsi";
+  return kurumListesi().find(k => kurumKodla(k) === kod) || "hepsi";
 }
 
 function siralamaFiltreleri() {
@@ -5460,7 +5463,7 @@ function urlAlanlari(tamKapsam) {
   else if (sihirbaz.imlec && urlGuvenliMi(sihirbaz.imlec)) ekle("q", sihirbaz.imlec);
 
   ekle("p", haritaKodla(durum.profil, (k, v) => !tamKapsam && ref.profil[k] === v));
-  ekle("pr", haritaKodla(durum.parametre, (k, v) => tamKapsam ? !v : ref.parametre[k] === v));
+  ekle("pr", haritaKodla(durum.parametre, (k, v) => tamKapsam ? false : ref.parametre[k] === v));
 
   if (tamKapsam || !aynıMı(durum.nace, ref.nace)) {
     ekle("nb", urlGuvenliMi(durum.nace.birincil) ? durum.nace.birincil : "");
@@ -5496,11 +5499,12 @@ function sorgudanHamDurum(sorgu) {
   const ham = {
     uygulama: UYGULAMA_KIMLIGI, surum: SEMA_SURUMU,
     profil: temel.profil, parametre: temel.parametre, nace: temel.nace,
-    pano: {}, panoNot: {}, odul: {}, yigin: {}, kanit: {},
-    gunluk: [], oneriler: [], gorunum: temel.gorunum, notlariPaylas: false, senaryo: temel.senaryo
+    pano: {}, odul: {}, yigin: {}, kanit: {},
+    gorunum: temel.gorunum, senaryo: temel.senaryo
   };
+  URL_DISI_ALANLAR.forEach(alan => { ham[alan] = durum[alan]; });
   if (sorgu.has("p")) Object.assign(ham.profil, haritaCoz(sorgu.get("p")));
-  if (sorgu.has("pr")) Object.assign(ham.parametre, haritaCoz(sorgu.get("pr"), v => Number(v)));
+  if (sorgu.has("pr")) Object.assign(ham.parametre, haritaCoz(sorgu.get("pr"), v => v === "" ? null : Number(v)));
   if (sorgu.has("nb") || sorgu.has("ni") || sorgu.has("nu") || sorgu.has("nk")) {
     ham.nace = {
       birincil: sorgu.get("nb") || temel.nace.birincil,
@@ -5515,25 +5519,32 @@ function sorgudanHamDurum(sorgu) {
   }
   if (sorgu.has("kn")) listeCoz(sorgu.get("kn")).forEach(k => { if (guvenliAnahtar(k)) ham.kanit[k] = true; });
   if (sorgu.has("pn")) ham.pano = haritaCoz(sorgu.get("pn"));
-  if (sorgu.has("od")) ham.odul = haritaCoz(sorgu.get("od"), v => Number(v));
+  if (sorgu.has("od")) ham.odul = haritaCoz(sorgu.get("od"), v => v === "" ? null : Number(v));
   if (sorgu.has("gv")) ham.gorunum = sorgu.get("gv");
   if (sorgu.has("s")) ham.aktifSekme = sorgu.get("s");
   return ham;
 }
 
+function filtreGecerli(alan, deger) {
+  if (deger === "hepsi") return true;
+  if (alan === "kategori") return Object.prototype.hasOwnProperty.call(KATEGORI_ETIKET, deger);
+  if (alan === "durumFiltre") return Object.prototype.hasOwnProperty.call(DURUM_ETIKET, deger);
+  if (alan === "uyumFiltre") return ["guclu", "zayif", "yok"].indexOf(deger) >= 0;
+  return false;
+}
+
 function sorgudanFiltreUygula(sorgu) {
   const eslesme = { fk: "kategori", fd: "durumFiltre", fu: "uyumFiltre" };
   Object.keys(eslesme).forEach(k => {
-    if (!sorgu.has(k)) return;
-    const v = sorgu.get(k);
-    if (urlGuvenliMi(v)) cizSiralama[eslesme[k]] = v;
+    const alan = eslesme[k];
+    const v = sorgu.has(k) ? sorgu.get(k) : "hepsi";
+    cizSiralama[alan] = urlGuvenliMi(v) && filtreGecerli(alan, v) ? v : "hepsi";
   });
-  if (sorgu.has("fkr")) cizSiralama.kurum = kurumCoz(sorgu.get("fkr"));
-  if (sorgu.has("q")) {
-    const q = sorgu.get("q");
-    if (q === "ozet") { sihirbaz.ekran = "ozet"; sihirbaz.imlec = null; }
-    else if (SORULAR.some(s => s.id === q)) { sihirbaz.ekran = "soru"; sihirbaz.imlec = q; }
-  }
+  cizSiralama.kurum = sorgu.has("fkr") ? kurumCoz(sorgu.get("fkr")) : "hepsi";
+  const q = sorgu.has("q") ? sorgu.get("q") : "";
+  if (q === "ozet") { sihirbaz.ekran = "ozet"; sihirbaz.imlec = null; }
+  else if (SORULAR.some(s => s.id === q)) { sihirbaz.ekran = "soru"; sihirbaz.imlec = q; }
+  else { sihirbaz.ekran = "soru"; sihirbaz.imlec = null; }
 }
 
 function urlDurumuCoz(sorgu) {
@@ -6134,21 +6145,17 @@ let baglantiBildirimi = "";
 
 function baslangicDurumunuKur() {
   const giris = baslangicSorgusu();
-  if (!giris) {
-    try { yukle(); } catch (e) {
-      durumuBenimse(varsayilanDurum());
-      depoUyarisi = "Saklanan kayıt okunamadı ve yok sayıldı. Uygulama varsayılan durumla açıldı.";
-    }
-    return;
+  try { yukle(); } catch (e) {
+    durumuBenimse(varsayilanDurum());
+    depoUyarisi = "Saklanan kayıt okunamadı ve yok sayıldı. Uygulama varsayılan durumla açıldı.";
   }
+  if (!giris) return;
   if (giris.hata) {
-    try { yukle(); } catch (e) { durumuBenimse(varsayilanDurum()); }
     depoUyarisi = giris.hata + " Bağlantı yok sayıldı ve bu tarayıcıdaki kayıtlı durum açıldı.";
     return;
   }
   const cozum = urlDurumuCoz(giris.sorgu);
   if (cozum.hata) {
-    try { yukle(); } catch (e) { durumuBenimse(varsayilanDurum()); }
     depoUyarisi = cozum.hata + " Bağlantı yok sayıldı ve bu tarayıcıdaki kayıtlı durum açıldı.";
     return;
   }
