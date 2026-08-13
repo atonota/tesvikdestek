@@ -447,6 +447,14 @@ input,select,textarea{min-height:48px}
 .sh-ozet-satir .s{font-size:1.1rem;color:var(--ink-3)}
 .sh-ozet-satir .c{font-size:1.15rem;font-weight:600}
 .sh-ozet-satir button{justify-self:start}
+/* ————— Dar ekranda uzun metin taşmasın ————— */
+.tablewrap td,.tablewrap td::before,.kv,.kv dt,.kv dd,.gl dt,.gl dd,.mono,.prog-inst,.note,.small,.hint,
+.nace-kart,.timeline .t,.reasons li,.bos{overflow-wrap:anywhere;word-break:break-word}
+.sayfa select,.sayfa input,.sayfa textarea,.sayfa .btn{max-width:100%}
+.kv{grid-template-columns:minmax(0,1fr)}
+.sayfa a{overflow-wrap:anywhere}
+@media (min-width:720px){.kv{grid-template-columns:auto minmax(0,1fr)}}
+
 /* ————— Telefonda özet kart: ayrıntı, Ayrıntı panelinde durur ————— */
 .prog .reasons,.prog .prog-aciklama,.prog .kilit-notu{display:none}
 .prog .prog-head{gap:.6rem}
@@ -561,12 +569,24 @@ dialog[open]{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;max-width:
   .btn.menu-ac{display:none}
   .altbar,.bolum-cubugu{display:none}
   .yolharita{display:flex}
-  .ustcubuk{display:flex;flex-wrap:wrap;gap:calc(var(--u)*2);padding:calc(var(--u)*1.5) calc(var(--u)*3)}
-  .ustcubuk-baslik{flex:1 1 240px}
+  .ustcubuk{display:flex;flex-wrap:wrap;gap:calc(var(--u)*.75) calc(var(--u)*2);padding:calc(var(--u)*1) calc(var(--u)*3);height:auto}
+  .ustcubuk-baslik h2{line-height:1.25}
+  .yolharita{padding:.4rem clamp(.7rem,2vw,1.4rem)}
+  .ustcubuk-baslik{flex:0 1 auto;min-width:200px}
+  .ustcubuk-arac{flex:1 1 auto;justify-content:flex-end}
   .ustcubuk-baslik .kirinti{display:block}
+  .ustcubuk-baslik h2{white-space:normal;overflow:visible;text-overflow:clip;font-size:1.3rem}
   .ustcubuk-arac{display:flex;gap:calc(var(--u)*1);align-items:center;flex-wrap:wrap}
-  .ara-dugme{width:auto;height:auto;min-width:220px;padding:calc(var(--u)*.75) calc(var(--u)*1.25);border-radius:var(--r-sm);justify-content:flex-start}
+  .ustcubuk .btn.sm{width:auto;min-width:0;max-width:none;height:auto;min-height:38px;
+    padding:.45rem .85rem;border-radius:var(--r-sm)}
+  .ustcubuk .ara-dugme{width:auto;min-width:200px;max-width:320px;height:auto;flex:1 1 200px;
+    padding:calc(var(--u)*.75) calc(var(--u)*1.25);border-radius:var(--r-sm);justify-content:flex-start}
+  .ustcubuk .dugme-metni{display:inline}
+  .arac-grubu{flex:1 1 100%;justify-content:flex-end}
+  .arac-grubu select{max-width:260px}
   .ara-dugme span:not([aria-hidden]),.ara-dugme kbd{display:inline}
+  .yolharita .ya{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .yolharita button{min-width:0}
   .sayfa{padding:calc(var(--u)*3)}
   .card{padding:calc(var(--u)*2.5)}
   .tile{padding:calc(var(--u)*2)}
@@ -575,10 +595,10 @@ dialog[open]{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;max-width:
   .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface)}
   .tablewrap table{min-width:520px;display:table}
   .tablewrap thead{display:table-header-group}
-  .tablewrap tbody{display:table-row-group}
-  .tablewrap tr{display:table-row;border:0;border-radius:0;padding:0;margin:0;background:none}
+  .tablewrap tbody{display:table-row-group;width:auto}
+  .tablewrap tr{display:table-row;width:auto;border:0;border-radius:0;padding:0;margin:0;background:none}
   .tablewrap tr:hover{background:var(--surface-2)}
-  .tablewrap td{display:table-cell;padding:calc(var(--u)*1.25) calc(var(--u)*1.5);border-bottom:1px solid var(--line)}
+  .tablewrap td{display:table-cell;width:auto;padding:calc(var(--u)*1.25) calc(var(--u)*1.5);border-bottom:1px solid var(--line)}
   .tablewrap td::before{content:none}
   .tablewrap tr:not(.satir-acildi) td[data-ikincil]{display:table-cell}
   .satir-ac{display:none}
