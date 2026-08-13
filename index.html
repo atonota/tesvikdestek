@@ -83,7 +83,7 @@ a:hover{text-decoration:none}
 .uygulama{display:grid;grid-template-columns:var(--rail-w) minmax(0,1fr);min-height:100vh}
 .uygulama[data-rail="dar"]{--rail-w:var(--rail-w-dar)}
 .rail{background:var(--rail-bg);border-inline-end:1px solid var(--line);display:flex;flex-direction:column;gap:calc(var(--u)*1);
-  position:sticky;top:0;height:100vh;overflow-y:auto;padding:calc(var(--u)*2) calc(var(--u)*1.5);z-index:40}
+  position:-webkit-sticky;position:sticky;top:0;height:100vh;overflow-y:auto;padding:calc(var(--u)*2) calc(var(--u)*1.5);z-index:40}
 .rail-marka{display:flex;align-items:center;gap:calc(var(--u)*1.25);padding:0 calc(var(--u)*.5) calc(var(--u)*2)}
 .rail-logo{width:34px;height:34px;flex:none;border-radius:9px;background:linear-gradient(150deg,var(--accent),var(--info));
   color:#fff;display:grid;place-items:center;font-weight:800;font-size:.8rem;letter-spacing:.02em}
@@ -111,7 +111,7 @@ a:hover{text-decoration:none}
 .uygulama[data-rail="dar"] .rail{padding-inline:calc(var(--u)*1)}
 
 .icerik{min-width:0;display:flex;flex-direction:column;background:var(--canvas)}
-.ustcubuk{position:sticky;top:0;z-index:35;background:color-mix(in srgb,var(--canvas) 88%,transparent);
+.ustcubuk{position:-webkit-sticky;position:sticky;top:0;z-index:35;background:var(--canvas);background:color-mix(in srgb,var(--canvas) 88%,transparent);
   backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);
   padding:calc(var(--u)*1.5) calc(var(--u)*3);display:flex;gap:calc(var(--u)*2);align-items:center;flex-wrap:wrap}
 .ustcubuk-baslik{min-width:0;flex:1 1 240px}
@@ -194,7 +194,7 @@ legend{font-size:.875rem;font-weight:620;padding:0 calc(var(--u)*.75)}
 .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface)}
 table{border-collapse:collapse;width:100%;min-width:520px;font-size:.8125rem}
 th,td{text-align:start;padding:calc(var(--u)*1.25) calc(var(--u)*1.5);border-bottom:1px solid var(--line);vertical-align:top}
-th{background:var(--surface-2);font-weight:640;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3);position:sticky;top:0}
+th{background:var(--surface-2);font-weight:640;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3);position:-webkit-sticky;position:sticky;top:0}
 tbody tr:last-child td{border-bottom:0}
 tbody tr:hover{background:var(--surface-2)}
 .num{font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -221,7 +221,7 @@ dialog.drawer::backdrop{background:rgba(8,12,18,.6);backdrop-filter:blur(2px)}
 .drawer-inner{background:var(--surface);color:var(--ink);height:100%;width:100%;max-width:760px;margin-inline-start:auto;
   display:flex;flex-direction:column;border-inline-start:1px solid var(--line);box-shadow:var(--sh-3)}
 .drawer-head{display:flex;gap:calc(var(--u)*1.5);align-items:flex-start;justify-content:space-between;padding:calc(var(--u)*2.5);
-  border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:2}
+  border-bottom:1px solid var(--line);position:-webkit-sticky;position:sticky;top:0;background:var(--surface);z-index:2}
 .drawer-body{padding:calc(var(--u)*2.5);overflow-y:auto;flex:1}
 .drawer-body h4{margin-top:calc(var(--u)*3);color:var(--ink-3);text-transform:uppercase;font-size:.6875rem;letter-spacing:.07em}
 .drawer-body h4:first-child{margin-top:0}
@@ -457,13 +457,13 @@ input,select,textarea{min-height:48px}
 
 /* ————— Kabuk: önce telefon, sonra masaüstü ————— */
 .uygulama{display:block;min-height:100vh;min-height:100dvh}
-.rail{position:fixed;inset-block:0;inset-inline-start:0;width:min(320px,86vw);height:100dvh;transform:translateX(-102%);
+.rail{position:fixed;top:0;bottom:0;left:0;width:320px;width:min(320px,86vw);height:100vh;height:100dvh;transform:translateX(-102%);
   transition:transform var(--gecis);box-shadow:var(--sh-3);z-index:100;padding:calc(var(--u)*2) calc(var(--u)*1.5)}
 .uygulama[data-menu="acik"] .rail{transform:none}
 .uygulama[data-menu="acik"] .perde{display:block;opacity:1}
 .btn.menu-ac{display:inline-flex}
 
-.ustcubuk{position:sticky;top:0;z-index:35;display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto;
+.ustcubuk{position:-webkit-sticky;position:sticky;top:0;z-index:35;display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto;
   align-items:center;gap:.35rem;padding:.4rem .5rem;flex-wrap:nowrap;height:56px;
   padding-top:calc(.4rem + env(safe-area-inset-top))}
 .ustcubuk-baslik{min-width:0;flex:initial}
@@ -477,20 +477,22 @@ input,select,textarea{min-height:48px}
 .arac-grubu{grid-column:1 / -1;order:1;padding-bottom:.5rem}
 
 .bolum-cubugu{display:flex;gap:.4rem;overflow-x:auto;padding:.25rem .5rem;background:var(--surface);
-  border-bottom:1px solid var(--line);scrollbar-width:none;position:sticky;top:56px;z-index:30;align-items:center;
+  border-bottom:1px solid var(--line);scrollbar-width:none;position:-webkit-sticky;position:sticky;top:56px;z-index:30;align-items:center;
   -webkit-overflow-scrolling:touch}
 .bolum-cubugu::-webkit-scrollbar{display:none}
 .bolum-cubugu button{flex:0 0 auto;min-height:44px;padding:.25rem .85rem;border-radius:999px;border:1px solid var(--line-2);
   background:var(--surface-2);color:var(--ink-2);font:inherit;font-size:1.05rem;font-weight:560;cursor:pointer;white-space:nowrap}
 .bolum-cubugu button[aria-current="page"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 
+dialog:not([open]){display:none}
+dialog[open]{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;max-width:none;max-height:none;border:0}
 .yolharita{display:none}
-.sayfa{padding:calc(var(--u)*1.5) calc(var(--u)*1.5) calc(84px + env(safe-area-inset-bottom))}
+.sayfa{padding:calc(var(--u)*1.5);padding-bottom:96px;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
 .card{padding:calc(var(--u)*1.75)}
 .bolum-bas{margin-bottom:calc(var(--u)*1.25)}
 
-.altbar{position:fixed;inset-inline:0;bottom:0;z-index:60;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
-  gap:2px;background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:saturate(1.4) blur(12px);
+.altbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:2px;background:var(--surface);background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:saturate(1.4) blur(12px);
   border-top:1px solid var(--line);padding:.3rem .25rem calc(.3rem + env(safe-area-inset-bottom))}
 .altbar button{display:grid;justify-items:center;gap:.1rem;min-height:52px;padding:.25rem .1rem;border:0;background:none;
   color:var(--ink-3);font:inherit;cursor:pointer;border-radius:12px}
@@ -522,7 +524,7 @@ input,select,textarea{min-height:48px}
 
 @media (min-width:900px){
   .uygulama{display:grid;grid-template-columns:var(--rail-w) minmax(0,1fr)}
-  .rail{position:sticky;top:0;height:100vh;transform:none;box-shadow:none;width:auto;z-index:40}
+  .rail{position:-webkit-sticky;position:sticky;top:0;height:100vh;transform:none;box-shadow:none;width:auto;z-index:40}
   .btn.menu-ac{display:none}
   .altbar,.bolum-cubugu{display:none}
   .yolharita{display:flex}
@@ -5158,39 +5160,45 @@ function mcpSonucHtml() {
     '<br><span class="small">Sınama zamanı: ' + kacis(d.zaman) + ". Bu sonuç yalnız köprüyü tanımlar; başvuru sürecinizin durumunu değiştirmez.</span></div>";
 }
 
-async function mcpSina(adres) {
+function mcpSina(adres, bitince) {
+  const haberVer = typeof bitince === "function" ? bitince : function () { ciz(["ai"]); };
   const zaman = new Date().toISOString().slice(0, 19).replace("T", " ");
   let url;
   try { url = new URL(adres); } catch (e) {
     mcpDurumu.son = { basarili: false, baslik: "Adres okunamadı", mesaj: "Geçerli bir adres girin.", zaman };
+    haberVer();
     return;
   }
   if (url.protocol !== "https:") {
     mcpDurumu.son = { basarili: false, baslik: "Yalnız HTTPS kabul edilir", mesaj: "MCP köprüsü şifreli bağlantı üzerinden sunulmalıdır. Girilen şema: " + url.protocol, zaman };
+    haberVer();
     return;
   }
   const govde = { jsonrpc: "2.0", id: 1, method: "initialize", params: {
     protocolVersion: MCP_PROTOKOL_SURUMU, capabilities: {}, clientInfo: { name: "arsam-destektesvik", version: String(SEMA_SURUMU) + ".0.0" } } };
-  try {
-    const yanit = await fetch(url.toString(), {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Accept": "application/json, text/event-stream", "MCP-Protocol-Version": MCP_PROTOKOL_SURUMU },
-      body: JSON.stringify(govde)
-    });
-    const metin = (await yanit.text()).slice(0, 400);
-    if (!yanit.ok) {
+  const istek = new XMLHttpRequest();
+  istek.open("POST", url.toString(), true);
+  istek.setRequestHeader("Content-Type", "application/json");
+  istek.setRequestHeader("Accept", "application/json, text/event-stream");
+  istek.setRequestHeader("MCP-Protocol-Version", MCP_PROTOKOL_SURUMU);
+  istek.onload = function () {
+    const metin = String(istek.responseText || "").slice(0, 400);
+    if (istek.status < 200 || istek.status >= 300) {
       mcpDurumu.son = { basarili: false, baslik: "Köprü isteği reddedildi", zaman,
-        mesaj: "Sunucu " + yanit.status + " yanıtı verdi. Yetkilendirme gerekiyorsa köprü OAuth akışını istemci tarafında yürütmelidir.", ayrinti: metin };
-      return;
+        mesaj: "Sunucu " + istek.status + " yanıtı verdi. Yetkilendirme gerekiyorsa köprü OAuth akışını istemci tarafında yürütmelidir.", ayrinti: metin };
+    } else {
+      const surumBasligi = istek.getResponseHeader("MCP-Protocol-Version") || "başlık yok";
+      mcpDurumu.son = { basarili: true, baslik: "Köprü yanıt verdi", zaman,
+        mesaj: "Başlangıç isteği " + istek.status + " ile yanıtlandı. Bildirilen protokol sürümü: " + surumBasligi + ". ChatGPT veya Claude bağlantısı yine de ilgili istemcide ayrıca kurulmalıdır.", ayrinti: metin };
     }
-    const surumBasligi = yanit.headers.get("MCP-Protocol-Version") || "başlık yok";
-    mcpDurumu.son = { basarili: true, baslik: "Köprü yanıt verdi", zaman,
-      mesaj: "Başlangıç isteği " + yanit.status + " ile yanıtlandı. Bildirilen protokol sürümü: " + surumBasligi + ". ChatGPT veya Claude bağlantısı yine de ilgili istemcide ayrıca kurulmalıdır.", ayrinti: metin };
-  } catch (e) {
+    haberVer();
+  };
+  istek.onerror = function () {
     mcpDurumu.son = { basarili: false, baslik: "Bağlantı kurulamadı", zaman,
-      mesaj: "Tarayıcı isteği tamamlayamadı. En sık nedenler: köprüde çapraz kaynak izni bulunmaması, adresin erişilebilir olmaması veya ağ engeli. Bu, başvuru sürecinizde bir hata değildir.",
-      ayrinti: String(e && e.message ? e.message : e).slice(0, 200) };
-  }
+      mesaj: "Tarayıcı isteği tamamlayamadı. En sık nedenler: köprüde çapraz kaynak izni bulunmaması, adresin erişilebilir olmaması veya ağ engeli. Bu, başvuru sürecinizde bir hata değildir." };
+    haberVer();
+  };
+  try { istek.send(JSON.stringify(govde)); } catch (e) { istek.onerror(); }
 }
 
 function cizGunluk() {
@@ -5276,10 +5284,10 @@ function bolumCubuguYenile(aktifSekme) {
 
 function tablolariEtiketle(kok) {
   const alan = kok || document;
-  alan.querySelectorAll(".tablewrap table").forEach(tablo => {
+  Array.prototype.forEach.call(alan.querySelectorAll(".tablewrap table"), function (tablo) {
     const basliklar = Array.prototype.map.call(tablo.querySelectorAll("thead th"), th => th.textContent.trim());
     if (!basliklar.length) return;
-    tablo.querySelectorAll("tbody tr").forEach(satir => {
+    Array.prototype.forEach.call(tablo.querySelectorAll("tbody tr"), function (satir) {
       Array.prototype.forEach.call(satir.children, (hucre, i) => {
         if (basliklar[i]) hucre.setAttribute("data-etiket", basliklar[i]);
       });
@@ -5320,8 +5328,17 @@ function ustcubukYenile() {
     "<br>Karar tarihi " + tarihTr(bugunIso());
 }
 
+function grafikleriBirak() {
+  Object.keys(grafikOrnekleri).forEach(k => {
+    const ornek = grafikOrnekleri[k];
+    if (ornek && typeof ornek.dispose === "function") { try { ornek.dispose(); } catch (e) { bozukKaydiYokSay(); } }
+    delete grafikOrnekleri[k];
+  });
+}
+
 function sekmeSec(id, sessiz) {
   if (!SEKMELER.some(s => s.id === id)) id = "kokpit";
+  if (durum.aktifSekme === "analitik" && id !== "analitik") grafikleriBirak();
   durum.aktifSekme = id;
   SEKMELER.forEach(s => {
     const dugme = document.getElementById("sekme-" + s.id);
@@ -5332,7 +5349,7 @@ function sekmeSec(id, sessiz) {
     panel.hidden = !aktif;
   });
   if (CIZICILER[id]) {
-    try { CIZICILER[id](); } catch (e) { bozukKaydiYokSay(); }
+    try { if (kirliPaneller[id] !== false) paneliCiz(id); } catch (e) { bozukKaydiYokSay(); }
   }
   ustcubukYenile();
   menuKapat();
@@ -5363,8 +5380,25 @@ function menuKapat(odagiIade) {
   return true;
 }
 
+const kirliPaneller = {};
+
+function panelleriKirlet(cizimler) {
+  (cizimler || Object.keys(CIZICILER)).forEach(k => { if (CIZICILER[k]) kirliPaneller[k] = true; });
+}
+
+function paneliCiz(id) {
+  if (!CIZICILER[id]) return;
+  CIZICILER[id]();
+  kirliPaneller[id] = false;
+}
+
+function aktifPaneliTazele() {
+  if (kirliPaneller[durum.aktifSekme]) paneliCiz(durum.aktifSekme);
+}
+
 function cizHepsi() {
-  Object.keys(CIZICILER).forEach(k => CIZICILER[k]());
+  panelleriKirlet();
+  paneliCiz(durum.aktifSekme);
 }
 
 const FILTRE_KIMLIKLERI = ["fKategori", "fDurum", "fKurum", "fUyum"];
@@ -5391,7 +5425,8 @@ function odagiGeriYukle(kimlik) {
 
 function ciz(cizimler) {
   const kimlik = odakKimligi();
-  (cizimler || Object.keys(CIZICILER)).forEach(k => { if (CIZICILER[k]) CIZICILER[k](); });
+  panelleriKirlet(cizimler);
+  aktifPaneliTazele();
   sekmeleriKur();
   if (durum.aktifSekme === "analitik") grafikleriKur();
   odagiGeriYukle(kimlik);
@@ -6231,9 +6266,9 @@ function mcpTestBaslat() {
   if (!alan || !alan.value.trim()) { bildir("Önce bir HTTPS köprü adresi girin."); return; }
   dugme.disabled = true;
   dugme.textContent = "Sınanıyor…";
-  mcpSina(alan.value.trim()).then(() => {
-    dugme.disabled = false;
-    dugme.textContent = "Bağlantıyı sına";
+  mcpSina(alan.value.trim(), function () {
+    const yenidenDugme = document.getElementById("btnMcpTest");
+    if (yenidenDugme) { yenidenDugme.disabled = false; yenidenDugme.textContent = "Bağlantıyı sına"; }
     const kap = document.getElementById("mcpSonuc");
     if (kap) kap.innerHTML = mcpSonucHtml();
     gunlugeYaz("mcp", "Köprü sınandı: " + (mcpDurumu.son && mcpDurumu.son.basarili ? "yanıt alındı" : "yanıt alınamadı") + ".");
