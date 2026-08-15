@@ -185,6 +185,21 @@ def _seed_two_tenants(connection) -> None:
             {"id": f"audit-{suffix}", "tenant_id": tenant_id, "at": now},
         )
         _insert_decision(connection, tenant_id, f"decision-{suffix}")
+        # The approval references the decision above, so it is inserted after it.
+        connection.execute(
+            text(
+                "INSERT INTO approvals (id, tenant_id, decision_id, actor_user_id, "
+                "approved_at, note, label) VALUES (:id, :tenant_id, :decision_id, "
+                ":actor_user_id, :at, '', 'Kullanici onayi')"
+            ),
+            {
+                "id": f"approval-{suffix}",
+                "tenant_id": tenant_id,
+                "decision_id": f"decision-{suffix}",
+                "actor_user_id": f"user-{suffix}",
+                "at": now,
+            },
+        )
 
 
 class TestMigration:
@@ -384,9 +399,10 @@ class TestPreAuthLookupScopes:
             users = set(connection.scalars(text("SELECT tenant_id FROM users")))
             sessions = set(connection.scalars(text("SELECT tenant_id FROM user_sessions")))
             audits = set(connection.scalars(text("SELECT tenant_id FROM audit_events")))
+            approvals = set(connection.scalars(text("SELECT tenant_id FROM approvals")))
         assert counts == dict.fromkeys(TENANT_TABLES, 1)
         assert tenants == {"tenant-a"}
-        assert users == sessions == audits == {"tenant-a"}
+        assert users == sessions == audits == approvals == {"tenant-a"}
 
     def test_the_lookup_scopes_do_not_leak_between_transactions(self, seeded, app_engine) -> None:
         with app_engine.connect() as connection:
@@ -439,9 +455,11 @@ class TestTenantACannotWriteTenantBRows:
             )
             assert result.rowcount == 1
         with seeded.begin() as connection:
-            names = dict(
-                connection.execute(text("SELECT tenant_id, display_name FROM company_profiles"))
-            )
+            # A SQLAlchemy 2 CursorResult is not a mapping; read the rows first.
+            rows = connection.execute(
+                text("SELECT tenant_id, display_name FROM company_profiles")
+            ).all()
+            names = {row.tenant_id: row.display_name for row in rows}
         assert names["tenant-b"] == "Sirket b"
 
     def test_the_application_role_cannot_delete_any_row_at_all(self, seeded, app_engine) -> None:

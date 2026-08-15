@@ -37,9 +37,14 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 FROM python:3.13-slim AS runtime
 
+# The builder installs the project as an editable checkout, so the link inside
+# /opt/venv points at /build/src - a path this stage does not have. The source
+# is copied to /app/src below; PYTHONPATH is what makes it importable from any
+# working directory, for uvicorn, alembic and scripts/seed.py alike.
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PATH="/opt/venv/bin:${PATH}"
+    PATH="/opt/venv/bin:${PATH}" \
+    PYTHONPATH="/app/src"
 
 # curl is used by the container HEALTHCHECK below and nothing else.
 RUN apt-get update \

@@ -13,6 +13,7 @@ substitute for running the pipeline, and the evidence report says so.
 
 import ast
 import importlib.util
+import re
 from pathlib import Path
 
 import pytest
@@ -21,6 +22,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 PLATFORM = REPO_ROOT / "platform"
 
 CI = REPO_ROOT / ".github" / "workflows" / "ci.yml"
+DOCKERFILE = PLATFORM / "Dockerfile"
 COMPOSE = PLATFORM / "compose.yaml"
 ROLE_INIT = PLATFORM / "scripts" / "db-init" / "01-app-role.sh"
 SMOKE = PLATFORM / "scripts" / "container-smoke.sh"
@@ -70,6 +72,35 @@ def _statements(path: Path) -> str:
         if docstring:
             text = text.replace(docstring, "", 1)
     return "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("#"))
+
+
+def _runtime_stage() -> str:
+    """The final image's instructions, with comments dropped and continuations joined.
+
+    Docker strips ``#`` lines before it joins continuations, and so does this
+    helper - for the same reason ``_statements()`` exists.  The comment above
+    the runtime ``ENV`` block explains the very ``COPY`` these contracts assert;
+    left in, prose alone could satisfy a structural check.
+    """
+    dockerfile = _text(DOCKERFILE)
+    marker = "\nFROM python:3.13-slim AS runtime\n"
+    assert marker in dockerfile, "the runtime stage is not where this contract expects it"
+    stage = dockerfile[dockerfile.index(marker) + len(marker) :]
+    instructions = "\n".join(
+        line for line in stage.splitlines() if not line.lstrip().startswith("#")
+    )
+    return re.sub(r"\\\n\s*", " ", instructions)
+
+
+def _runtime_env() -> dict[str, str]:
+    """Every ``ENV KEY=VALUE`` pair declared in the runtime stage."""
+    environment: dict[str, str] = {}
+    for line in _runtime_stage().splitlines():
+        if not line.startswith("ENV "):
+            continue
+        for key, value in re.findall(r'(\w+)=("[^"]*"|\S+)', line[4:]):
+            environment[key] = value.strip('"')
+    return environment
 
 
 @pytest.fixture(scope="module")
@@ -132,6 +163,48 @@ class TestPreAuthPoliciesUseExactLookups:
     def test_the_lookup_read_window_requires_a_non_empty_setting(self) -> None:
         """An unset GUC must match nothing, not every row with a blank column."""
         assert "nullif(current_setting('{lookup_setting}', true), '')" in _lookup_policy_source()
+
+
+class TestTheRuntimeImageCanImportItsOwnPackage:
+    """The image copied the source in and then could not import it.
+
+    The builder installs the project as an editable checkout, so the link in
+    ``/opt/venv`` points at ``/build/src`` - a path that exists only in the
+    builder stage.  The runtime stage copies the source to ``/app/src``, but
+    nothing told Python to look there, so ``python scripts/seed.py`` died with
+    ``ModuleNotFoundError: No module named 'destektesvik'``.  ``alembic upgrade
+    head`` survived only because ``alembic.ini`` sets ``prepend_sys_path = src``
+    - a relative path Alembic resolves against the working directory, which is
+    ``/app``.  ``uvicorn`` was never reached: the editable install records
+    absolute ``/build/src``, absent from runtime, and the smoke aborted at
+    ``seed.py`` before the web container started.
+
+    The contract is the general one: every entrypoint, whatever its working
+    directory, must find the copied package.
+    """
+
+    def test_the_source_is_copied_to_an_absolute_runtime_path(self) -> None:
+        assert "COPY --from=builder /build/src /app/src" in _runtime_stage()
+
+    def test_the_copied_source_is_on_the_module_search_path(self) -> None:
+        """Without this the image ships code it cannot import."""
+        entries = _runtime_env().get("PYTHONPATH", "").split(":")
+        assert "/app/src" in entries, (
+            f"the runtime image never puts /app/src on PYTHONPATH: {entries}"
+        )
+
+    def test_the_module_search_path_is_absolute(self) -> None:
+        """A relative entry would only work from one working directory."""
+        for entry in _runtime_env().get("PYTHONPATH", "").split(":"):
+            assert entry.startswith("/"), f"PYTHONPATH entry {entry!r} is not absolute"
+
+    def test_the_virtualenv_is_still_first_on_path(self) -> None:
+        """Adding PYTHONPATH must not disturb which interpreter runs."""
+        path = _runtime_env().get("PATH", "")
+        assert path.startswith("/opt/venv/bin:"), path
+        assert "${PATH}" in path or "$PATH" in path, (
+            f"the runtime PATH no longer preserves the base image's PATH: {path!r}"
+        )
 
 
 class TestContainerJobSeparatesTheDatabaseRoles:
