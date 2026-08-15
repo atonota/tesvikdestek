@@ -40,7 +40,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor, type RenderResult } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, type RenderResult } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { readFileSync, readdirSync, statSync } from "node:fs";
@@ -68,6 +68,7 @@ import {
   isStaticDemoOnly,
   matchDemoProfile,
   normalizeDemoEmail,
+  resetDemoSessionState,
   startDemoSession,
 } from "@/demo";
 import { server } from "@/mocks/server";
@@ -101,8 +102,21 @@ beforeEach(() => {
 
 afterEach(() => {
   for (const undo of cleanups) undo();
+  /*
+   * Unmounted before module memory is cleared, and the order matters now.
+   *
+   * On the static publication the workspace gate rebuilds a demo from
+   * `?demo=…` in the address. Clearing the session while that tree is still
+   * mounted is a state change it reacts to - it sees the address, sees no
+   * session, and correctly opens the demo again - so the next test would start
+   * inside a session it never created.
+   */
+  cleanup();
   // Module memory is the whole storage mechanism, so it outlives `cleanup()`.
-  endDemoSession();
+  // `resetDemoSessionState` rather than `endDemoSession`, because leaving a
+  // demo also latches "a demo was ended in this document" - see
+  // `demo/session.ts` - and that latch has to be cleared for the next test too.
+  resetDemoSessionState();
   // The static-demo flag is build-time configuration, so a test that stubs it
   // must hand it back or every later file in the run inherits a deployment it
   // never asked for.

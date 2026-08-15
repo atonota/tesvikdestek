@@ -19,7 +19,11 @@
 #
 #   _site/index.html   a redirect to ./uygulama/, so the repository's Pages
 #                      root leads somewhere rather than 404ing.
-#   _site/uygulama/    the application, at the path its base was built for.
+#   _site/uygulama/    the application, at the path its base was built for -
+#                      a copy of `platform/frontend/dist-pages`, which is built
+#                      once and is the same directory the browser gate served
+#                      while it tested. Measured artifact and published
+#                      artifact are one artifact.
 #   _site/404.html     the application again. Pages serves this for any path
 #                      that is not a file, which is every deep link the SPA
 #                      router owns - `/tesvikdestek/uygulama/giris` first
@@ -30,11 +34,14 @@
 #                      chunk name is not worth a silent blank page.
 #
 # `.github/workflows/../../platform/frontend/src/test/pages-deployment-contract.test.ts`
-# pins the claims above, and that test runs below before anything is built.
+# pins the claims above, including the single build and the permission split,
+# and it runs below before anything is built.
 #
-# Nothing here reads a secret. `contents: read` is deliberate: a deployment
-# that can write to the repository is a deployment that can rewrite the thing
-# it deployed.
+# Nothing here reads a secret, and no job holds a permission it does not use:
+# `build` may only read the repository, and only `deploy` may write to Pages.
+# `contents: read` throughout is deliberate on top of that - a deployment that
+# can write to the repository is a deployment that can rewrite the thing it
+# deployed.
 
 name: Pages
 
@@ -43,10 +50,16 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Least privilege, and granted per job rather than to the whole workflow.
+#
+# The default here is the smallest thing any job needs: read the repository.
+# The Pages capabilities - `pages: write` and the OIDC `id-token: write` that
+# `deploy-pages` exchanges for a deployment token - are granted **only** to the
+# `deploy` job below. That matters because `build` is the job that runs third
+# party code: dependencies, a browser, a bundler. A build step that can also
+# publish to the live site is a build step that can publish anything it likes.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 # One publication at a time, and a queued one is not cancelled: cancelling a
 # deploy mid-flight is how a site ends up half-updated.
@@ -59,8 +72,12 @@ env:
 
 jobs:
   build:
-    name: Check, build the static demo, assemble the site
+    name: Check, build the static demo once, assemble the site
     runs-on: ubuntu-latest
+    # Reads the repository, writes an artifact. Nothing more: this job cannot
+    # reach the Pages API and cannot mint a deployment token.
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v6
 
@@ -80,8 +97,11 @@ jobs:
         working-directory: platform/frontend
         run: pnpm install --frozen-lockfile
 
-      # The gates. All three run before a single asset is emitted, so a red
-      # check cannot be discovered after the artifact already exists.
+      # The gates. Lint, types and the targeted unit tests run before anything
+      # is built at all; the browser gate runs against the built artifact,
+      # because a reload of a real document is the only thing that settles what
+      # it checks. Nothing is uploaded, and therefore nothing is published,
+      # unless every one of them passed.
       - name: Lint
         working-directory: platform/frontend
         run: pnpm lint
@@ -99,17 +119,43 @@ jobs:
         run: >-
           pnpm exec vitest run
           src/test/demo-login.test.tsx
+          src/test/demo-refresh.test.tsx
           src/test/pages-deployment-contract.test.ts
 
-      - name: Build the static demo
+      # The browser gate. It exists because the defect it regression-tests was
+      # invisible to every check above: a demo that opened correctly, and
+      # disappeared on reload, in a bundle whose unit tests were all green.
+      # Only a real document reload settles that, so this step is required
+      # before the publish build rather than run beside it.
+      - name: Install the browser the static-demo gate runs in
         working-directory: platform/frontend
-        env:
-          VITE_STATIC_DEMO_ONLY: "true"
-        # The base is written out in full rather than held in an `env:` key.
-        # It is the published address, `pages-deployment-contract.test.ts`
-        # asserts on it as text, and an indirection would let the contract pass
-        # while the path it names had quietly changed one level up.
-        run: pnpm exec vite build --base /tesvikdestek/uygulama/
+        run: pnpm exec playwright install --with-deps chromium
+
+      # The artifact, built exactly once, by the one command that knows how.
+      #
+      # `e2e:pages:build` in `platform/frontend/package.json` is the canonical
+      # definition of this build: the static-demo flag, the published base and
+      # the output directory, in one place. This step used to spell all three
+      # out again, which meant a developer running the browser gate locally and
+      # this workflow could build two different bundles from the same commit
+      # while both looked correct. A copy that can drift from the thing it
+      # copies is worse than an indirection.
+      #
+      # Everything downstream uses these bytes: the browser gate serves this
+      # directory, and `_site/uygulama` is a copy of it.
+      - name: Build the static demo, once
+        working-directory: platform/frontend
+        run: pnpm run e2e:pages:build
+
+      - name: Static publication demo tests, in a real browser
+        # Runs *after* the build and against its output: `dist-pages` as built
+        # in the step above, which this config serves and does not rebuild.
+        # Both widths, desktop and 320px. Nothing answers a backend path while
+        # these run, because nothing does on GitHub Pages either. The artifact
+        # exists at this point but is published only if this step passes -
+        # there is no upload and no deploy job reachable past a red gate.
+        working-directory: platform/frontend
+        run: pnpm exec playwright test --config=playwright.pages.config.ts
 
       - name: Assemble _site
         # `set -euo pipefail` so a failed copy stops the job instead of
@@ -119,7 +165,8 @@ jobs:
           set -euo pipefail
           rm -rf _site
           mkdir -p _site/uygulama
-          cp -R platform/frontend/dist/. _site/uygulama/
+          # The very bytes the browser gate just walked through.
+          cp -R platform/frontend/dist-pages/. _site/uygulama/
 
           # The SPA fallback: the app itself, served for every unmatched path.
           cp _site/uygulama/index.html _site/404.html
@@ -164,8 +211,6 @@ jobs:
           grep -q './uygulama/' _site/index.html
           grep -q '/tesvikdestek/uygulama/' _site/uygulama/index.html
 
-      - uses: actions/configure-pages@v6
-
       - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
@@ -174,9 +219,19 @@ jobs:
     name: Deploy to GitHub Pages
     needs: build
     runs-on: ubuntu-latest
+    # The only job that may publish, and the only one holding the permissions
+    # that let it. `configure-pages` lives here rather than in `build` for the
+    # same reason: it talks to the Pages API, so it belongs on the side of the
+    # fence that is allowed to.
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/configure-pages@v6
+
       - id: deployment
         uses: actions/deploy-pages@v5

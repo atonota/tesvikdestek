@@ -29,6 +29,26 @@ export interface DemoSession {
 /** The entire storage mechanism. */
 let current: DemoSession | null = null;
 
+/**
+ * Was a demo deliberately ended in *this* document?
+ *
+ * The static publication rebuilds a demo from `?demo=<rol>` in the address, and
+ * that raises one question immediately: after pressing Çıkış, does going back
+ * to the address the visitor just left walk straight back in? It must not - a
+ * button labelled "Çıkış" that the Back button undoes is not an exit.
+ *
+ * So leaving latches this, and `app.tsx` refuses to rebuild a demo from the
+ * address while it is set. The latch is a module variable for exactly the
+ * reason the session itself is: it must not outlive the document. And that
+ * lifetime is also the honest limit of the guarantee, stated rather than
+ * glossed: a *reload* of a demo URL opens the demo again, because a reload is
+ * a new document and a new document cannot tell "I just left this demo" from
+ * "somebody sent me this link" without persisting something - and persisting
+ * something is precisely what this module refuses to do. Inside one document,
+ * where the fact is genuinely known, it is honoured.
+ */
+let endedHere = false;
+
 const listeners = new Set<() => void>();
 
 function emit(): void {
@@ -53,8 +73,22 @@ export function isDemoSession(): boolean {
 
 export function startDemoSession(role: DemoRole): DemoSession {
   current = { role, profile: demoProfile(role) };
+  // Entering again is a deliberate act by the same visitor, so the exit latch
+  // is released here rather than left to expire with the document.
+  endedHere = false;
   emit();
   return current;
+}
+
+/**
+ * Has a demo been ended in this document since it loaded?
+ *
+ * Read by the static publication's workspace gate, which will not rebuild a
+ * demo from the address once the answer is yes. See `endedHere` above for what
+ * this does and does not promise.
+ */
+export function wasDemoEndedHere(): boolean {
+  return endedHere;
 }
 
 /**
@@ -64,6 +98,27 @@ export function startDemoSession(role: DemoRole): DemoSession {
 export function endDemoSession(): void {
   if (current === null) return;
   current = null;
+  // A demo genuinely ended here; the address must not walk back into it.
+  endedHere = true;
+  emit();
+}
+
+/**
+ * Test teardown only: hand the next test a document that has never seen a demo.
+ *
+ * Module memory is the whole storage mechanism, so it outlives React's
+ * `cleanup()` - `endDemoSession()` has always been called in teardown for that
+ * reason. The exit latch has the same lifetime and therefore the same problem:
+ * one test that presses Çıkış would otherwise leave every later test in the
+ * file inside a document that "has already left a demo".
+ *
+ * Kept separate from `endDemoSession()` rather than folded into it with a flag,
+ * because the two mean different things and only one of them is a product
+ * behaviour. No production module calls this.
+ */
+export function resetDemoSessionState(): void {
+  current = null;
+  endedHere = false;
   emit();
 }
 

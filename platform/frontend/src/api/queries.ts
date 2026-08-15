@@ -63,7 +63,25 @@ export const queryKeys = {
  * when the hook was declared.
  */
 function readOrDemo<T>(demo: () => T, live: () => Promise<T>): () => Promise<T> {
-  return () => (isDemoSession() ? Promise.resolve(demo()) : live());
+  return () => {
+    if (isDemoSession()) return Promise.resolve(demo());
+    /*
+     * The static publication has no origin to read from, so it does not try.
+     *
+     * Without this, every read on that build - a public catalogue, a workspace
+     * screen whose demo context was lost on reload - becomes a request to a
+     * file server that answers 404, and the interface reports a server failure
+     * for a server that does not exist. `StaticDemoOnlyError` carries the
+     * sentence that says so, and `describeError` already renders it verbatim
+     * in the error surface every screen has.
+     *
+     * The refusal lives here, at the last line before `client.ts`, for the
+     * same reason the demo branch does: a guard in a route is a guard one new
+     * caller can forget.
+     */
+    if (isStaticDemoOnly()) return refuseWithoutBackend();
+    return live();
+  };
 }
 
 export function useProgramsQuery(): UseQueryResult<Program[]> {
@@ -91,7 +109,10 @@ export function useDecisionQuery(id: string): UseQueryResult<Decision> {
   return useQuery({
     queryKey: queryKeys.decision(id),
     queryFn: () => {
-      if (!isDemoSession()) return fetchDecision(id);
+      if (!isDemoSession()) {
+        if (isStaticDemoOnly()) return refuseWithoutBackend();
+        return fetchDecision(id);
+      }
       const found = demoDecision(id);
       // Absent in the demo set is a genuine 404-shaped answer, not an empty
       // decision - the workspace must show "bulunamadı", not a blank record.
@@ -125,11 +146,24 @@ function refuseDemoWrite(what: string): Promise<never> {
   return Promise.reject(new DemoWriteRefusedError(what));
 }
 
+/**
+ * The one question every write below asks first.
+ *
+ * Two refusals, ordered, and the order is the honest one: inside a demo the
+ * reason a save did not happen is the demo, and that sentence names what was
+ * refused; outside a demo on the static publication the reason is that there
+ * is no server at all. Only when neither holds does a write reach the network.
+ */
+function refusedWrite(what: string): Promise<never> | null {
+  if (isDemoSession()) return refuseDemoWrite(what);
+  if (isStaticDemoOnly()) return refuseWithoutBackend();
+  return null;
+}
+
 export function useRunEvaluation() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: () =>
-      isDemoSession() ? refuseDemoWrite("Yeniden değerlendirme") : postEvaluation(),
+    mutationFn: () => refusedWrite("Yeniden değerlendirme") ?? postEvaluation(),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: queryKeys.decisions });
     },
@@ -140,9 +174,7 @@ export function useSaveProfile() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (fields: Record<string, string>) =>
-      isDemoSession()
-        ? refuseDemoWrite("Profil kaydı")
-        : postForm(AUTH_PATHS.profile, fields),
+      refusedWrite("Profil kaydı") ?? postForm(AUTH_PATHS.profile, fields),
     onSuccess: () => {
       // The profile itself cannot be read back, but decisions derived from it can.
       void client.invalidateQueries({ queryKey: queryKeys.decisions });
@@ -284,6 +316,12 @@ export function useLogout() {
         endDemoSession();
         return;
       }
+      /*
+       * The static publication has no session to close and no endpoint to
+       * close it at. Reaching `POST /cikis` there would be a request into a
+       * 404 on the one action a visitor takes to *stop* trusting the page.
+       */
+      if (isStaticDemoOnly()) return;
       await postForm(AUTH_PATHS.logout, {});
     },
     onSuccess: () => {
@@ -303,7 +341,7 @@ export function useRecordApproval(decisionId: string) {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (note: string) =>
-      isDemoSession() ? refuseDemoWrite("Kullanıcı onayı") : postApproval(decisionId, note),
+      refusedWrite("Kullanıcı onayı") ?? postApproval(decisionId, note),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: queryKeys.decision(decisionId) });
     },

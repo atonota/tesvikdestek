@@ -6,7 +6,18 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["dist", "coverage", "storybook-static", "playwright-report", "node_modules"],
+    // `dist-pages` is the static publication's build output, produced by the
+    // Playwright projects that exercise it. Build output is not source, and
+    // linting a bundle only reports on the bundler.
+    ignores: [
+      "dist",
+      "dist-pages",
+      "coverage",
+      "storybook-static",
+      "playwright-report",
+      "test-results",
+      "node_modules",
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

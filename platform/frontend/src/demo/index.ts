@@ -11,3 +11,4 @@ export * from "./data";
 export * from "./deployment";
 export * from "./profiles";
 export * from "./session";
+export * from "./url";

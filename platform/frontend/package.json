@@ -18,6 +18,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
+    "e2e:pages:build": "VITE_STATIC_DEMO_ONLY=true vite build --base /tesvikdestek/uygulama/ --outDir dist-pages",
+    "e2e:pages": "pnpm run e2e:pages:build && playwright test --config=playwright.pages.config.ts",
     "e2e:install": "playwright install --with-deps chromium",
     "storybook": "storybook dev -p 6006 --no-open",
     "storybook:build": "storybook build"

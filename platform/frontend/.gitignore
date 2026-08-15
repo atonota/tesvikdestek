@@ -4,6 +4,7 @@
 # which is what the canonical package fingerprint enumerates.
 node_modules/
 dist/
+dist-pages/
 coverage/
 storybook-static/
 playwright-report/

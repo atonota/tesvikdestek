@@ -1,8 +1,9 @@
 /** Authenticated surfaces: dashboard, discovery, decision workspace, settings, ops. */
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   NavLink,
+  Navigate,
   Outlet,
   useLocation,
   useNavigate,
@@ -64,7 +65,17 @@ import {
   type AssistantSuggestion,
   type ConversionAction,
 } from "@/components";
-import { demoBadgeLabel, useDemoSession } from "@/demo";
+import {
+  DEMO_ROLE_PARAM,
+  demoBadgeLabel,
+  isStaticDemoOnly,
+  parseDemoRole,
+  startDemoSession,
+  useDemoSession,
+  wasDemoEndedHere,
+  withDemoRole,
+  withoutDemoRole,
+} from "@/demo";
 import { calculateMaturity } from "@/domain/maturity";
 import { emptyProfileValues } from "@/domain/facts";
 import { useUiStore, type Density, type FontScale, type ThemeChoice } from "@/store/ui";
@@ -114,6 +125,128 @@ export const APP_NAV = [
  * frame a visitor without a session is entitled to see.
  */
 export function WorkspaceGate() {
+  /*
+   * Two deployments, two front doors, chosen by a build-time fact.
+   *
+   * This function holds no hook of its own on purpose: the two gates below ask
+   * genuinely different questions - one asks a server, the other asks the
+   * address bar - and merging them would mean one component whose hooks run
+   * for a deployment they do not apply to. The ordinary path below is the
+   * original gate, unchanged, and `isStaticDemoOnly()` is false for every
+   * build except the one GitHub Pages workflow.
+   */
+  return isStaticDemoOnly() ? <StaticDemoGate /> : <ServerSessionGate />;
+}
+
+/**
+ * The static publication's front door: the address bar, and no network.
+ *
+ * On GitHub Pages there is no FastAPI process, so the evidence read the server
+ * gate depends on cannot be made and must not be attempted - a static page
+ * asking a file server for `/api/degerlendirmeler` gets a 404 and turns a
+ * refresh into "Çalışma alanı açılamadı", which is the defect this gate exists
+ * to remove. What is real on that publication is the demo, so the question
+ * here is "which demo profile is this?", and the only place the answer can
+ * survive a reload without being written to storage is `?demo=<rol>`.
+ *
+ * Four answers, and the asymmetry between them is deliberate:
+ *
+ *   a live demo    renders the workspace, and the address is brought back into
+ *                  agreement with the session. The *session* is the fact; a
+ *                  stale link that names the other profile does not relabel a
+ *                  running demo, it gets corrected by it.
+ *   a readable
+ *   `?demo=…`      rebuilds that demo, once, and renders. This is the reload.
+ *   a demo that
+ *   was ended here rebuilds nothing. Pressing Çıkış and then going back to the
+ *                  address must not be an undo for leaving.
+ *   anything else  goes to the login screen, which is where the two profiles
+ *                  are and where the static notice explains the publication.
+ *                  Not an error card: nothing failed.
+ */
+function StaticDemoGate() {
+  const location = useLocation();
+  const demo = useDemoSession();
+  const navigate = useNavigate();
+
+  const roleFromUrl = parseDemoRole(new URLSearchParams(location.search).get(DEMO_ROLE_PARAM));
+  /*
+   * A demo already left in this document is not rebuilt, however inviting the
+   * address looks. `wasDemoEndedHere` is module memory with the document's own
+   * lifetime - see `demo/session.ts` for what that does and does not promise.
+   */
+  const rebuildable = roleFromUrl !== null && !wasDemoEndedHere();
+
+  /*
+   * The two writes this gate performs, both in an effect and both idempotent.
+   *
+   * Starting the session during render would be a side effect in a render
+   * pass, and React may run those twice; the query layer reads the session at
+   * call time, so an effect is early enough - the first read a workspace
+   * screen makes happens after this commit.
+   */
+  useEffect(() => {
+    if (demo === null) {
+      if (rebuildable && roleFromUrl !== null) startDemoSession(roleFromUrl);
+      return;
+    }
+    if (roleFromUrl !== demo.role) {
+      /*
+       * The running session wins, and the address is rewritten to say so.
+       *
+       * `replace`, because this is a correction rather than a place the
+       * visitor navigated to and might want to go back to. And the fragment is
+       * carried rather than dropped: `#kanit-3` is where the reader is *inside*
+       * the screen, this rewrite happens underneath them while they are looking
+       * at it, and losing it would scroll a reviewer back to the top of a long
+       * decision page for no reason they could see.
+       */
+      void navigate(
+        `${location.pathname}${withDemoRole(location.search, demo.role)}${location.hash}`,
+        { replace: true },
+      );
+    }
+  }, [demo, location.hash, location.pathname, location.search, navigate, rebuildable, roleFromUrl]);
+
+  if (demo === null) {
+    if (rebuildable) {
+      // The effect above is about to open it; a skeleton for one commit is
+      // honest and short, and it is what the server gate shows here too.
+      return (
+        <PublicShell>
+          <SkeletonBlock lines={5} label="Demo yeniden kuruluyor" />
+        </PublicShell>
+      );
+    }
+    /*
+     * No demo, and nothing readable to rebuild one from.
+     *
+     * Sent to the login screen rather than shown an error, and the return path
+     * is stripped of any demo claim first: a value that was just refused must
+     * not be handed back through `donus` and re-applied after entry.
+     */
+    return (
+      <Navigate
+        to={loginHref(
+          `${location.pathname}${withoutDemoRole(location.search)}${location.hash}`,
+        )}
+        replace
+      />
+    );
+  }
+
+  return <Outlet />;
+}
+
+/**
+ * The ordinary deployment's front door, behind a real FastAPI origin.
+ *
+ * Unchanged by the static-demo work: it observes the session exactly as it
+ * always has, and the `?demo=…` parameter grants nothing here. A URL parameter
+ * that could open a demo in the deployment that has real tenants would be a
+ * link anybody could send to make somebody else's product show example data.
+ */
+function ServerSessionGate() {
   const location = useLocation();
   const session = useDecisionsQuery();
   const returnTo = `${location.pathname}${location.search}`;

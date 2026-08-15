@@ -15,6 +15,19 @@ import { defineConfig, devices } from "@playwright/test";
  * The build under test is the *production* build, mounted at `/uygulama/`
  * exactly as the reverse proxy will mount it. Only the backend is faked.
  */
+
+/**
+ * The static publication is *not* run from this config.
+ *
+ * It has its own - `playwright.pages.config.ts` - and the separation is not
+ * tidiness. Two configs mean two servers and two builds, and holding both here
+ * made every ordinary `pnpm e2e` (and every Frontend CI run) build the Pages
+ * artifact as well: a second Vite build, started at the same moment as the
+ * first, paid for by a job that never looks at its output. `testIgnore` below
+ * keeps the spec out of these projects; the other config is what runs it.
+ */
+const PAGES_SPEC = /pages-static-demo\.spec\.ts/u;
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -32,8 +45,8 @@ export default defineConfig({
   // for a broken assertion.
   expect: { timeout: 10_000 },
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile", use: { ...devices["Pixel 5"] } },
+    { name: "chromium", use: { ...devices["Desktop Chrome"] }, testIgnore: PAGES_SPEC },
+    { name: "mobile", use: { ...devices["Pixel 5"] }, testIgnore: PAGES_SPEC },
   ],
   webServer: {
     // Self-contained on purpose: builds and serves the real production bundle,
