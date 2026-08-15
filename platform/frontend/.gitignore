@@ -1,0 +1,12 @@
+# Everything here is build/runtime output, never package content.
+# A nested ignore file keeps the repository-root .gitignore untouched while
+# still keeping node_modules out of `git ls-files -co --exclude-standard`,
+# which is what the canonical package fingerprint enumerates.
+node_modules/
+dist/
+coverage/
+storybook-static/
+playwright-report/
+test-results/
+.vite/
+*.tsbuildinfo

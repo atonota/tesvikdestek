@@ -1,0 +1,120 @@
+{% extends "temel.html" %}
+{% block title %}Karar ayrintisi{% endblock %}
+{% block content %}
+  <h1>{{ program.name if program else decision.program_code }}</h1>
+  <p>
+    <span class="badge badge-{{ decision.outcome.value }}">{{ outcome_labels[decision.outcome] }}</span>
+  </p>
+  <div class="notice">
+    <p>{{ decision.review_status.value == 'review_required' and 'Bu karar yeniden inceleme gerektiriyor.' or 'Bu karar guncel kural ve kaynak surumune gore uretildi.' }}</p>
+    <p>
+      Bu sonuc <strong>baglayici degildir</strong> ve resmi kurum karari yerine gecmez.
+      Kesin bilgi icin resmi kaynagi esas alin.
+    </p>
+  </div>
+  {% if request.query_params.get('onay') == 'tamam' %}
+    <div class="notice ok" role="status"><p>Kullanici onayiniz kaydedildi.</p></div>
+  {% endif %}
+  <h2>Neden bu sonuc?</h2>
+  {% if decision.reasons %}
+    <ul>
+      {% for reason in decision.reasons %}
+        <li>{{ reason_labels.get(reason, reason) }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="meta">Ek gerekce yok.</p>
+  {% endif %}
+  {% if decision.missing_facts %}
+    <h2>Eksik veriler</h2>
+    <ul>
+      {% for fact in decision.missing_facts %}
+        <li>{{ fact_labels.get(fact, fact) }} <span class="meta">({{ fact }})</span></li>
+      {% endfor %}
+    </ul>
+    <p><a href="/profil">Profili tamamlayin</a>.</p>
+  {% endif %}
+  <h2>Kural izi</h2>
+  <div class="table-scroll">
+    <table>
+      <caption class="meta">Her kosul, dayandigi kaynak yakalamasiyla birlikte.</caption>
+      <thead>
+        <tr>
+          <th scope="col">Kosul</th>
+          <th scope="col">Beklenen</th>
+          <th scope="col">Profildeki deger</th>
+          <th scope="col">Sonuc</th>
+          <th scope="col">Kaynak</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for trace in decision.traces %}
+          <tr>
+            <th scope="row">{{ trace.label or (fact_labels.get(trace.fact, trace.fact)) }}</th>
+            <td>{{ trace.operator }} {{ trace.expected }}</td>
+            <td>{{ 'bilinmiyor' if trace.actual is none else trace.actual }}</td>
+            <td>{{ {'true': 'saglandi', 'false': 'saglanmadi', 'unknown': 'bilinmiyor'}[trace.result] }}</td>
+            <td><code>{{ trace.citation }}</code></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <h2>Kaynaklar ve surumler</h2>
+  <dl>
+    <dt>Kural kumesi surumu</dt><dd><code>{{ decision.rule_set_version_id }}</code></dd>
+    <dt>Program surumu</dt><dd><code>{{ decision.program_version_id }}</code></dd>
+    <dt>Girdi ozeti (SHA-256)</dt><dd><code class="hash">{{ decision.input_hash }}</code></dd>
+    <dt>Karar ozeti (SHA-256)</dt><dd><code class="hash">{{ decision.decision_hash }}</code></dd>
+  </dl>
+  <ul>
+    {% for snapshot in snapshots %}
+      <li>
+        <a href="{{ snapshot.url }}" rel="noopener noreferrer">{{ snapshot.title }}</a>
+        — {{ snapshot.publisher }},
+        yakalama: {{ snapshot.captured_at.strftime('%Y-%m-%d') }},
+        icerik ozeti: <code class="hash">{{ snapshot.short_hash() }}</code>,
+        inceleme: {{ snapshot.review_status.value }}
+        {% if not snapshot.effective_from and not snapshot.effective_to %}
+          <br><span class="meta">Yururluk tarihleri kaynakta yayinlanmamis; tahmin edilmemistir.</span>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+  {% if program and program.required_documents %}
+    <h2>Gereken belgeler (kontrol listesi)</h2>
+    <ul>
+      {% for document in program.required_documents %}<li>{{ document }}</li>{% endfor %}
+    </ul>
+    <p class="meta">Bu liste hazirlik icindir; resmi basvuru ilgili kurumun sisteminden yapilir.</p>
+  {% endif %}
+  {% if program and not program.published_reference %}
+    <p class="meta">
+      Bu programda kaynakta yayinlanmis referans tutar sisteme islenmemistir. Hicbir tutar
+      uydurulmaz; hak edilmis tutar hesaplanmaz.
+    </p>
+  {% endif %}
+  <h2>Kullanici onayi</h2>
+  <p class="meta">
+    Bu onay <strong>sizin kendi kaydiniz</strong> icindir. Resmi kurum onayi degildir ve
+    hicbir kuruma iletilmez.
+  </p>
+  {% if approvals %}
+    <ul>
+      {% for approval in approvals %}
+        <li>{{ approval.label }} — {{ approval.approved_at.strftime('%Y-%m-%d %H:%M') }}
+          {% if approval.note %}<br><span class="meta">{{ approval.note }}</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  <form method="post" action="/degerlendirmeler/{{ decision.id }}/onay">
+    <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+    <div class="field">
+      <label for="not">Not (istege bagli)</label>
+      <textarea id="not" name="not" rows="3"></textarea>
+    </div>
+    <button type="submit">Kullanici onayi ver</button>
+  </form>
+  <p><a href="/degerlendirmeler">Listeye don</a></p>
+{% endblock %}

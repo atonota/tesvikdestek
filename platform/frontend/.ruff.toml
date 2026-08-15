@@ -1,0 +1,12 @@
+# This subtree contains no Python and must never be linted or formatted by the
+# backend's Ruff run.
+#
+# Why this file exists: `ruff format --check .` from `platform/` walks into
+# `frontend/node_modules`, where a transitive dependency (`flatted`) ships a
+# vendored `flatted.py`. Ruff's linter excludes it, but the formatter counted
+# it - so a dependency update could have failed the *backend* format gate for
+# reasons that have nothing to do with this repository's Python.
+#
+# Scoped here rather than in platform/pyproject.toml because this package is
+# not permitted to modify backend configuration.
+extend-exclude = ["*"]

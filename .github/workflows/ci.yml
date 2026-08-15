@@ -1,0 +1,199 @@
+# CI for the DestekTesvik MVP.
+#
+# What this workflow proves: the code lints, type checks, and passes its unit,
+# architecture and PostgreSQL integration tests - including row level security
+# and the append-only triggers - and that a linux/amd64 image builds and boots.
+#
+# What it explicitly does NOT do: push an image, deploy anything, or claim
+# dual-vendor (AMD + Intel) verification. GitHub-hosted x64 runners do not
+# guarantee a CPU vendor, so a green run here is evidence about one x86_64
+# host, not about two. That gate lives in
+# docs/runbooks/hetzner-dual-host-acceptance.md.
+#
+# No secret is read and no registry credential exists in this file.
+
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_VERSION: "0.11.1"
+  PYTHON_VERSION: "3.13"
+
+defaults:
+  run:
+    working-directory: platform
+
+jobs:
+  lint-type-unit:
+    name: Lint, type check, unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install uv (pinned, from the official installer)
+        run: |
+          curl -LsSf "https://astral.sh/uv/${UV_VERSION}/install.sh" | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Install dependencies from the lockfile
+        run: uv sync --frozen
+      - name: Ruff (lint)
+        run: uv run --frozen ruff check .
+      - name: Ruff (format check)
+        run: uv run --frozen ruff format --check .
+      - name: mypy
+        run: uv run --frozen mypy
+      - name: Unit tests
+        run: uv run --frozen pytest tests/unit -q
+
+  architecture-and-legacy-guard:
+    name: Architecture boundaries and legacy prototype guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install uv (pinned, from the official installer)
+        run: |
+          curl -LsSf "https://astral.sh/uv/${UV_VERSION}/install.sh" | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - run: uv sync --frozen
+      - name: Domain must not import a framework; the prototype must not change
+        run: uv run --frozen pytest tests/architecture -q
+
+  postgres-integration:
+    name: PostgreSQL integration, migrations and RLS
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: destektesvik
+          POSTGRES_USER: destektesvik_owner
+          POSTGRES_PASSWORD: ci-owner-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U destektesvik_owner -d destektesvik"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DESTEKTESVIK_TEST_DATABASE_URL: postgresql+psycopg://destektesvik_owner:ci-owner-password@127.0.0.1:5432/destektesvik
+      DESTEKTESVIK_TEST_APP_DATABASE_URL: postgresql+psycopg://destektesvik_app:ci-app-password@127.0.0.1:5432/destektesvik
+      DESTEKTESVIK_APP_DB_ROLE: destektesvik_app
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install uv (pinned, from the official installer)
+        run: |
+          curl -LsSf "https://astral.sh/uv/${UV_VERSION}/install.sh" | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - run: uv sync --frozen
+      - name: Create the unprivileged application role
+        # NOSUPERUSER + NOBYPASSRLS is the whole point: with a privileged role
+        # the RLS assertions would pass without RLS doing anything at all.
+        # CONNECT + USAGE only: table grants are the migration's job, per table.
+        env:
+          PGPASSWORD: ci-owner-password
+        run: |
+          psql -h 127.0.0.1 -U destektesvik_owner -d destektesvik -v ON_ERROR_STOP=1 <<'SQL'
+          CREATE ROLE destektesvik_app LOGIN PASSWORD 'ci-app-password'
+              NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS;
+          GRANT CONNECT ON DATABASE destektesvik TO destektesvik_app;
+          GRANT USAGE ON SCHEMA public TO destektesvik_app;
+          SQL
+      - name: Integration tests (application layer + PostgreSQL security)
+        run: uv run --frozen pytest tests/integration -q
+      - name: The PostgreSQL-only security tests must not have skipped
+        # A silently skipped security test is worse than a failing one.
+        # `set -o pipefail` is load bearing: without it `pytest | tee` reports
+        # tee's exit code, so a *failing* security test would pass this gate.
+        run: |
+          set -o pipefail
+          uv run --frozen pytest tests/integration/test_postgres_security.py \
+            -q --no-header -rs | tee /tmp/pg-security.txt
+          if grep -qi "skipped" /tmp/pg-security.txt; then
+            echo "::error::PostgreSQL security tests skipped in CI - RLS and"
+            echo "::error::append-only triggers were therefore NOT verified."
+            exit 1
+          fi
+
+  container-build-and-smoke:
+    name: linux/amd64 image build and container smoke
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: destektesvik
+          POSTGRES_USER: destektesvik_owner
+          POSTGRES_PASSWORD: ci-owner-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U destektesvik_owner -d destektesvik"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Buildx
+        # v4 and v7 below are the current majors on the official release pages,
+        # checked 2026-08-14; see docs/reports/2026-08-14-implementation-evidence.md.
+        uses: docker/setup-buildx-action@v4
+      - name: Build linux/amd64 image (loaded locally, never pushed)
+        uses: docker/build-push-action@v7
+        with:
+          context: platform
+          file: platform/Dockerfile
+          platforms: linux/amd64
+          push: false
+          load: true
+          tags: destektesvik:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Create the unprivileged application role
+        # The smoke test used to run the web container as the schema owner,
+        # which is a superuser here: every RLS policy would have been bypassed
+        # and the smoke would still have gone green.
+        # CONNECT + USAGE only: table grants are the migration's job, per table.
+        env:
+          PGPASSWORD: ci-owner-password
+        run: |
+          psql -h 127.0.0.1 -U destektesvik_owner -d destektesvik -v ON_ERROR_STOP=1 <<'SQL'
+          CREATE ROLE destektesvik_app LOGIN PASSWORD 'ci-app-password'
+              NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS;
+          GRANT CONNECT ON DATABASE destektesvik TO destektesvik_app;
+          GRANT USAGE ON SCHEMA public TO destektesvik_app;
+          SQL
+      - name: Container smoke (migrate, seed, health, readiness, OpenAPI, page)
+        # Owner URL migrates and seeds; the web container runs as the
+        # application role, and the script refuses to continue if that role is
+        # a superuser or holds BYPASSRLS.
+        run: |
+          ./scripts/container-smoke.sh \
+            destektesvik:ci \
+            'postgresql+psycopg://destektesvik_owner:ci-owner-password@127.0.0.1:5432/destektesvik' \
+            'postgresql+psycopg://destektesvik_app:ci-app-password@127.0.0.1:5432/destektesvik' \
+            host
+      - name: Determinism fingerprint inside the image
+        # Recorded so the dual-host runbook can compare this exact output on a
+        # real AMD host and a real Intel host.
+        run: docker run --rm destektesvik:ci python scripts/decision-fingerprint.py

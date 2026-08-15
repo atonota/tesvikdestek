@@ -1,0 +1,622 @@
+/**
+ * The adaptive enterprise shell and assistant.
+ *
+ * Mobile-first in the literal sense: the 320px layout is the one written
+ * without a media query, and the desktop arrangement is the exception added
+ * when there is room. Everything is built on the existing tokens - no new
+ * colour, no new spacing scale, no new radius.
+ *
+ * Three rules this file is held to by `adaptive.test.tsx`, all of them
+ * lessons already paid for elsewhere in this codebase:
+ *
+ *  1. Every grid declares `minmax(0, 1fr)`. An implicit `auto` track takes its
+ *     minimum from its content and grows past its own container instead of
+ *     wrapping, which is exactly how the provider and media surfaces overflowed
+ *     at 320px.
+ *  2. Motion goes through `--dt-motion-duration` and nothing else. A hard-coded
+ *     `200ms` ignores both `prefers-reduced-motion` and the appearance store,
+ *     so the setting would be a lie in the one place it matters.
+ *  3. Nothing hides overflow and nothing is a pill.
+ *
+ * Two live-browser findings are answered by the layout below, and pinned by
+ * `adaptive-layout.test.ts`:
+ *
+ *  - **The conversion action shared `grid-area: content`.** Two elements in one
+ *    named area are stacked on top of each other by definition, so at 1440 the
+ *    primary call to action overlapped the first card on the page. Header,
+ *    conversion and content are now three distinct areas, at both sizes, so the
+ *    overlap cannot be reintroduced by a margin.
+ *  - **The rail was `align-self: start`**, so its border stopped at the height
+ *    of its own list and the shell read as a floating box. The rail now spans
+ *    both content rows and stretches through the shell; the sticky behaviour
+ *    moved onto the list inside it, which is the part that actually needs to
+ *    travel when the navigation is longer than the viewport.
+ *
+ * The 320px navigation and assistant are modal sheets rather than inline
+ * regions, so their rules are here too. They are positioned, backdropped and
+ * scroll-safe; modality, the focus trap and Escape belong to the dialog
+ * primitive, not to CSS.
+ *
+ * Unlike the media and provider stylesheets, this one *is* imported by the
+ * application entry: a real route renders this shell, so its rules are used.
+ */
+
+@layer components {
+  /* ------------------------------------------------------------ the frame */
+  /**
+   * One column, four stacked areas. Named rather than ordinal: the conversion
+   * action is optional, and an ordinal `grid-template-rows` silently shifts
+   * every later child up a row when it is absent.
+   *
+   * On a phone the frame is the window, and the content is what scrolls.
+   *
+   * This used to be `min-block-size: 100dvh` with the whole document scrolling
+   * underneath a `fixed` conversion action and a `sticky` thumb bar. Both of
+   * those paint on top of the page, and reserving space at the *end* of the
+   * content only ever rescues the last card: anything that happens to lie in the
+   * bottom band at the scroll offset a person arrives at is simply underneath an
+   * opaque bar, and no amount of trailing padding moves it.
+   *
+   * Measured in Chromium at 320x568 on `/uygunluk/sihirbaz`, at `scrollY = 0`:
+   * the first answer control occupied `y 494.14 - 538.14` while the thumb bar
+   * began at `503.83`. Nine and a half pixels of a 44px target were reachable,
+   * and a hit test 30% of the way down it returned `.dt-shell__bottom-link`.
+   * axe reported `target-size`, serious: "partially obscured (smallest space is
+   * 254px by 10.7px)". It came clear at maximum scroll, which is why every
+   * overlap test - all of which scroll first - was green while this shipped.
+   *
+   * Bounding the frame to the window and letting only `.dt-shell__content`
+   * scroll makes the chrome permanently visible *and* structurally incapable of
+   * covering anything: header, action and thumb bar are rows outside the
+   * scrollport rather than layers above it. "Pinned" and "covers nothing" stop
+   * being two requirements held apart by arithmetic.
+   *
+   * The desktop query hands the scroll back to the document, where the rail and
+   * the assistant are sticky and need the page to travel.
+   */
+  .dt-shell {
+    /**
+     * Measured heights, published by the shell component.
+     *
+     * Declared here with a zero fallback so the first paint - before the
+     * resize observer has run once - is a layout that merely lacks the offsets
+     * rather than one built on `calc()` with an empty variable in it. The
+     * header is two layers, wraps at 320px and grows with the font-scale
+     * setting, so no number written in this file could be right for everyone.
+     */
+    --dt-shell-header-h: 0px;
+    --dt-shell-bottom-h: 0px;
+    --dt-shell-conversion-h: 0px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "header"
+      "content"
+      "conversion"
+      "bottom";
+    block-size: 100dvh;
+    background: var(--dt-color-bg);
+    color: var(--dt-color-fg);
+  }
+
+  /* ---------------------------------------------------------- the header */
+  .dt-shell__header {
+    grid-area: header;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    position: sticky;
+    inset-block-start: 0;
+    z-index: var(--dt-z-sticky);
+    background: var(--dt-color-surface);
+    border-block-end: 1px solid var(--dt-color-line);
+  }
+
+  /**
+   * Two real layers, each addressable.
+   *
+   * `data-header-layer` is not decoration: a "layer" made of margins inside one
+   * row is invisible to assistive technology and to the layout test.
+   */
+  .dt-shell__header-layer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    padding-block: 0.5rem;
+    /* `viewport-fit=cover` means the page runs under the rounded corners. */
+    padding-inline: calc(var(--dt-density-pad-x) + env(safe-area-inset-left, 0px))
+      calc(var(--dt-density-pad-x) + env(safe-area-inset-right, 0px));
+    min-inline-size: 0;
+  }
+
+  .dt-shell__header-layer[data-header-layer="context"] {
+    border-block-start: 1px solid var(--dt-color-line);
+    background: var(--dt-color-surface-sunken);
+  }
+
+  .dt-shell__brand {
+    font-weight: var(--dt-font-weight-bold);
+    color: var(--dt-color-primary);
+    text-decoration: none;
+    min-inline-size: 0;
+  }
+
+  .dt-shell__utilities {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin-inline-start: auto;
+    min-inline-size: 0;
+  }
+
+  /* The two header controls that open the 320px sheets. */
+  .dt-shell__nav-trigger,
+  .dt-shell__aside-trigger {
+    display: flex;
+    align-items: center;
+    min-inline-size: 0;
+  }
+
+  .dt-shell__title {
+    margin: 0;
+    font-weight: var(--dt-font-weight-medium);
+    min-inline-size: 0;
+  }
+
+  .dt-shell__crumbs {
+    color: var(--dt-color-fg-muted);
+    min-inline-size: 0;
+  }
+
+  /* ------------------------------------------------------ the navigation */
+  .dt-shell__rail {
+    grid-area: rail;
+    background: var(--dt-color-surface);
+    border-inline-end: 1px solid var(--dt-color-line);
+  }
+
+  /**
+   * The scrolling part is the list, not the column.
+   *
+   * A sticky element that has been stretched to fill its grid area has nowhere
+   * to travel, so pinning the column would do nothing while also capping its
+   * height. The list travels instead: it stays in view past a long page and
+   * scrolls on its own when the navigation is taller than the viewport.
+   */
+  .dt-shell__rail > ul {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: sticky;
+    /**
+     * Below the header, not behind it.
+     *
+     * The header is sticky at `0` and sits in a higher stacking context, so a
+     * list pinned to `0` shares that band and loses. What that looked like in a
+     * browser: after scrolling, Kokpit and Kararlar were under the header -
+     * visible, focusable and unclickable.
+     */
+    inset-block-start: var(--dt-shell-header-h, 0px);
+    max-block-size: calc(100dvh - var(--dt-shell-header-h, 0px));
+    overflow-y: auto;
+  }
+
+  .dt-shell__nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-block-size: var(--dt-target-touch);
+    padding: 0.5rem var(--dt-density-pad-x);
+    color: inherit;
+    text-decoration: none;
+    border-inline-start: 3px solid transparent;
+  }
+
+  .dt-shell__nav-link.is-active {
+    border-inline-start-color: var(--dt-color-primary);
+    background: var(--dt-color-primary-soft);
+    font-weight: var(--dt-font-weight-medium);
+  }
+
+  .dt-shell__nav-link:hover {
+    background: var(--dt-color-surface-sunken);
+  }
+
+  /* ------------------------------------------------------------ the sheets */
+  /**
+   * The 320px navigation and assistant.
+   *
+   * They cover the page rather than pushing it down, which is the difference
+   * between a panel and an accordion: an accordion moves the content a person
+   * was reading, and gives a keyboard user nothing to be contained by.
+   */
+  .dt-sheet__overlay {
+    position: fixed;
+    inset: 0;
+    background: rgb(0 0 0 / 45%);
+    z-index: var(--dt-z-drawer);
+  }
+
+  .dt-sheet {
+    position: fixed;
+    inset-block: 0;
+    z-index: var(--dt-z-dialog);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    inline-size: min(20rem, 92vw);
+    background: var(--dt-color-surface);
+    box-shadow: var(--dt-shadow-2);
+    transition: transform var(--dt-motion-duration) var(--dt-motion-ease);
+  }
+
+  .dt-sheet--start {
+    inset-inline-start: 0;
+    border-inline-end: 1px solid var(--dt-color-line);
+  }
+
+  .dt-sheet--end {
+    inset-inline-end: 0;
+    inline-size: min(26rem, 96vw);
+    border-inline-start: 1px solid var(--dt-color-line);
+  }
+
+  .dt-sheet--start {
+    padding-inline-start: env(safe-area-inset-left, 0px);
+  }
+
+  .dt-sheet--end {
+    padding-inline-end: env(safe-area-inset-right, 0px);
+  }
+
+  .dt-sheet__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding: 0.6rem var(--dt-density-pad-x);
+    border-block-end: 1px solid var(--dt-color-line);
+    min-inline-size: 0;
+  }
+
+  .dt-sheet__title {
+    margin: 0;
+    font-size: var(--dt-font-size-lg);
+  }
+
+  .dt-sheet__body {
+    padding: var(--dt-density-pad-x);
+    padding-block-end: calc(var(--dt-density-pad-x) + env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+    min-inline-size: 0;
+  }
+
+  .dt-sheet__body > ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* --------------------------------------------------------- the content */
+  .dt-shell__content {
+    grid-area: content;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: var(--dt-density-gap);
+    padding-block-start: var(--dt-density-pad-x);
+    padding-inline: calc(var(--dt-density-pad-x) + env(safe-area-inset-left, 0px))
+      calc(var(--dt-density-pad-x) + env(safe-area-inset-right, 0px));
+    /**
+     * Nothing to reserve any more, so nothing is reserved.
+     *
+     * This used to be `calc(pad + --dt-shell-conversion-h + safe-area-bottom)`,
+     * making room under a conversion action that was fixed over the page. The
+     * action is a row below this box now, and the thumb bar is a row below that,
+     * so the only space needed at the end of the content is the page's own
+     * padding. No measured height is read here, and the bottom inset belongs to
+     * the bar that actually touches it.
+     */
+    padding-block-end: var(--dt-density-pad-x);
+    /**
+     * The scrollport. The only one on a phone.
+     *
+     * `overscroll-behavior-block: contain` stops a flick that runs out of
+     * content from scrolling whatever is behind the frame - on iOS that is the
+     * rubber-band that makes a fixed app shell feel like a web page.
+     */
+    overflow-y: auto;
+    overscroll-behavior-block: contain;
+    min-inline-size: 0;
+  }
+
+  /* It takes focus on a phone so a keyboard can scroll it, so it shows focus.
+     `outline-offset` is negative: the ring is drawn just inside the scrollport
+     rather than outside it, where the header and the thumb bar would clip it. */
+  .dt-shell__content:focus-visible {
+    outline: var(--dt-focus-ring);
+    outline-offset: -3px;
+  }
+
+  .dt-shell__main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--dt-density-gap);
+    min-inline-size: 0;
+  }
+
+  /* ------------------------------------------------------------ the rail */
+  .dt-shell__aside {
+    grid-area: aside;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: var(--dt-density-gap);
+    /*
+     * No block-end padding on the column itself.
+     *
+     * A sticky child cannot travel past the end of its containing block, so
+     * padding here would stop the assistant that many pixels short at the
+     * bottom of the page - and "short" means "back under the header". The
+     * spacing moves inside, where it is part of the bounded box instead.
+     */
+    padding-inline: var(--dt-density-pad-x);
+    min-inline-size: 0;
+  }
+
+  /**
+   * The part of the assistant that travels.
+   *
+   * The column is stretched across both content rows and has nowhere to go; the
+   * block inside it does. Sticky here rather than on the column for the same
+   * reason the rail's list is sticky rather than the rail.
+   */
+  .dt-shell__aside-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--dt-density-gap);
+    padding-block-end: var(--dt-density-pad-x);
+    min-inline-size: 0;
+  }
+
+  /* ----------------------------------------------- the conversion action */
+  /**
+   * Pinned above the bottom bar, not buried at the end of the page.
+   *
+   * A conversion action the person has to scroll back up to find is a
+   * conversion action that does not get used.
+   */
+  /**
+   * A row, not a layer.
+   *
+   * It was `position: sticky` first, which pins an element only while its own
+   * containing block is on screen - it held for the height of its row and then
+   * scrolled away: measured at 320x568, by `scrollY ≈ 584` its top was at
+   * `-435`. It was then `position: fixed`, which kept it on screen by painting
+   * it over the page, and paid for that by covering whatever was underneath.
+   *
+   * Now the frame is bounded to the window and the content scrolls inside it,
+   * so this sits in a real grid row between the content and the thumb bar. It
+   * cannot scroll away, because the row is outside the scrollport; it cannot
+   * cover anything, because a grid row is not a layer. Its own area keeps it
+   * from ever sharing a track with the content again.
+   */
+  .dt-shell__conversion {
+    grid-area: conversion;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.3rem;
+    padding-block: 0.6rem;
+    padding-inline: calc(var(--dt-density-pad-x) + env(safe-area-inset-left, 0px))
+      calc(var(--dt-density-pad-x) + env(safe-area-inset-right, 0px));
+    background: var(--dt-color-surface);
+    border-block-start: 1px solid var(--dt-color-line);
+    box-shadow: var(--dt-shadow-2);
+  }
+
+  .dt-shell__conversion-hint {
+    margin: 0;
+    color: var(--dt-color-fg-muted);
+    font-size: var(--dt-font-size-sm);
+  }
+
+  /* ---------------------------------------------------- bottom navigation */
+  /**
+   * The last row of the frame, and the only reader of the bottom inset.
+   *
+   * It was `position: sticky`, which pinned it to the viewport while the page
+   * scrolled underneath - so it painted over the content, and the content never
+   * reserved its height. The frame is bounded now and this is a real row, so it
+   * is permanently in view without covering anything.
+   *
+   * **The home indicator is accounted for here and nowhere else.** This padding
+   * is part of the element's border box, so the height the shell publishes as
+   * `--dt-shell-bottom-h` already contains it. Anything that then added
+   * `env(safe-area-inset-bottom)` on top of that variable counted the same
+   * 34 pixels twice - which is exactly what the fixed conversion action's
+   * `inset-block-end` used to do. There is one accounting path; `adaptive-layout
+   * .test.ts` fails if a second one appears.
+   */
+  .dt-shell__bottom {
+    grid-area: bottom;
+    background: var(--dt-color-surface);
+    border-block-start: 1px solid var(--dt-color-line);
+    /* Under the home indicator and the rounded corners otherwise. */
+    padding-block-end: env(safe-area-inset-bottom, 0px);
+    padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
+  }
+
+  .dt-shell__bottom > ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .dt-shell__bottom-link {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 0.15rem;
+    min-block-size: var(--dt-target-touch);
+    padding: 0.35rem 0.2rem;
+    color: var(--dt-color-fg-muted);
+    text-decoration: none;
+  }
+
+  .dt-shell__bottom-link.is-active {
+    color: var(--dt-color-primary);
+    font-weight: var(--dt-font-weight-medium);
+  }
+
+  .dt-shell__bottom-label {
+    font-size: var(--dt-font-size-sm);
+  }
+
+  /* --------------------------------------------------------- the assistant */
+  .dt-assistant {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--dt-density-gap);
+    min-inline-size: 0;
+  }
+
+  .dt-assistant__list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .dt-assistant__item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.3rem;
+    padding-block: 0.6rem;
+    border-block-start: 1px solid var(--dt-color-line);
+  }
+
+  .dt-assistant__title {
+    margin: 0;
+    font-weight: var(--dt-font-weight-medium);
+  }
+
+  .dt-assistant__why,
+  .dt-assistant__source,
+  .dt-assistant__read {
+    margin: 0;
+    color: var(--dt-color-fg-muted);
+    font-size: var(--dt-font-size-sm);
+  }
+
+  .dt-assistant__basis,
+  .dt-assistant__action {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+  }
+
+  .dt-assistant__provider,
+  .dt-assistant__withheld {
+    margin: 0 0 0.6rem;
+    padding: var(--dt-density-pad-y) var(--dt-density-pad-x);
+    border: 1px solid var(--dt-color-line);
+    border-radius: var(--dt-radius);
+    background: var(--dt-color-surface-sunken);
+    font-size: var(--dt-font-size-sm);
+  }
+
+  .dt-assistant__missing-title {
+    margin: 0.6rem 0 0.3rem;
+    font-weight: var(--dt-font-weight-medium);
+  }
+
+  .dt-assistant__missing {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.3rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ------------------------------------------------- three columns, ≥64rem */
+  /**
+   * The rail spans both content rows, so it runs the full height of the shell
+   * rather than stopping where its own list ends. The conversion action gets
+   * the row above the content: distinct areas, so the primary call to action
+   * cannot overlap the first card.
+   */
+  @media (min-width: 64rem) {
+    /**
+     * The document scrolls again here.
+     *
+     * The phone frame is bounded to the window so its chrome cannot cover the
+     * content. Desktop has no chrome over the content to begin with - the rail
+     * and the assistant are columns - and both of them are `position: sticky`,
+     * which needs the *page* to be what travels. Keeping the phone's bounded
+     * frame here would leave the rail and the assistant nothing to stick to.
+     */
+    .dt-shell {
+      block-size: auto;
+      min-block-size: 100dvh;
+      grid-template-columns: minmax(0, 16rem) minmax(0, 1fr);
+      grid-template-rows: auto auto minmax(0, 1fr);
+      grid-template-areas:
+        "header header"
+        "rail conversion"
+        "rail content";
+    }
+
+    .dt-shell--with-rail {
+      grid-template-columns: minmax(0, 16rem) minmax(0, 1fr) minmax(0, 22rem);
+      grid-template-areas:
+        "header header header"
+        "rail conversion aside"
+        "rail content aside";
+    }
+
+    .dt-shell__aside {
+      border-inline-start: 1px solid var(--dt-color-line);
+      padding-block-start: var(--dt-density-pad-x);
+    }
+
+    .dt-shell__aside-inner {
+      position: sticky;
+      inset-block-start: var(--dt-shell-header-h, 0px);
+      max-block-size: calc(100dvh - var(--dt-shell-header-h, 0px));
+      overflow-y: auto;
+    }
+
+    .dt-shell__conversion {
+      justify-self: end;
+      box-shadow: none;
+      border: 0;
+      background: none;
+      padding-inline: 0;
+      padding-block-end: 0;
+    }
+
+    /**
+     * The content gives its scroll back to the document.
+     *
+     * On a phone this box is the scrollport. Here the page is, and a nested
+     * scroller would strand the sticky rail and the sticky assistant: both
+     * travel with the document, and at 1440x400 a content column that swallowed
+     * the scroll would leave them nothing to move against.
+     */
+    .dt-shell__content {
+      overflow: visible;
+      padding-block-end: var(--dt-density-pad-x);
+    }
+  }
+}

@@ -1,0 +1,87 @@
+/**
+ * Data grid. Reuses the existing tokens; introduces no new colour values.
+ *
+ * Every grid here declares its columns, and every flexible track is written
+ * `minmax(0, 1fr)`. An undeclared track is `auto`, whose minimum is the widest
+ * thing inside it - which is how `/kaynaklar` came to scroll sideways by 35
+ * pixels on a 320px phone while every unit test passed.
+ * `test/design-system-contract.test.ts` fails if a grid here forgets again.
+ */
+@layer components {
+  .dt-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dt-density-gap); }
+
+  .dt-grid__toolbar { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.5rem; }
+  .dt-grid__toolbar-row {
+    display: flex; gap: var(--dt-density-gap); align-items: flex-end;
+    justify-content: space-between; flex-wrap: wrap;
+  }
+  .dt-grid__search {
+    display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.2rem;
+    /* A minimum of 18rem is 288px, which is wider than a 320px page once it is
+       padded: the field asked for more room than the page had and the whole
+       toolbar grew instead of wrapping. It may still *prefer* 18rem. */
+    min-inline-size: 0; flex: 1 1 min(100%, 18rem);
+  }
+  .dt-grid__scope { margin: 0; font-size: var(--dt-font-size-sm); }
+
+  .dt-grid__panel {
+    border: 1px solid var(--dt-color-line);
+    border-radius: var(--dt-radius);
+    background: var(--dt-color-surface-sunken);
+    padding: var(--dt-density-pad-x);
+    display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.6rem;
+  }
+  .dt-grid__panel-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.25rem; }
+  .dt-grid__panel-item {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 0.5rem; flex-wrap: wrap;
+  }
+  .dt-grid__filter { border: 0; padding: 0; margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.3rem; }
+  .dt-grid__filter legend { font-weight: 600; }
+
+  .dt-grid__bulkbar {
+    position: sticky; inset-block-start: 0; z-index: var(--dt-z-sticky);
+    display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+    flex-wrap: wrap; padding: 0.6rem 0.9rem;
+    background: var(--dt-color-accent-soft);
+    border: 1px solid var(--dt-color-accent);
+    border-radius: var(--dt-radius);
+  }
+  .dt-grid__bulkbar p { margin: 0; }
+
+  .dt-grid__tablewrap {
+    border: 1px solid var(--dt-color-line);
+    border-radius: var(--dt-radius);
+    background: var(--dt-color-surface);
+  }
+  .dt-grid__grouprow th {
+    background: var(--dt-color-surface-sunken);
+    text-align: start;
+  }
+  .dt-table th[data-pinned="start"] { position: sticky; inset-inline-start: 0; z-index: 2; background: var(--dt-color-surface-sunken); }
+
+  .dt-grid__cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dt-density-gap); }
+  .dt-grid__card {
+    border: 1px solid var(--dt-color-line);
+    border-radius: var(--dt-radius);
+    background: var(--dt-color-surface);
+    padding: var(--dt-density-pad-x);
+  }
+
+  /* Below 768px the table becomes cards rather than a horizontal scroll. */
+  .dt-grid__tablewrap--desktop { display: none; }
+  @media (min-width: 768px) {
+    .dt-grid__tablewrap--desktop { display: block; }
+    .dt-grid__cards--mobile { display: none; }
+  }
+
+  .dt-grid__pagination {
+    position: sticky; inset-block-end: 0;
+    display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+    padding: 0.5rem 0.25rem;
+    background: var(--dt-color-bg);
+    border-block-start: 1px solid var(--dt-color-line);
+  }
+
+  [data-density="dense"] .dt-grid__panel { padding: 0.4rem 0.55rem; }
+}

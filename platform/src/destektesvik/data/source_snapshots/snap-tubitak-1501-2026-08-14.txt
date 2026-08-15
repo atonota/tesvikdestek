@@ -1,0 +1,24 @@
+KAYNAK: TUBITAK 1501 - TUBITAK Sanayi Ar-Ge Projeleri Destekleme Programi
+URL: https://tubitak.gov.tr/tr/destekler/sanayi/ulusal-destek-programlari/1501-tubitak-sanayi-ar-ge-projeleri-destekleme-programi
+YAYINLAYAN: TUBITAK
+DERLEME TARIHI: 2026-08-14
+DERLEME TURU: Elle hazirlanmis ozet cikarim (canli sayfa yakalamasi degildir)
+INCELEME DURUMU: pending_review - alan uzmani dogrulamasi yapilmamistir
+
+RESMI SAYFANIN BELIRTTIGI TEMEL KOSULLAR (OZET)
+- Basvuru sahibi, Turkiye'de yerlesik sermaye sirketi olmalidir.
+- Program KOBI olcegindeki kuruluslara yoneliktir.
+- Program cagri tabanlidir; basvurular acik cagri donemlerinde alinir.
+- Destek turu hibedir (geri odemesiz).
+- Basvuru ve surec yonetimi PRODIS uzerinden yurutulur.
+
+BU SNAPSHOT'TA YER ALMAYAN BILGILER
+- Cagri acilis ve kapanis tarihleri bu derlemede yer almamaktadir. Bu nedenle cagri
+  penceresi BILINMIYOR olarak islenmistir ve kararlar KOSULLU uretilir.
+- Destek orani ve ust limit tutarlari bu derlemede yer almamaktadir. Hicbir referans
+  tutar sisteme yazilmamistir; uydurulmus tutar kullanilmaz.
+- Yururluk baslangic ve bitis tarihleri bu derlemede yer almamaktadir; NULL birakilmistir.
+
+UYARI
+Bu metin resmi belge degildir ve hukuki baglayiciligi yoktur. Guncel ve baglayici bilgi
+icin yukaridaki resmi URL esas alinmalidir.

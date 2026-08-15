@@ -1,0 +1,32 @@
+{% extends "temel.html" %}
+{% block title %}Kayit ol{% endblock %}
+{% block content %}
+  <h1>Kayit ol</h1>
+  <p class="meta">
+    Bir kayit, bir organizasyon ve bir kullanici olusturur. Verileriniz baska
+    organizasyonlardan yalitilir.
+  </p>
+  {% if error %}
+    <div class="notice error" role="alert"><p>{{ error }}</p></div>
+  {% endif %}
+  <form method="post" action="/kayit">
+    <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+    <div class="field">
+      <label for="organizasyon">Organizasyon adi</label>
+      <input id="organizasyon" name="organizasyon" type="text" autocomplete="organization">
+    </div>
+    <div class="field">
+      <label for="eposta">E-posta</label>
+      <input id="eposta" name="eposta" type="email" required autocomplete="email"
+             aria-describedby="eposta-ipucu">
+      <p class="hint" id="eposta-ipucu">Giris icin kullanilir.</p>
+    </div>
+    <div class="field">
+      <label for="parola">Parola</label>
+      <input id="parola" name="parola" type="password" required minlength="12"
+             autocomplete="new-password" aria-describedby="parola-ipucu">
+      <p class="hint" id="parola-ipucu">En az 12 karakter.</p>
+    </div>
+    <button type="submit">Hesap olustur</button>
+  </form>
+{% endblock %}

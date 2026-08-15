@@ -1,0 +1,119 @@
+# CI for the frontend package only.
+#
+# Deliberately a separate workflow from ci.yml: the Python pipeline has no Node
+# step and must not grow one, and a frontend failure must not be reported as a
+# backend failure. Neither workflow reads a secret, pushes an image, or deploys.
+#
+# What this proves: the frontend lints, type checks, passes its unit, component
+# and guard suites above the coverage thresholds in vitest.config.ts, builds,
+# builds its Storybook, and passes its browser tests including axe checks.
+#
+# Test counts are deliberately not written here. A number in a comment goes
+# stale the moment a test is added, and this file has already carried a wrong
+# one; the suite reports its own total on every run.
+#
+# What it explicitly does NOT prove: anything about the real FastAPI backend.
+# The browser tests run against Playwright-routed fixtures, which is stated in
+# every spec title.
+
+name: Frontend CI
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "platform/frontend/**"
+      - ".github/workflows/frontend-ci.yml"
+  pull_request:
+    paths:
+      - "platform/frontend/**"
+      - ".github/workflows/frontend-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "22"
+
+defaults:
+  run:
+    working-directory: platform/frontend
+
+jobs:
+  quality:
+    name: Lint, types, tests, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Enable pnpm through corepack
+        # The version comes from `packageManager` in package.json, so CI and a
+        # developer laptop cannot silently use different resolvers.
+        run: corepack enable
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: platform/frontend/pnpm-lock.yaml
+
+      - name: Install from the lockfile, exactly
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm typecheck
+
+      - name: Unit, component and guard tests with coverage thresholds
+        # Thresholds live in vitest.config.ts and fail the run on their own.
+        run: pnpm test:coverage
+
+      - name: Production build
+        run: pnpm build
+
+      - name: Storybook build
+        run: pnpm storybook:build
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: platform/frontend/coverage
+          retention-days: 7
+
+  browser:
+    name: Playwright (mocked backend)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: corepack enable
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: platform/frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Browser tests, responsive overflow and axe checks
+        # These use Playwright request routing, not a live backend. The job name
+        # and every spec title say so; this is not real-backend E2E evidence.
+        run: pnpm e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: platform/frontend/playwright-report
+          retention-days: 7

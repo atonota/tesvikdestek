@@ -1,0 +1,26 @@
+KAYNAK: KOSGEB Girisimci Destek Programi
+URL: https://kosgeb.gov.tr/site/tr/genel/destekdetay/1231/girisimci-destek-programi
+YAYINLAYAN: KOSGEB
+DERLEME TARIHI: 2026-08-14
+DERLEME TURU: Elle hazirlanmis ozet cikarim (canli sayfa yakalamasi degildir)
+INCELEME DURUMU: pending_review - alan uzmani dogrulamasi yapilmamistir
+
+RESMI SAYFANIN BELIRTTIGI TEMEL KOSULLAR (OZET)
+- Programin Is Gelistirme bileseni, isletme yasi 0-3 yil araliginda olan isletmelere
+  yoneliktir.
+- Faaliyet alani kosulu NACE bazlidir: imalat (NACE Rev.2 C kisimi) ile 61, 62, 63 ve 72
+  bolumlerindeki faaliyetler resmi sayfada sayilmaktadir.
+- Isletmenin KOSGEB Veri Tabaninda kayitli ve aktif olmasi, beyaninin guncel olmasi
+  gerekmektedir.
+- Basvuru KOSGEB e-Hizmetler uzerinden yapilir.
+
+BU SNAPSHOT'TA YER ALMAYAN BILGILER
+- Cagri acilis ve kapanis tarihleri bu derlemede yer almamaktadir. Cagri penceresi
+  BILINMIYOR olarak islenmistir ve kararlar KOSULLU uretilir.
+- Destek kalemleri ve ust limit tutarlari bu derlemede yer almamaktadir; hicbir tutar
+  sisteme yazilmamistir.
+- Yururluk tarihleri NULL birakilmistir.
+
+UYARI
+Bu metin resmi belge degildir ve hukuki baglayiciligi yoktur. Guncel ve baglayici bilgi
+icin yukaridaki resmi URL esas alinmalidir.

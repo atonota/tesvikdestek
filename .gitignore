@@ -1,1 +1,49 @@
 .DS_Store
+
+# --- platform/ (Python MVP) ----------------------------------------------
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.egg-info/
+# Anchored on purpose. An unanchored `build/` or `dist/` also swallows any
+# nested directory of that name - a source folder, a fixture, a docs output -
+# and a source file lost to .gitignore is found only when it is already missing.
+/build/
+/dist/
+/platform/build/
+/platform/dist/
+
+# --- frontend (platform/frontend, Node/pnpm) ------------------------------
+node_modules/
+.pnpm-store/
+.vite/
+.turbo/
+platform/frontend/dist/
+platform/frontend/storybook-static/
+platform/frontend/playwright-report/
+platform/frontend/test-results/
+platform/frontend/blob-report/
+platform/frontend/.playwright/
+*.tsbuildinfo
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
+
+# Local databases and secrets. .env.example is committed; .env never is.
+*.db
+*.sqlite3
+.env
+.env.*
+!.env.example
+.env.local
+.env.*.local
+secrets/
+*.pem
+*.key

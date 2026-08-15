@@ -1,0 +1,21 @@
+# esbuild: Vite's bundler needs its platform binary postinstall to fetch the
+# correct native binary. Without it, no build runs.
+#
+# msw: its postinstall is a no-op here, because it only writes a browser worker
+# into directories named by a `workerDirectory` key that package.json
+# deliberately does not declare. MSW is used solely through its Node interceptor
+# in the Vitest suite; the browser tests use Playwright request routing and
+# install nothing into the page.
+#
+# Both are first-party tooling dependencies, reviewed and allowed on purpose.
+allowBuilds:
+  esbuild: true
+  msw: true
+minimumReleaseAgeExclude:
+  - '@hookform/resolvers@5.8.0'
+  - '@storybook/builder-vite@10.5.8'
+  - '@storybook/csf-plugin@10.5.8'
+  - '@storybook/react-dom-shim@10.5.8'
+  - '@storybook/react-vite@10.5.8'
+  - '@storybook/react@10.5.8'
+  - storybook@10.5.8

@@ -1,0 +1,37 @@
+{% extends "temel.html" %}
+{% block title %}Degerlendirmeler{% endblock %}
+{% block content %}
+  <h1>Degerlendirmeler</h1>
+  {% if not decisions %}
+    <div class="notice"><p>Henuz degerlendirme yok. <a href="/profil">Profil sayfasindan</a> calistirin.</p></div>
+  {% else %}
+    <p class="meta">Toplam {{ decisions|length }} kayit. En yeni ustte.</p>
+    <div class="table-scroll">
+      <table>
+        <caption class="meta">Her satir degistirilemez bir karar kaydidir.</caption>
+        <thead>
+          <tr>
+            <th scope="col">Program</th>
+            <th scope="col">Sonuc</th>
+            <th scope="col">Kural surumu</th>
+            <th scope="col">Karar ozeti</th>
+            <th scope="col">Tarih</th>
+            <th scope="col">Ayrinti</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for decision in decisions %}
+            <tr>
+              <th scope="row">{{ programs[decision.program_code].name if decision.program_code in programs else decision.program_code }}</th>
+              <td><span class="badge badge-{{ decision.outcome.value }}">{{ outcome_labels[decision.outcome] }}</span></td>
+              <td><code>{{ decision.rule_set_version_id }}</code></td>
+              <td><code class="hash">{{ decision.decision_hash[:12] }}</code></td>
+              <td>{{ decision.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+              <td><a href="/degerlendirmeler/{{ decision.id }}">Ac</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+{% endblock %}

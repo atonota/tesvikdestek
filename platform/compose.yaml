@@ -1,0 +1,86 @@
+# Single-host development / production-like basis.
+#
+# Two roles, on purpose:
+#   destektesvik_owner  - owns the schema, runs migrations
+#   destektesvik_app    - what the web process uses; NOSUPERUSER, NOBYPASSRLS
+# One role for both would silently disable row level security.
+#
+# There is no worker service here because this MVP has no background jobs.
+# Inventing one would be scaffolding pretending to be a system.
+
+name: destektesvik
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-destektesvik}
+      POSTGRES_USER: ${POSTGRES_USER:-destektesvik_owner}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      # Read by scripts/db-init/01-app-role.sh. Without this the init script
+      # would fall back to its own default and could create a role the
+      # migration then refuses to find.
+      DESTEKTESVIK_APP_DB_ROLE: ${DESTEKTESVIK_APP_DB_ROLE:-destektesvik_app}
+      DESTEKTESVIK_APP_DB_PASSWORD: ${DESTEKTESVIK_APP_DB_PASSWORD:?set it in .env}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./scripts/db-init:/docker-entrypoint-initdb.d:ro
+    # Deliberately NOT published to the host: nothing outside this compose
+    # network needs to reach PostgreSQL.
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-destektesvik_owner} -d ${POSTGRES_DB:-destektesvik}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    build:
+      context: .
+      platforms:
+        - linux/amd64
+    restart: unless-stopped
+    # No DESTEKTESVIK_MIGRATION_DATABASE_URL here, on purpose. The web process
+    # reads DESTEKTESVIK_DATABASE_URL only; handing it the owner credentials as
+    # well put the schema owner's password in the environment of the one
+    # process exposed to the network. Two roles only help if the web tier
+    # cannot read the other one.
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DESTEKTESVIK_DATABASE_URL: ${DESTEKTESVIK_DATABASE_URL:?set it in .env}
+      DESTEKTESVIK_SECRET_KEY: ${DESTEKTESVIK_SECRET_KEY:?set it in .env}
+      DESTEKTESVIK_SESSION_COOKIE_SECURE: ${DESTEKTESVIK_SESSION_COOKIE_SECURE:-false}
+      DESTEKTESVIK_SESSION_COOKIE_SAMESITE: ${DESTEKTESVIK_SESSION_COOKIE_SAMESITE:-lax}
+      DESTEKTESVIK_SESSION_TTL_SECONDS: ${DESTEKTESVIK_SESSION_TTL_SECONDS:-43200}
+      DESTEKTESVIK_AI_PROVIDER: ${DESTEKTESVIK_AI_PROVIDER:-disabled}
+      DESTEKTESVIK_ENVIRONMENT: ${DESTEKTESVIK_ENVIRONMENT:-development}
+    ports:
+      - "127.0.0.1:8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:8000/saglik"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  migrate:
+    build:
+      context: .
+      platforms:
+        - linux/amd64
+    profiles: ["migrate"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DESTEKTESVIK_MIGRATION_DATABASE_URL: ${DESTEKTESVIK_MIGRATION_DATABASE_URL:?set it in .env}
+      DESTEKTESVIK_DATABASE_URL: ${DESTEKTESVIK_DATABASE_URL:?set it in .env}
+      DESTEKTESVIK_APP_DB_ROLE: ${DESTEKTESVIK_APP_DB_ROLE:-destektesvik_app}
+    command: ["sh", "-c", "alembic upgrade head && python scripts/seed.py"]
+
+volumes:
+  db_data:

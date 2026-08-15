@@ -1,0 +1,28 @@
+{
+  "_comment": "SHA-256 of every legacy prototype file this change package is forbidden to touch. Computed at base SHA 2ad7561e6fa33eb384c8ce62402f9ac18dd2152d. '.gitignore' is deliberately absent: it is the one pre-existing tracked file the package may append to.",
+  "base_sha": "2ad7561e6fa33eb384c8ce62402f9ac18dd2152d",
+  "files": {
+    "404.html": "110d5d47e4c18c2350459a5fc49d2485e125f054e87685a1e404d88fbd711a6d",
+    "AGENTS.md": "19800e331242903ea0db03e5c62737801dc6be5c8f20655ac98640ce3b06249d",
+    "MOBILE-FIRST-UYUMSUZLUK-RAPORU.md": "9c37fbd11ce728a05a57838c0c281230031455af9868fa83850faf9c15a715c4",
+    "basvuru-panosu/index.html": "a7c7cba91825394094acd1ee6e639e2127060a3c85fce9ede2166f9dacbce611",
+    "birlikte-kullanim/index.html": "1167b8b7bfdd76a390a413de54ca5529362fc25e7e157f0e7ad76b769b7e099e",
+    "destektesvik.html": "a4115b31b26cc99b27ca1630b4f21b5700bbf49cd5a7ee138ffecc6de421ffb4",
+    "faaliyet-ve-nace/index.html": "1c267cd36e1a067b52c9ee9b07374fdb0b8390d85e728347ab5fc76149b1d7b8",
+    "finansman-yigini/index.html": "7706f8305e0f9b4640cee0ad746fdb689749c86ed8ede7d563a3e0db0695a0d5",
+    "gorsel-analitik/index.html": "e15d241e32852b1441d6a9f35a29a42934e3608d090ef5085a814fde6ee2f19c",
+    "index.html": "b6d9e8a9dc0d25525476c5b5d303f00958ee22fc6abd283c5bac50b2c252b64e",
+    "kanit-listesi/index.html": "563aa83089d723362a4780f2d5029dff610a42a5d650a50e355af79fa1996416",
+    "karar-gunlugu/index.html": "2f6892e836eb5608cfd7f05f52422b8cc2612a9a986af4cc34d49f218c5f6316",
+    "kaynaklar/index.html": "cff1227ebfc63a410912b8e6a517431ea46ec28be899e730a77c7fe9ede73ec8",
+    "oneri-sirasi/index.html": "1d52595b7b238edd26d00551e3c4a8a59e555e00ea04862ad168f048dd0ff8f9",
+    "sayfalari-uret.mjs": "9df3f22edcff0ddeb2d0dd8cfce66c58ee701851a2152a348a2709b3b8d4e39b",
+    "senaryo-sonucu/index.html": "d199594bdfda859785a57423da7962866e1093b86ada3bd417aaf93bb6a0da1d",
+    "senaryolar/index.html": "50586e30197c650957e3b842790652a53d9b6eefc30f26f9cf570f05656c3dbb",
+    "sozluk/index.html": "3538f7d1f3d71a6c377329b0ee25ec53f6fa75e94dd14e9f602ed73f25e498f0",
+    "takvim/index.html": "fd687429177c947f5b892e7bb604bfa30108ef318195e568094f08781ccfbe71",
+    "uygunluk-sihirbazi/index.html": "50a74015136465c8d0dd8f1c08bd10bafeddcd008c90d28086ba9c9ba761fbab",
+    "yapay-zeka-ve-mcp/index.html": "70519c54651df0d88d32cc4b21a1a071566a1de3c75989903ed16386c0ea72f7",
+    "yonetici-kokpiti/index.html": "ed970c5f5c267bb32021552c884dbe5bac908f0e951afd922256d43b9af11a5e"
+  }
+}

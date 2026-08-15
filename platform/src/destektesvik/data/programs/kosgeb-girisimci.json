@@ -1,0 +1,81 @@
+{
+  "program": {
+    "id": "KOSGEB-GIRISIMCI@2026.1",
+    "code": "KOSGEB-GIRISIMCI",
+    "name": "KOSGEB Girisimci Destek Programi (Is Gelistirme)",
+    "version": "2026.1",
+    "support_type": "grant",
+    "official_url": "https://kosgeb.gov.tr/site/tr/genel/destekdetay/1231/girisimci-destek-programi",
+    "source_snapshot_ids": ["snap-kosgeb-girisimci-2026-08-14"],
+    "call_window": {"opens_on": null, "closes_on": null},
+    "published_reference": null,
+    "required_documents": [
+      "KOSGEB Veri Tabani kaydi",
+      "Guncel isletme beyani",
+      "Ticaret sicil gazetesi",
+      "Vergi levhasi"
+    ],
+    "notes": "Faaliyet kosulu NACE bolum on ekleri ve imalat (C) kisim beyani ile modellenmistir."
+  },
+  "snapshots": [
+    {
+      "id": "snap-kosgeb-girisimci-2026-08-14",
+      "file": "snap-kosgeb-girisimci-2026-08-14.txt",
+      "url": "https://kosgeb.gov.tr/site/tr/genel/destekdetay/1231/girisimci-destek-programi",
+      "publisher": "KOSGEB",
+      "title": "KOSGEB Girisimci Destek Programi",
+      "captured_at": "2026-08-14T00:00:00+00:00",
+      "effective_from": null,
+      "effective_to": null,
+      "reviewed_at": null,
+      "review_status": "pending_review"
+    }
+  ],
+  "rule_set": {
+    "id": "KOSGEB-GIRISIMCI:2026.1",
+    "version": "2026.1",
+    "rule": {
+      "all": [
+        {
+          "op": "lte",
+          "fact": "company_age_years",
+          "value": 3,
+          "citation": "snap-kosgeb-girisimci-2026-08-14",
+          "label": "Isletme yasi 0-3 yil araliginda olmak"
+        },
+        {
+          "any": [
+            {
+              "op": "prefix",
+              "fact": "nace_code",
+              "value": ["61", "62", "63", "72"],
+              "citation": "snap-kosgeb-girisimci-2026-08-14",
+              "label": "NACE 61/62/63/72 bolumlerinde faaliyet gostermek"
+            },
+            {
+              "op": "eq",
+              "fact": "nace_section",
+              "value": "C",
+              "citation": "snap-kosgeb-girisimci-2026-08-14",
+              "label": "NACE Rev.2 C kisminda (imalat) faaliyet gostermek"
+            }
+          ]
+        },
+        {
+          "op": "eq",
+          "fact": "kosgeb_db_registered",
+          "value": true,
+          "citation": "snap-kosgeb-girisimci-2026-08-14",
+          "label": "KOSGEB Veri Tabaninda kayitli ve aktif olmak"
+        },
+        {
+          "op": "eq",
+          "fact": "kosgeb_declaration_current",
+          "value": true,
+          "citation": "snap-kosgeb-girisimci-2026-08-14",
+          "label": "KOSGEB beyaninin guncel olmasi"
+        }
+      ]
+    }
+  }
+}

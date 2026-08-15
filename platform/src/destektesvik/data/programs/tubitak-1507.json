@@ -1,0 +1,70 @@
+{
+  "program": {
+    "id": "TUBITAK-1507@2026.1",
+    "code": "TUBITAK-1507",
+    "name": "TUBITAK 1507 - KOBI Ar-Ge Baslangic Destek Programi",
+    "version": "2026.1",
+    "support_type": "grant",
+    "official_url": "https://tubitak.gov.tr/tr/destekler/sanayi/ulusal-destek-programlari/1507-tubitak-kobi-ar-ge-baslangic-destek-programi",
+    "source_snapshot_ids": ["snap-tubitak-1507-2026-08-14"],
+    "call_window": {"opens_on": null, "closes_on": null},
+    "published_reference": null,
+    "required_documents": [
+      "Ticaret sicil gazetesi",
+      "Vergi levhasi",
+      "KOBI beyannamesi",
+      "Proje oneri dokumani (PRODIS)"
+    ],
+    "notes": "Ilk proje kriteri, resmi sayfadaki ayrintiya degil, kullanici beyanina dayanir."
+  },
+  "snapshots": [
+    {
+      "id": "snap-tubitak-1507-2026-08-14",
+      "file": "snap-tubitak-1507-2026-08-14.txt",
+      "url": "https://tubitak.gov.tr/tr/destekler/sanayi/ulusal-destek-programlari/1507-tubitak-kobi-ar-ge-baslangic-destek-programi",
+      "publisher": "TUBITAK",
+      "title": "1507 TUBITAK KOBI Ar-Ge Baslangic Destek Programi",
+      "captured_at": "2026-08-14T00:00:00+00:00",
+      "effective_from": null,
+      "effective_to": null,
+      "reviewed_at": null,
+      "review_status": "pending_review"
+    }
+  ],
+  "rule_set": {
+    "id": "TUBITAK-1507:2026.1",
+    "version": "2026.1",
+    "rule": {
+      "all": [
+        {
+          "op": "eq",
+          "fact": "is_capital_company",
+          "value": true,
+          "citation": "snap-tubitak-1507-2026-08-14",
+          "label": "Turkiye'de yerlesik sermaye sirketi olmak"
+        },
+        {
+          "op": "eq",
+          "fact": "is_resident_in_turkey",
+          "value": true,
+          "citation": "snap-tubitak-1507-2026-08-14",
+          "label": "Turkiye'de yerlesik olmak"
+        },
+        {
+          "op": "eq",
+          "fact": "sme_declaration",
+          "value": true,
+          "citation": "snap-tubitak-1507-2026-08-14",
+          "label": "KOBI olceginde olmak (beyan)"
+        },
+        {
+          "op": "eq",
+          "fact": "has_previous_tubitak_project",
+          "value": false,
+          "citation": "snap-tubitak-1507-2026-08-14",
+          "label": "Baslangic programi niteligi: daha once TUBITAK destekli projesi olmamak (beyan)"
+        }
+      ]
+    }
+  }
+}

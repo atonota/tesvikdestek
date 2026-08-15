@@ -1,0 +1,23 @@
+{% extends "temel.html" %}
+{% block title %}Giris{% endblock %}
+{% block content %}
+  <h1>Giris</h1>
+  {% if registered %}
+    <div class="notice ok" role="status"><p>Kaydiniz olusturuldu. Simdi giris yapabilirsiniz.</p></div>
+  {% endif %}
+  {% if error %}
+    <div class="notice error" role="alert"><p>{{ error }}</p></div>
+  {% endif %}
+  <form method="post" action="/giris">
+    <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+    <div class="field">
+      <label for="eposta">E-posta</label>
+      <input id="eposta" name="eposta" type="email" required autocomplete="email">
+    </div>
+    <div class="field">
+      <label for="parola">Parola</label>
+      <input id="parola" name="parola" type="password" required autocomplete="current-password">
+    </div>
+    <button type="submit">Giris yap</button>
+  </form>
+{% endblock %}

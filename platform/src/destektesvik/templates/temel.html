@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ app_name }}{% endblock %} — {{ app_name }}</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <a class="skip-link" href="#icerik">Ana icerige gec</a>
+  <header class="site">
+    <strong>{{ app_name }}</strong>
+    <p class="meta">Destek ve tesvik programlari icin deterministik on degerlendirme</p>
+    <nav aria-label="Ana menu">
+      <ul>
+        <li><a href="/">Ana sayfa</a></li>
+        <li><a href="/kaynaklar">Kaynaklar</a></li>
+        {% if user %}
+          <li><a href="/profil">Sirket profili</a></li>
+          <li><a href="/degerlendirmeler">Degerlendirmeler</a></li>
+          <li>
+            <form method="post" action="/cikis" style="display:inline">
+              <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+              <button class="secondary" type="submit">Cikis ({{ user.email }})</button>
+            </form>
+          </li>
+        {% else %}
+          <li><a href="/giris">Giris</a></li>
+          <li><a href="/kayit">Kayit ol</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </header>
+  <main id="icerik">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site">
+    <p>
+      Bu uygulama hukuki veya mali danismanlik hizmeti vermez. Uretilen sonuclar
+      <strong>baglayici degildir</strong> ve resmi kurum karari yerine gecmez.
+      Resmi basvuru islemleri ilgili kurumun kendi sistemleri uzerinden yapilir.
+    </p>
+  </footer>
+</body>
+</html>

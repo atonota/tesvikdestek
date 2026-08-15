@@ -1,0 +1,75 @@
+{% extends "temel.html" %}
+{% block title %}Sirket profili{% endblock %}
+{% block content %}
+  <h1>Sirket profili</h1>
+  <p class="meta">
+    Bilmediginiz bir alani <strong>"Bilinmiyor"</strong> birakin. Sistem eksik veriyi
+    "hayir" saymaz; sonucu <span class="badge badge-insufficient_data">Yetersiz veri</span>
+    olarak isaretler ve neyin eksik oldugunu soyler.
+  </p>
+  {% if saved %}
+    <div class="notice ok" role="status"><p>Profil kaydedildi.</p></div>
+  {% endif %}
+  {% if request.query_params.get('hata') == 'profil' %}
+    <div class="notice error" role="alert"><p>Degerlendirme icin once profili kaydedin.</p></div>
+  {% endif %}
+  <form method="post" action="/profil">
+    <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+    <fieldset>
+      <legend>Kimlik</legend>
+      <div class="field">
+        <label for="display_name">Sirket adi</label>
+        <input id="display_name" name="display_name" type="text"
+               value="{{ profile.display_name if profile else '' }}">
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Beyanlar</legend>
+      {% for name in boolean_facts %}
+        <div class="field">
+          <label for="{{ name }}">{{ fact_labels[name] }}</label>
+          <select id="{{ name }}" name="{{ name }}">
+            {% for value, label in tristate_choices %}
+              {% set current = facts.get(name) %}
+              {% set selected = (value == '' and current is none)
+                                or (value == 'true' and current is sameas true)
+                                or (value == 'false' and current is sameas false) %}
+              <option value="{{ value }}" {% if selected %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endfor %}
+    </fieldset>
+    <fieldset>
+      <legend>Sayisal veriler</legend>
+      {% for name in integer_facts %}
+        <div class="field">
+          <label for="{{ name }}">{{ fact_labels[name] }}</label>
+          <input id="{{ name }}" name="{{ name }}" type="number" inputmode="numeric"
+                 value="{{ facts.get(name, '') }}">
+        </div>
+      {% endfor %}
+      <p class="hint">Kurulus yilindan isletme yasi otomatik hesaplanir.</p>
+    </fieldset>
+    <fieldset>
+      <legend>Faaliyet ve bolge</legend>
+      {% for name in text_facts %}
+        <div class="field">
+          <label for="{{ name }}">{{ fact_labels[name] }}</label>
+          <input id="{{ name }}" name="{{ name }}" type="text" value="{{ facts.get(name, '') }}">
+        </div>
+      {% endfor %}
+    </fieldset>
+    <button type="submit">Profili kaydet</button>
+  </form>
+  <hr>
+  <h2>Degerlendirmeyi calistir</h2>
+  <p class="meta">
+    Uc program icin deterministik degerlendirme calistirilir. Yapay zeka bu adimda
+    devrede degildir ve sonucu degistiremez.
+  </p>
+  <form method="post" action="/degerlendir">
+    <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+    <button type="submit">Degerlendir</button>
+  </form>
+{% endblock %}

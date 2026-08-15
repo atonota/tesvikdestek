@@ -1,0 +1,32 @@
+{% extends "temel.html" %}
+{% block title %}Ana sayfa{% endblock %}
+{% block content %}
+  <h1>Destek ve tesvik on degerlendirmesi</h1>
+  <p>
+    Sirket profilinizi girin; sistem, resmi kaynaklardan derlenmis ve <strong>surumlenmis</strong>
+    kurallarla her program icin bir on degerlendirme uretir. Her sonuc, hangi kural surumune ve
+    hangi kaynak yakalamasina dayandigini gosterir.
+  </p>
+  <div class="notice">
+    <h2>Bu sistem ne yapar, ne yapmaz</h2>
+    <ul>
+      <li><strong>Yapar:</strong> Kaynagi belli, izi surulebilir, tekrar uretilebilir bir on degerlendirme.</li>
+      <li><strong>Yapar:</strong> Eksik veriyi "uygun degil" saymaz; eksik oldugunu adiyla soyler.</li>
+      <li><strong>Yapmaz:</strong> Alacaginiz tutari hesaplamaz.</li>
+      <li><strong>Yapmaz:</strong> Resmi kuruma basvuru gondermez.</li>
+      <li><strong>Yapmaz:</strong> "Resmen onaylandi" sonucu uretmez; boyle bir sonuc yoktur.</li>
+    </ul>
+  </div>
+  <h2>Sonuc turleri</h2>
+  <ul>
+    <li><span class="badge badge-candidate_eligible">Aday uygunluk</span> Kosullar, elimizdeki veriyle saglaniyor gorunuyor.</li>
+    <li><span class="badge badge-conditional">Kosullu</span> Bir sey bilinmiyor: ornegin cagri penceresi yayinlanmamis.</li>
+    <li><span class="badge badge-insufficient_data">Yetersiz veri</span> Profilde eksik olgu var; hangisi oldugu listelenir.</li>
+    <li><span class="badge badge-ineligible">Uygun degil</span> Bir kosul acikca saglanmiyor.</li>
+  </ul>
+  {% if not user %}
+    <p><a href="/kayit">Hesap acin</a> veya <a href="/giris">giris yapin</a>.</p>
+  {% else %}
+    <p><a href="/profil">Sirket profiline gecin</a>.</p>
+  {% endif %}
+{% endblock %}

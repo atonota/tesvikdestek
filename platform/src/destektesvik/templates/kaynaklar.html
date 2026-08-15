@@ -1,0 +1,35 @@
+{% extends "temel.html" %}
+{% block title %}Kaynaklar{% endblock %}
+{% block content %}
+  <h1>Kaynaklar ve programlar</h1>
+  <div class="notice">
+    <p>
+      Buradaki kaynak metinleri <strong>elle hazirlanmis ozet cikarimlardir</strong>, canli
+      sayfa yakalamasi degildir. Icerik ozeti (hash), sistemin uzerinde akil yurttugu metnin
+      ozetidir; resmi sayfanin o gun ne yazdiginin kaniti degildir.
+    </p>
+    <p>Hicbiri alan uzmani tarafindan dogrulanmamistir (<code>pending_review</code>).</p>
+  </div>
+  {% for program in programs %}
+    <div class="card">
+      <h2>{{ program.name }}</h2>
+      <p class="meta">
+        Kod: <code>{{ program.code }}</code> · Surum: <code>{{ program.version }}</code> ·
+        Destek turu: {{ program.support_type.value }}
+      </p>
+      <p><a href="{{ program.official_url }}" rel="noopener noreferrer">Resmi sayfa</a></p>
+      <p class="meta">Cagri penceresi: kaynakta yayinlanmamis (bilinmiyor). Sonuclar kosullu uretilir.</p>
+      <ul>
+        {% for snapshot_id in program.source_snapshot_ids %}
+          {% set snapshot = snapshots[snapshot_id] %}
+          <li>
+            <code>{{ snapshot.id }}</code> — yakalama {{ snapshot.captured_at.strftime('%Y-%m-%d') }},
+            ozet <code class="hash">{{ snapshot.short_hash() }}</code>,
+            inceleme {{ snapshot.review_status.value }}
+          </li>
+        {% endfor %}
+      </ul>
+      {% if program.notes %}<p class="meta">{{ program.notes }}</p>{% endif %}
+    </div>
+  {% endfor %}
+{% endblock %}

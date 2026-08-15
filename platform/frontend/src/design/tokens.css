@@ -1,0 +1,282 @@
+/*
+ * Design tokens.
+ *
+ * The colour ramp starts from the values already in
+ * `platform/src/destektesvik/static/app.css` so the SSR pages and this
+ * application are visibly one product rather than two. Nothing here is
+ * re-invented for novelty.
+ *
+ * Four outcome colours exist because the domain has exactly four outcomes.
+ * There is deliberately no "approved" or "success" colour: the product has no
+ * such state, and a green tick is a claim.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* --- neutral surfaces ------------------------------------------------ */
+  --dt-color-bg: #f7f8fa;
+  --dt-color-surface: #ffffff;
+  --dt-color-surface-raised: #ffffff;
+  --dt-color-surface-sunken: #eef1f5;
+  --dt-color-fg: #14181f;
+  --dt-color-fg-muted: #515b6b;
+  --dt-color-line: #d3d9e2;
+  /* Raised from #aab3c0, which reached only 2.2:1 on white. A border that
+     carries meaning is a non-text UI component and owes WCAG 1.4.11 its 3:1. */
+  --dt-color-line-strong: #767f8d;
+
+  --dt-color-accent: #1b4d8f;
+  --dt-color-accent-hover: #16406f;
+  --dt-color-accent-fg: #ffffff;
+  --dt-color-accent-soft: #e7eefa;
+
+  /* --- brand ------------------------------------------------------------
+   * Parliament blue leads and lemon supports, and neither is ever the only
+   * carrier of meaning: the four outcome colours above still own the domain
+   * semantics, so a brand refresh cannot quietly restate a decision.
+   *
+   * Lemon is a light hue. It is paired with near-black text rather than white,
+   * because lemon-on-white text would fail contrast at any weight, and the
+   * contract test computes both pairings rather than trusting the eye. */
+  --dt-color-primary: #123a6b;
+  --dt-color-primary-hover: #0d2b50;
+  --dt-color-primary-fg: #ffffff;
+  --dt-color-primary-soft: #e6ecf6;
+
+  --dt-color-secondary: #f2e14c;
+  --dt-color-secondary-hover: #e3d232;
+  --dt-color-secondary-fg: #241f00;
+  --dt-color-secondary-soft: #fbf7d6;
+
+  --dt-color-danger: #8f1d1d;
+  --dt-color-danger-soft: #fbeaea;
+  --dt-color-focus: #0b63d6;
+
+  /* --- the four outcome semantics -------------------------------------- */
+  --dt-outcome-candidate-fg: #14532d;
+  --dt-outcome-candidate-bg: #e3f4e8;
+  --dt-outcome-candidate-line: #2f7d4f;
+
+  --dt-outcome-ineligible-fg: #6d1f1f;
+  --dt-outcome-ineligible-bg: #fbe9e9;
+  --dt-outcome-ineligible-line: #a33a3a;
+
+  --dt-outcome-conditional-fg: #6a4310;
+  --dt-outcome-conditional-bg: #fdf2e0;
+  --dt-outcome-conditional-line: #a5731f;
+
+  --dt-outcome-insufficient-fg: #33415a;
+  --dt-outcome-insufficient-bg: #eef1f7;
+  --dt-outcome-insufficient-line: #67748f;
+
+  /* --- density --------------------------------------------------------- */
+  --dt-density-row: 48px;
+  --dt-density-pad-y: 0.75rem;
+  --dt-density-pad-x: 1rem;
+  --dt-density-gap: 1rem;
+
+  /* --- typography ------------------------------------------------------
+   * Roboto is bundled (`@fontsource-variable/roboto`, imported by the app entry
+   * and the Storybook preview), so it is named first and the system stack is
+   * only the fallback for the moments before the file lands.
+   *
+   * The scale has no member below 1rem, in any variant. Small type is where
+   * data-dense interfaces quietly become unreadable, and this product is read
+   * by people making financial decisions, often on a phone. `sm` and `xs` still
+   * exist as *relative* steps - they simply bottom out at 1rem, so a caption is
+   * distinguished by weight and colour instead of by being too small to read.
+   *
+   * 400 is the lightest weight anywhere. The variable font ships 100-900; the
+   * lighter end is not used. */
+  --dt-font-sans: "Roboto Variable", "Roboto", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --dt-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --dt-font-size-base: 1rem;
+  --dt-font-size-sm: 1rem;
+  --dt-font-size-xs: 1rem;
+  --dt-font-size-lg: 1.125rem;
+  --dt-font-size-xl: 1.375rem;
+  --dt-font-size-2xl: 1.75rem;
+  --dt-font-weight-regular: 400;
+  --dt-font-weight-medium: 500;
+  --dt-font-weight-bold: 700;
+  --dt-line-height: 1.55;
+
+  /* --- shape, depth, motion --------------------------------------------
+   * Flat 2.0 with card surfaces: real edges, restrained elevation, and a
+   * corner scale that stops at 12px. There is no pill radius token, because
+   * there are no pills - `999px` and `50%` are banned outright by the design
+   * contract test. On a box smaller than 24px the browser clamps a 12px radius
+   * to half the box, so a spinner still reads as a circle without the
+   * stylesheet ever claiming one. */
+  --dt-radius-sm: 4px;
+  --dt-radius: 8px;
+  --dt-radius-lg: 12px;
+  --dt-shadow-1: 0 1px 2px rgb(16 24 40 / 8%);
+  --dt-shadow-2: 0 6px 20px rgb(16 24 40 / 12%);
+  --dt-motion-duration: 160ms;
+  --dt-motion-ease: cubic-bezier(0.2, 0, 0.2, 1);
+
+  --dt-z-sticky: 10;
+  --dt-z-drawer: 40;
+  --dt-z-dialog: 50;
+  --dt-z-toast: 60;
+
+  --dt-focus-ring: 3px solid var(--dt-color-focus);
+  --dt-focus-offset: 2px;
+
+  /* Minimum target size. WCAG 2.2 AA 2.5.8 asks for 24px; touch-primary
+     actions go to 44px via the `--dt-target-touch` token. */
+  --dt-target-min: 24px;
+  --dt-target-touch: 44px;
+}
+
+/* --- density variants -------------------------------------------------- */
+[data-density="compact"] {
+  --dt-density-row: 40px;
+  --dt-density-pad-y: 0.5rem;
+  --dt-density-pad-x: 0.75rem;
+  --dt-density-gap: 0.75rem;
+}
+
+[data-density="dense"] {
+  --dt-density-row: 32px;
+  --dt-density-pad-y: 0.3rem;
+  --dt-density-pad-x: 0.55rem;
+  --dt-density-gap: 0.5rem;
+  /* Density tightens spacing, never type. Shrinking the text was how "dense"
+     used to mean "harder to read"; rows get closer, letters do not get
+     smaller, and 1rem remains the floor at every setting. */
+}
+
+/* --- font scale -------------------------------------------------------- */
+[data-font-scale="large"] {
+  --dt-font-size-base: 1.125rem;
+  --dt-font-size-sm: 1.0625rem;
+  --dt-font-size-xs: 1rem;
+  --dt-font-size-lg: 1.25rem;
+  --dt-font-size-xl: 1.5rem;
+  --dt-font-size-2xl: 2rem;
+}
+
+/* --- dark theme -------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --dt-color-bg: #0d1117;
+    --dt-color-surface: #151b23;
+    --dt-color-surface-raised: #1c242e;
+    --dt-color-surface-sunken: #10161d;
+    --dt-color-fg: #e8edf4;
+    --dt-color-fg-muted: #a3aec0;
+    --dt-color-line: #2b3441;
+    /* Raised from #3d4959, which reached only 1.9:1 on the dark surface. */
+    --dt-color-line-strong: #78879c;
+
+    --dt-color-accent: #7aa9e9;
+    --dt-color-accent-hover: #9cc0f2;
+    --dt-color-accent-fg: #0d1117;
+    --dt-color-accent-soft: #1b2735;
+
+    /* Parliament blue and lemon, re-derived rather than re-used. The light
+       primary would sit at 1.9:1 on this background, so the dark theme lifts
+       it into a readable tint and flips the foreground with it. Lemon is
+       already light, so it keeps its near-black text in both themes. */
+    --dt-color-primary: #9dbdea;
+    --dt-color-primary-hover: #bcd3f3;
+    --dt-color-primary-fg: #0d1117;
+    --dt-color-primary-soft: #172234;
+
+    --dt-color-secondary: #e0d04a;
+    --dt-color-secondary-hover: #efe067;
+    --dt-color-secondary-fg: #1a1600;
+    --dt-color-secondary-soft: #26230f;
+
+    --dt-color-danger: #f2a0a0;
+    --dt-color-danger-soft: #2a1717;
+    --dt-color-focus: #8ab8ff;
+
+    --dt-outcome-candidate-fg: #a7e0bd;
+    --dt-outcome-candidate-bg: #16261d;
+    --dt-outcome-candidate-line: #3f8a5e;
+
+    --dt-outcome-ineligible-fg: #f3aeae;
+    --dt-outcome-ineligible-bg: #2a1919;
+    --dt-outcome-ineligible-line: #a35252;
+
+    --dt-outcome-conditional-fg: #f0cf95;
+    --dt-outcome-conditional-bg: #2a2317;
+    --dt-outcome-conditional-line: #a3823f;
+
+    --dt-outcome-insufficient-fg: #bcc7dc;
+    --dt-outcome-insufficient-bg: #1a2029;
+    --dt-outcome-insufficient-line: #5d6a82;
+
+    --dt-shadow-1: 0 1px 2px rgb(0 0 0 / 40%);
+    --dt-shadow-2: 0 6px 20px rgb(0 0 0 / 55%);
+  }
+}
+
+:root[data-theme="dark"] {
+  --dt-color-bg: #0d1117;
+  --dt-color-surface: #151b23;
+  --dt-color-surface-raised: #1c242e;
+  --dt-color-surface-sunken: #10161d;
+  --dt-color-fg: #e8edf4;
+  --dt-color-fg-muted: #a3aec0;
+  --dt-color-line: #2b3441;
+  /* Raised from #3d4959, which reached only 1.9:1 on the dark surface. */
+  --dt-color-line-strong: #78879c;
+
+  --dt-color-accent: #7aa9e9;
+  --dt-color-accent-hover: #9cc0f2;
+  --dt-color-accent-fg: #0d1117;
+  --dt-color-accent-soft: #1b2735;
+
+  /* Parliament blue and lemon, re-derived for this background. The light
+     primary sits at 1.9:1 here, so the dark theme lifts it into a readable
+     tint and flips the foreground with it. */
+  --dt-color-primary: #9dbdea;
+  --dt-color-primary-hover: #bcd3f3;
+  --dt-color-primary-fg: #0d1117;
+  --dt-color-primary-soft: #172234;
+
+  --dt-color-secondary: #e0d04a;
+  --dt-color-secondary-hover: #efe067;
+  --dt-color-secondary-fg: #1a1600;
+  --dt-color-secondary-soft: #26230f;
+
+  --dt-color-danger: #f2a0a0;
+  --dt-color-danger-soft: #2a1717;
+  --dt-color-focus: #8ab8ff;
+
+  --dt-outcome-candidate-fg: #a7e0bd;
+  --dt-outcome-candidate-bg: #16261d;
+  --dt-outcome-candidate-line: #3f8a5e;
+
+  --dt-outcome-ineligible-fg: #f3aeae;
+  --dt-outcome-ineligible-bg: #2a1919;
+  --dt-outcome-ineligible-line: #a35252;
+
+  --dt-outcome-conditional-fg: #f0cf95;
+  --dt-outcome-conditional-bg: #2a2317;
+  --dt-outcome-conditional-line: #a3823f;
+
+  --dt-outcome-insufficient-fg: #bcc7dc;
+  --dt-outcome-insufficient-bg: #1a2029;
+  --dt-outcome-insufficient-line: #5d6a82;
+
+  --dt-shadow-1: 0 1px 2px rgb(0 0 0 / 40%);
+  --dt-shadow-2: 0 6px 20px rgb(0 0 0 / 55%);
+}
+
+/* --- reduced motion ---------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dt-motion-duration: 0ms;
+  }
+}
+
+:root[data-reduced-motion="true"] {
+  --dt-motion-duration: 0ms;
+}

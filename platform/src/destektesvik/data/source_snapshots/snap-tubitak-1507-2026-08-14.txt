@@ -1,0 +1,27 @@
+KAYNAK: TUBITAK 1507 - TUBITAK KOBI Ar-Ge Baslangic Destek Programi
+URL: https://tubitak.gov.tr/tr/destekler/sanayi/ulusal-destek-programlari/1507-tubitak-kobi-ar-ge-baslangic-destek-programi
+YAYINLAYAN: TUBITAK
+DERLEME TARIHI: 2026-08-14
+DERLEME TURU: Elle hazirlanmis ozet cikarim (canli sayfa yakalamasi degildir)
+INCELEME DURUMU: pending_review - alan uzmani dogrulamasi yapilmamistir
+
+RESMI SAYFANIN BELIRTTIGI TEMEL KOSULLAR (OZET)
+- Basvuru sahibi, Turkiye'de yerlesik sermaye sirketi olmalidir.
+- Program KOBI olcegindeki kuruluslara yoneliktir.
+- Program, Ar-Ge kulturunu yeni edinmeye baslayan kuruluslara yonelik bir baslangic
+  programidir; ilk proje niteligi ve benzeri kriterler resmi sayfada ayrintilandirilmistir.
+- Program cagri tabanlidir.
+- Destek turu hibedir (geri odemesiz).
+- Basvuru ve surec yonetimi PRODIS uzerinden yurutulur.
+
+BU SNAPSHOT'TA YER ALMAYAN BILGILER
+- Cagri acilis ve kapanis tarihleri bu derlemede yer almamaktadir. Cagri penceresi
+  BILINMIYOR olarak islenmistir ve kararlar KOSULLU uretilir.
+- Destek orani ve ust limit tutarlari bu derlemede yer almamaktadir.
+- Ilk proje sayisi esigi gibi sayisal kriterler bu derlemede yer almamaktadir; sisteme
+  yalnizca "daha once TUBITAK destekli projesi var mi" beyani islenmistir.
+- Yururluk tarihleri NULL birakilmistir.
+
+UYARI
+Bu metin resmi belge degildir ve hukuki baglayiciligi yoktur. Guncel ve baglayici bilgi
+icin yukaridaki resmi URL esas alinmalidir.
