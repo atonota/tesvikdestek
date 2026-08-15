@@ -2,17 +2,31 @@
 
 **Tarih:** 2026-08-15
 **Belge sınıfı:** Kanonik talep + gap raporu. Salt okunur bir tespit belgesidir.
+**Revizyon:** **v2** — Bölüm 2.8'deki son doğrudan talepler eklendi; Bölüm 11'deki faz
+haritası `P0`–`P6` olarak yeniden kuruldu. Eski `F1`–`F10` ve `M01`–`M68` aşılmış v1
+tarihidir.
 **Yazar rolü:** Codex Desktop MASTER'ın verdiği son kullanıcı raporunun tek Claude writer tarafından kanonikleştirilmiş hâli.
 **capability_delta:** `0` — bu belge hiçbir ürün, runtime, frontend veya backend yeteneği eklemez, kaldırmaz veya değiştirmez. Yalnızca ne olduğunu ve ne olmadığını yazar.
 **Değiştirilen ürün dosyası:** yok. **Yapılan git işlemi:** yok.
 
-> **Bu raporun en önemli cümlesi, en başta.**
-> **Frontend bitmedi.** Daha önce verilmiş olan "enterprise seviyede tamamlandı" kararı
-> **geri çekilmiştir**. Bugün elimizde olan şey; erişilebilirlik disiplini ve tasarım
-> token temeli sağlam, dürüstlük muhafızları gerçekten çalışan, ancak **ürün, kullanıcı
-> deneyimi, kullanıcı yolculuğu, fonksiyon kapsamı ve görsel tasarım bakımından MVP'nin
-> dahi altında kalan bir prototiptir.** Bu rapor bunu gizlemez, yumuşatmaz ve teknik
-> başarıyı ürün başarısı gibi sunmaz.
+> **Bu raporun en önemli iki cümlesi, en başta.**
+>
+> **1 — Bugün ne var.** **Frontend bitmedi.** Daha önce verilmiş olan "enterprise seviyede
+> tamamlandı" kararı **geri çekilmiştir**. Bugün elimizde olan şey; erişilebilirlik
+> disiplini ve tasarım token temeli sağlam, dürüstlük muhafızları gerçekten çalışan, ancak
+> **ürün, kullanıcı deneyimi, kullanıcı yolculuğu, fonksiyon kapsamı ve görsel tasarım
+> bakımından MVP'nin dahi altında kalan bir prototiptir.** Bu rapor bunu gizlemez,
+> yumuşatmaz ve teknik başarıyı ürün başarısı gibi sunmaz.
+>
+> **2 — İlk teslim ne olacak.** Sıradaki frontend teslimi **MVP değildir, prototip
+> değildir, iskelet değildir, "çalışan bir frontend" değildir ve sonradan olgunlaştırılacak
+> bir taslak değildir.** İlk teslim, waterfall sırayla ve tek seferde **enterprise, olgun
+> (mature), ileri (advanced) ve eksiksiz (complete)** olarak verilir: tüm kullanıcı
+> yolculukları, planlanan tüm ekranlar, fonksiyonların frontend davranışı, ilgili olduğu her
+> yerde yükleniyor / boş / sonuç yok / hata / kısmi / başarı / yetki / çevrimdışı durumları,
+> 320px yerli mobil webden masaüstüne kadar tüm cihaz merdiveni, dark/light, erişilebilirlik,
+> hareket, veri yoğun tablolar, medya/dosya ve AI sağlayıcı yüzeyleri **ilk teslimin
+> içindedir.** Bu belgede hiçbir yerde "bileşenler sonra olgunlaştırılacak" denmez.
 
 ---
 
@@ -126,8 +140,10 @@ Hiçbiri "sonra bakarız" diye kısaltılmamıştır.
 
 ### 2.3 Mimari talepleri
 
-19. **Backend bu frontend paketinde geliştirilmeyecek**, ama frontend backend-compatible
-    olacak.
+19. **Backend, frontend teslim edilmeden geliştirilmeye başlanmaz**; ama frontend
+    backend-compatible olarak kurulur. **Bu bir "backend hiç yapılmayacak" kararı
+    değildir** — backend çatısı, ortak ön gereksinimler, modüller ve modül sonrası iş
+    frontend tesliminden **sonra** gelen fazlardır (bkz. Bölüm 2.7 ve Bölüm 11).
 20. **Modular monolith.** Mikroservis değil.
 21. **Sustainable.** Uzun ömürlü, bakımı ekonomik.
 22. **Hetzner AMD EPYC / Intel x86_64.** Donanım hedefi bu.
@@ -188,6 +204,90 @@ Hiçbiri "sonra bakarız" diye kısaltılmamıştır.
 59. **AI sağlayıcıları:** Gemini, OpenClaw, Claude, ChatGPT/OpenAI — hem hesap hem API.
 60. **Sağlayıcı yönetimi:** kimlik bilgileri, OAuth, sağlık yoklaması, yönlendirme
     (routing), denetim izi.
+
+### 2.8 Son doğrudan talepler — bağlayıcı ve en güncel
+
+Aşağıdaki maddeler kullanıcının **en son** verdiği doğrudan taleplerdir. Bu belgedeki daha
+eski bir cümle bunlarla çelişiyorsa, **bu maddeler geçerlidir** ve eski cümle düzeltilmiştir.
+
+**A — İlk teslim ve sıra**
+
+61. **Frontend önce geliştirilir**, waterfall sırayla.
+62. **İlk frontend teslimi MVP değildir.** Prototip değildir, iskelet değildir, "çalışan
+    frontend" değildir ve sonradan olgunlaştırılacak bir taslak değildir.
+63. **İlk teslim zaten waterfall-tam, enterprise seviyede ve yüksek olgunluktadır:** tüm
+    kullanıcı yolculukları, planlanan tüm ekranlar, fonksiyonların frontend davranışı,
+    ilgili olduğu her yerde **yükleniyor / boş / sonuç yok / hata / kısmi / başarı / yetki /
+    çevrimdışı** durumları, 320px yerli mobil webden masaüstü uyarlamasına kadar tüm cihaz
+    merdiveni, dark/light, erişilebilirlik, hareket (motion), veri yoğun tablolar,
+    medya/dosya yüzeyleri ve AI sağlayıcı yüzeyleri.
+64. **Backend'e bağlı eylemler tipli, sözleşmeye bağlı frontend port/adaptörleri üzerinden
+    kurulur** ve backend var olana kadar **dürüst mock/demo durumları** gösterir. Uydurma
+    bir canlı uç yazılmaz ve ürünün tamamı hiçbir yerde "production'a hazır" ilan edilmez.
+
+**B — Bileşen sistemi ve Storybook**
+
+65. **Kullanıcının kendi hiyerarşi ifadesi aynen kayda geçer:** frontend bileşenleri, ana
+    bileşenler (main components), master bileşenler, master-main bileşenler ve
+    master/main bileşenlerden **türeyen / kalıtım alan** bileşenler.
+66. **Görünür her bileşen Storybook'ta kataloglanır** — her varyantı, her durumu, 320px
+    davranışı, dark/light durumu, etkileşim durumu ve erişilebilirlik durumuyla birlikte.
+    Bileşenin kaynağı repo kodudur; **Storybook zorunlu kalıcı katalog ve test yüzeyidir.**
+67. **Sonraki hiçbir faz "bileşen olgunlaştırma" diye adlandırılmaz.** Bileşenler ilk
+    teslimde zaten enterprise ve olgundur.
+68. **Somut bir soyağacı (lineage) ve tekilleştirme (no-duplicate) kuralı tanımlanır**;
+    React'in gerçeğine uyar ama kullanıcının "kalıtım/türeme" niyetini silmez.
+
+**C — Müşteriye gösterim ve sonraki bileşen işi**
+
+69. Enterprise/olgun waterfall frontend sahibe teslim edildikten sonra **sahip ürünü
+    müşteriye gösterir.**
+70. **Bu gösterim bir onay kapısı değildir**, bir dur/geç (stop/go) kapısı değildir ve
+    geliştirmeyi bloke etmez.
+71. **Sonraki bileşen işi olgunlaştırma değildir.** Yalnızca gerektiğinde **değiştirme,
+    silme ve ekleme** işidir.
+72. **Müşteri geri bildirimi uydurulmaz.** Sahip somut bir değişiklik/silme/ekleme talebi
+    verdiğinde, o talebin **her biri kendi test-first milestone'u** olur.
+
+**D — Frontend'den sonraki zorunlu faz sırası**
+
+73. **Backend çatısı kurulur.**
+74. **Modüllerden önce**, ortak ön gereksinim olarak planlanması ve geliştirilmesi gereken
+    her şey planlanır ve geliştirilir.
+75. **Modüler monolit modülleri geliştirilir.**
+76. **Modüller bittikten sonra gereken her şey geliştirilir.**
+77. **Modüler monolit zorunludur. Next.js ve MetaFramer yasaktır. S3 opsiyoneldir**, asla
+    zorunlu veya varsayılan değildir.
+
+**E — Kalite ve cihaz sözleşmesi**
+
+78. **Her görev tek ve anlamlı bir milestone'dur**, ortalama **2 kesintisiz worker-günü**.
+    Mikro-görev satırı yoktur.
+79. **Her şey test-first:** uygulamadan önce anlamlı RED, sonra GREEN, tam regresyon,
+    bağımsız review, kanıt ve rollback.
+80. **320px iPhone sınıfı yerli mobil web kaynak düzendir**; sonra 360, 375, 390, 412/430,
+    480, 768, 1024, 1280, 1440+ diye büyür.
+81. **Minimum görünür metin 1rem+**, **Roboto 400+**, **arama alanı hariç ~12px maksimum
+    yarıçap** sözleşmesi yürürlüktedir.
+82. Mevcut tasarım talepleri aynen durur: **parliament blue + lemon**, **Card UI + Flat
+    2.0**, **advanced layered header**, **mükemmel sol/sağ paneller**, **platformlar arası
+    tutarlı dropdown**, **motion / adaptive AI / conversion / veri / içerik öncelikleri**.
+
+**F — İş akışı**
+
+83. **Codex GUI → Pane → Claude worker ajanları.** Sahip sade Türkçe rapor alır; sahip
+    geliştirici değildir, vibecoder'dır.
+84. **50+ Claude rol kataloğu korunur**, ancak gerçek eşzamanlılık kaynak, admission,
+    bağımlılık ve tek-writer kurallarıyla sınırlıdır. **"50 süreç her zaman aynı anda
+    çalışır" iddiası kurulmaz.**
+85. **Müşteri onay kapısı eklenmez.**
+
+**G — Uydurma yasağı**
+
+86. "Teslimden sonra olgunlaştırma", bir onay kontrol noktası, bir dur/geç müşteri kapısı
+    veya uydurulmuş müşteri geri bildirimi **bu belgelerde yer almaz.**
+87. Bu taleplerden veya repo kanıtından türetilemeyen maddi bir ürün kararı varsa,
+    **tahmin edilmez; açık bir owner kararı olarak adlandırılır** (bkz. Bölüm 16 `kalanEngel`).
 
 ---
 
@@ -294,14 +394,33 @@ katkısı olmayan bir özellik, ne kadar iyi yapılmış olursa olsun, üründe 
 
 ## 5. Mimari kararlar ve kullanıcı ifadelerinin repo karşılığı
 
-### 5.1 Backend sınırı
+### 5.1 Backend sınırı — zaman sınırı, kapsam sınırı değil
 
-**Karar:** Backend bu frontend paketinde geliştirilmez. Ancak frontend
-**backend-compatible** olmak zorundadır: FastAPI'nin ürettiği OpenAPI sözleşmesine uyar,
-uydurma uç kullanmaz, SSR HTML ayrıştırmaz.
+**Karar:** Backend **frontend fazıyla (P1) aynı pakette geliştirilmez** ve frontend teslim
+edilmeden başlamaz. Ancak backend **programın kapsamındadır** ve P1'den sonra sırayla
+gelir: **P3 backend çatısı → P4 modül öncesi ortak ön gereksinimler → P5 modüler monolit
+modülleri → P6 modül sonrası iş.**
 
-**Neden:** Backend ve frontend'i aynı pakette değiştirmek, bir hata çıktığında hangisinin
-kırdığını belirsizleştirir. Tek writer / tek paket kuralının teknik karşılığı budur.
+**Frontend'in P1'deki yükümlülüğü:** backend-compatible olmak. FastAPI'nin üreteceği
+OpenAPI sözleşmesine uyar, uydurma uç kullanmaz, SSR HTML ayrıştırmaz ve backend'e bağlı
+her eylemi **tipli bir port** arkasına koyar.
+
+**Neden bu sıra:** Backend ve frontend'i aynı pakette değiştirmek, bir hata çıktığında
+hangisinin kırdığını belirsizleştirir. Tek writer / tek paket kuralının teknik karşılığı
+budur. Ayrıca ürün yüzeyi netleşmeden yazılan bir backend, üç ay sonra yeniden yazılır.
+
+### 5.1.1 Port / adaptör stratejisi — backend yokken ne kanıtlanır, ne kanıtlanmaz
+
+| Kanıtlanan | Kanıtlanmayan |
+|---|---|
+| Yüzeyin tüm durumları (yükleniyor, boş, sonuç yok, hata, kısmi, başarı, yetki, çevrimdışı) render edilir ve testlidir | Gerçek sunucu davranışı |
+| Port sözleşmesi tiplidir ve Zod ile doğrulanır | Sözleşmenin gerçek OpenAPI çıktısıyla birebir uyuştuğu |
+| Mock/demo adaptörü **açıkça mock olarak** işaretlenir | Uçtan uca gerçek veri akışı |
+| Yetenek kütüğü, arkasında uç olmayan her yeteneği **engelli** ilan eder | Engelli yeteneğin ne zaman açılacağı |
+
+**Bağlayıcı kural:** Bir port'un mock adaptörle çalışması **hiçbir yerde** "bu fonksiyon
+çalışıyor" diye raporlanmaz. P1 tesliminin iddiası şudur ve yalnız şudur: **frontend
+eksiksiz, olgun ve sözleşmeye bağlıdır; ürünün tamamı production'a hazır değildir.**
 
 ### 5.2 "React Router 19" ifadesinin doğru yorumu
 
@@ -346,7 +465,7 @@ React'e aittir; router ayrı bir paket olarak 7.x hattındadır.
 
 ## 6. Frontend kalite sözleşmesi
 
-### 6.1 Waterfall / master-component yaklaşımı
+### 6.1 Waterfall / master-component yaklaşımı ve bileşen soyağacı
 
 Her bileşen ailesi **önce tek bir olgun ana bileşen** olarak yazılır; türevleri o ana
 bileşenin yapılandırmasıdır, kopyası değil.
@@ -354,6 +473,40 @@ bileşenin yapılandırmasıdır, kopyası değil.
 **Somut örnek:** `DataGrid` tek master bileşendir. Kanban görünümü, takvim görünümü ve
 pivot görünümü ayrı tablo bileşenleri değil, aynı master'ın görünüm modlarıdır. Böylece
 klavye erişimi bir yerde çözülür, on bir yerde unutulmaz.
+
+#### 6.1.1 Kullanıcının hiyerarşi ifadesi ve teknik karşılığı
+
+Kullanıcı beş kademe tanımladı. **İfade aynen korunur**; aşağıdaki tablo her kademenin
+React'teki somut karşılığını verir. "Kalıtım/türeme" kelimesi **silinmez**; React'te
+`extends` ile sınıf kalıtımı yapılmadığı için türeme, **sarmalama (wrapping) + yapılandırma
+(configuration) + sözleşme daraltma (contract narrowing)** ile gerçekleşir.
+
+| Kademe | Kullanıcının ifadesi | Teknik karşılık | Kural |
+|---|---|---|---|
+| 1 | **Frontend bileşenleri** | Uygulamada render edilen her görünür React bileşeni | Hepsi kütükte kayıtlı olmak zorunda |
+| 2 | **Ana bileşenler (main)** | Bir kademede davranışın tek sahibi olan bileşen (ör. `Button`, `Dialog`) | Davranış burada bir kez çözülür |
+| 3 | **Master bileşenler** | Bütün bir alanın tek sözleşmesi olan büyük sistem (ör. `DataGrid`, `MediaLibrary`, `AppShell`, `FormShell`) | Alanın tüm görünüm ve modları bu tek master üzerinde yaşar |
+| 4 | **Master-main bileşenler** | Bir master'ın içinde, o master'ın sözleşmesini taşıyan ana parça (ör. `GridToolbar`, `GridViewport`, `ShellHeader`) | Master'ın dışından doğrudan tüketilmez |
+| 5 | **Türeyen / kalıtım alan bileşenler** | Bir ana veya master bileşeni sarmalayıp yapılandıran, kendi davranışını **eklemeyen** bileşen (ör. `PrimaryButton`, `DangerDialog`, `ApplicationGrid`) | **Kendi DOM'unu ve kendi klavye/odak mantığını kurmaz**; atasından devralır |
+
+#### 6.1.2 Türeme (kalıtım) sözleşmesi — dört madde
+
+1. **Tek ata kuralı.** Türeyen bir bileşenin **tam olarak bir** ana/master atası vardır ve
+   bu ata kütükte adıyla yazılıdır.
+2. **Davranış eklemez, daraltır.** Türev yalnız varsayılan prop, tema varyantı, kısıtlanmış
+   sözleşme ve alan (domain) anlamı ekler. Yeni bir odak tuzağı, yeni bir klavye haritası
+   veya yeni bir ARIA yapısı kuruyorsa **o bir türev değildir**; yeni bir ana bileşendir ve
+   öyle kaydedilir.
+3. **Erişilebilirlik atadan gelir.** Türevde ayrıca a11y kurulmaz; atanın a11y testi
+   türevi de korur.
+4. **No-duplicate kuralı.** Aynı görsel/davranışsal role sahip ikinci bir bağımsız
+   uygulama yazılamaz. Bir muhafız testi, aynı rolü iki farklı ağaçta kuran bileşenleri
+   yakalar ve paketi düşürür.
+
+**Sahibin diliyle:** Bir CRM'de "Kaydet" butonu, "Sil" butonu ve "Teklifi gönder" butonu
+üç ayrı buton kodu değildir; tek bir buton bileşeninin üç türevidir. Bunun bedeli şudur:
+klavye ile erişim bozulursa üç ekranda birden değil, **tek bir dosyada** düzeltilir.
+Kullanıcı bir daha "bazı butonlarda çalışıyor, bazılarında çalışmıyor" demez.
 
 ### 6.2 Olgunluk sözleşmesi
 
@@ -380,6 +533,28 @@ Yalnız birim testine dayanan hiçbir "tamamlandı" kabul edilmez.
 
 502 hataları, boş açılan rotalar ve devre dışı görünen ama gerekçesi yazılmamış her
 kontrol **kusurdur** ve ilgili milestone'un kabul kriterine yazılır.
+
+### 6.6 Storybook sözleşmesi — zorunlu katalog
+
+**Bileşenin kaynağı repo kodudur. Storybook kalıcı katalog ve test yüzeyidir.** İkisi
+birbirinin yerine geçmez ve Storybook opsiyonel bir vitrin değildir.
+
+Bir bileşen ancak katalog girişinde şu **yedi boyutun tamamı** varsa "kataloglanmış"
+sayılır:
+
+| # | Boyut | Ne gösterir |
+|---|---|---|
+| 1 | **Varyantlar** | Bileşenin tanımlı her görsel/anlamsal varyantı |
+| 2 | **Durumlar** | Yükleniyor, boş, sonuç yok, hata, kısmi, başarı, yetki, çevrimdışı — bileşen için anlamlı olanların hepsi |
+| 3 | **320px davranışı** | Kaynak düzende gerçek görünüm; yatay taşma yok |
+| 4 | **Dark ve light** | İkisi de ayrı story; biri diğerinin türevi değil |
+| 5 | **Etkileşim durumu** | Odak, hover, aktif, devre dışı, geçersiz — ve klavye yolu |
+| 6 | **Erişilebilirlik durumu** | Story üzerinde axe koşar; critical/serious = 0 |
+| 7 | **Soyağacı bilgisi** | Girişte atası ve türevleri adıyla yazılı |
+
+**Bağlayıcı kapı:** Kütükteki bir bileşen bu yedi boyutu taşıyan bir katalog girişine sahip
+değilse, o bileşeni içeren milestone GREEN alamaz. Bu, P1 boyunca **her** milestone'un
+kabul kriterine dahildir; ayrı ve sonraki bir "katalog fazı" yoktur.
 
 ---
 
@@ -582,10 +757,11 @@ anlamına gelmez: bu üç yetenek ayrı modüllerde yaşar, `DataGrid.tsx` için
 | **Klavye kısayolları** | ❌ **Yok** | `DataGrid.tsx` ve `GridToolbar.tsx` içinde komut kısayolu bağlaması yok | Komut kısayolları hiç yok. (Not: temel klavye **erişilebilirliği** vardır ve `a11y` yeteneği olarak kayıtlıdır; kastedilen, ondan farklı olarak komut kısayollarıdır.) |
 | **Gömülü grafik** | ❌ **Yok** | Grid ağacında hiçbir grafik/`chart` referansı yok; `package.json`'da grafik kütüphanesi bağımlılığı yok | Grid içi gömülü grafik hiç yok |
 
-**Doğru okuma:** M40'ın kırmızısı "beş yetenek de yok" değildir. Kırmızı olan, **olgunluk
+**Doğru okuma:** Grid olgunluk milestone'unun (`V2-P1-45`) kırmızısı "beş yetenek de yok"
+değildir. Kırmızı olan, **olgunluk
 adımlarıdır**: sunucu tarafında kalıcılık ve kurumsal paylaşım, komut kısayolları, gömülü
-grafik ve CSV dışı / sözleşmeye bağlı dışa aktarma. Mevcut üç davranış **korunur**; M40 bir
-yeniden yazma değil, bir genişletmedir.
+grafik ve CSV dışı / sözleşmeye bağlı dışa aktarma. Mevcut üç davranış **korunur**;
+`V2-P1-45` bir yeniden yazma değil, bir genişletmedir.
 
 **Sahibin diliyle:** Bir CRM'de filtrelediğiniz listenin adresini kopyalayıp meslektaşınıza
 gönderebiliyorsunuz, görünümü adlandırıp kaydedebiliyorsunuz ve CSV indirebiliyorsunuz —
@@ -637,6 +813,57 @@ rol yok, davet yok, ekip yok. Güvenlik ayarları sayfasında **yalnız çıkı�
 > Sonucu ve finansal etkiyi raporla → Aboneliğini öde
 
 İkinci yolculuğun **on bir halkasından sekizi bugün yoktur.**
+
+### 8.12 Bileşen sistemi ve Storybook kataloğu — ölçülmüş gerçek
+
+Bu bölüm bu paket sırasında `platform/frontend` üzerinde doğrudan ölçülmüştür.
+
+**Bileşen kütüğü — `src/components/registry.ts`:**
+
+| Kademe | Bileşen sayısı |
+|---|---|
+| primitives | 14 |
+| composites | 16 |
+| patterns | 10 |
+| shells | 5 |
+| domain | 18 |
+| templates | 12 |
+| **Toplam kayıtlı bileşen** | **75** |
+
+Ayrıca kütüğün dışında iki alt sistem vardır ve kendi yetenek kütüklerini taşırlar:
+`components/data-grid` ve `components/media`; buna `components/provider-connections` ve
+`components/adaptive` eklenir.
+
+**Storybook — ölçüm:**
+
+| Ölçü | Değer |
+|---|---|
+| Story dosyası | 10 |
+| Storybook `Meta` bildirimi | 10 |
+| Toplam `Story` dışa aktarımı | 89 |
+| Katalog başlığı biçimi | Kademe başına **"Genel bakış"** (ör. `1 Primitifler/Genel bakış`, `4 Kabuklar/Genel bakış`, `7 Veri tablosu/Genel bakış`) |
+| Kütükteki 75 bileşenden en az bir story içinde **adı geçen** | 75 / 75 |
+| Kütükteki 75 bileşenden **kendi katalog girişi** (kendi `Meta`'sı) olan | **0 / 75** |
+
+**Doğru okuma — ve bu bölüm bir düzeltmedir.** Bugünkü Storybook **boş değildir**; 89 story
+gerçek ve testlidir. Ama bugünkü katalog **kademe düzeyinde genel bakış** kataloğudur:
+on giriş, altı kademe ve üç alt sistem için. Kullanıcının istediği ise **bileşen düzeyinde,
+yedi boyutlu** katalogdur (bkz. 6.6): her görünür bileşenin kendi girişi ve o girişte her
+varyant, her durum, 320px, dark/light, etkileşim ve erişilebilirlik.
+
+**Kapsam farkı:** 10 katalog girişi → **75+ katalog girişi**, her biri yedi boyutlu.
+Bu bir yeniden yazma değil, bir **genişletmedir**: mevcut 89 story korunur ve girişlere
+dağıtılır.
+
+**Soyağacı kanıtı:** `registry.ts` kademe **listesi** tutar ve bir test kademe sayılarını
+(14/16/10/5/18/12 = 75) koda karşı zorlar. **Ata–türev ilişkisi kütükte yazılı değildir**;
+yani bugün "hangi bileşen hangi ana bileşenden türedi" sorusunun makine tarafından
+okunabilir bir cevabı **yoktur** ve no-duplicate kuralı **zorlanmamaktadır**.
+
+**Port kanıtı:** Tipli port disiplini bugün **tek bir yerde** vardır —
+`src/components/provider-connections/types.ts:379`'daki `ProviderConnectionPort`. Medya
+yükleme yüzeyi de bir taşıma katmanı (transport) bekler ve verilmediği için gerekçesiyle
+kapalıdır. Yani desen doğrudur ama **uygulama geneline yayılmamıştır**.
 
 ---
 
@@ -704,53 +931,58 @@ söylemez; yazılmış olan kısmın kendi içinde tutarlı olduğunu söyler.**
 
 ## 10. Birleşik gap matrisi
 
-### 10.1 P0 — Bunlar olmadan satılabilir hiçbir şey yok
+> **Numaralandırma notu.** Bu bölümdeki boşluk öncelikleri önceden `P0/P1/P2` diye
+> adlandırılıyordu. Yeni yol haritasının makro fazları da `P0–P6` olduğu için, çakışmayı
+> önlemek adına boşluk öncelikleri **`G0/G1/G2`** olarak yeniden adlandırılmıştır.
+> **İçerik değişmedi**, yalnız etiket değişti: eski `P0-7` bugünkü `G0-7`'dir.
+
+### 10.1 G0 — Bunlar olmadan satılabilir hiçbir şey yok
 
 | # | Boşluk | Bugünkü durum | Ürün etkisi |
 |---|---|---|---|
-| P0-1 | 320px native mobile-first kabuk | Yok (responsive var, native mobile-first yok) | Kullanıcıların çoğunluğu telefondan gelir ve ürünü kullanamaz |
-| P0-2 | Marka ve görsel kimlik (parliament blue + lemon, Flat 2.0) | Yok | Ürün gösterildiğinde ciddiye alınmaz |
-| P0-3 | Advanced layered header + global arama + sağ panel | Yok | Kullanıcı ürünün içinde kaybolur |
-| P0-4 | Satılabilir kamuya açık yüzey (hero, fiyat, dönüşüm hunisi, SEO) | Yok | Hiç müşteri gelmez |
-| P0-5 | Master DataGrid'in eksik 9 görünüm modu | 2/11 var | Veri yoğun iş yapılamaz |
-| P0-6 | Sunucu taraflı grid sözleşmesi | Yok | Veri büyüdüğünde ürün çöker |
-| P0-7 | Başvuru hattı (Application) | Varlık düzeyinde yok | Ürünün ikinci yarısı hiç yok |
-| P0-8 | Belge yükleme ve saklama | Taşıma katmanı yok | Dosya kütüphanesi hiçbir dosya kabul etmiyor |
-| P0-9 | Bildirim ve içgörü | Yok | Proaktiflik iddiası boş kalıyor |
-| P0-10 | Rol / yetki / ekip | Yok | Tek kullanıcıdan öteye geçilemez |
-| P0-11 | Parola sıfırlama, e-posta doğrulama | Yok | Gerçek kullanıcı hesabını kurtaramaz |
-| P0-12 | AI sağlayıcı bağlantısı (Gemini/OpenClaw/Claude/ChatGPT) | Yalnız anlatım, bağlantı yok | AI-first vaadi çalışmıyor |
-| P0-13 | AI-first davranış (proaktif fırsat, açıklama, deep link) | Yok | Ürünün temel farkı yok |
-| P0-14 | Program verisinin genişletilmesi (3 → uzman doğrulanmış set) | 3 program | Ürün cevap veremiyor |
-| P0-15 | Gerçek backend karşısında uçtan uca doğrulama | UNVERIFIED — sahibi **M67** | Ürünün çalıştığı kanıtlanmadı. **M67 GREEN olmadan production veya satılabilirlik kararı verilemez** |
+| G0-1 | 320px native mobile-first kabuk | Yok (responsive var, native mobile-first yok) | Kullanıcıların çoğunluğu telefondan gelir ve ürünü kullanamaz |
+| G0-2 | Marka ve görsel kimlik (parliament blue + lemon, Flat 2.0) | Yok | Ürün gösterildiğinde ciddiye alınmaz |
+| G0-3 | Advanced layered header + global arama + sağ panel | Yok | Kullanıcı ürünün içinde kaybolur |
+| G0-4 | Satılabilir kamuya açık yüzey (hero, fiyat, dönüşüm hunisi, SEO) | Yok | Hiç müşteri gelmez |
+| G0-5 | Master DataGrid'in eksik 9 görünüm modu | 2/11 var | Veri yoğun iş yapılamaz |
+| G0-6 | Sunucu taraflı grid sözleşmesi | Yok | Veri büyüdüğünde ürün çöker |
+| G0-7 | Başvuru hattı (Application) | Varlık düzeyinde yok | Ürünün ikinci yarısı hiç yok |
+| G0-8 | Belge yükleme ve saklama | Taşıma katmanı yok | Dosya kütüphanesi hiçbir dosya kabul etmiyor |
+| G0-9 | Bildirim ve içgörü | Yok | Proaktiflik iddiası boş kalıyor |
+| G0-10 | Rol / yetki / ekip | Yok | Tek kullanıcıdan öteye geçilemez |
+| G0-11 | Parola sıfırlama, e-posta doğrulama | Yok | Gerçek kullanıcı hesabını kurtaramaz |
+| G0-12 | AI sağlayıcı bağlantısı (Gemini/OpenClaw/Claude/ChatGPT) | Yalnız anlatım, bağlantı yok | AI-first vaadi çalışmıyor |
+| G0-13 | AI-first davranış (proaktif fırsat, açıklama, deep link) | Yok | Ürünün temel farkı yok |
+| G0-14 | Program verisinin genişletilmesi (3 → uzman doğrulanmış set) | 3 program | Ürün cevap veremiyor |
+| G0-15 | Gerçek backend karşısında uçtan uca doğrulama | UNVERIFIED — sahibi **V2-P6-01** | Ürünün çalıştığı kanıtlanmadı. **V2-P6-01 GREEN olmadan production veya satılabilirlik kararı verilemez** |
 
-### 10.2 P1 — MVP'den hemen sonra
+### 10.2 G1 — İlk teslimden hemen sonra
 
 | # | Boşluk | Ürün etkisi |
 |---|---|---|
-| P1-1 | Görev ve takvim | Başvuru takibi yapılamaz |
-| P1-2 | Denetim izi ve onay listesi ekranları | Kurumsal müşteri denetim isteyecek |
-| P1-3 | Dijital ikiz (şirketin yaşayan modeli) | Vizyonun merkezi varlığı |
-| P1-4 | Senaryo ve simülasyon | "Ya şunu yapsam" sorusu cevapsız |
-| P1-5 | CRM ve danışmanlık hattı | İkinci gelir hattı yok |
-| P1-6 | Faturalama ve abonelik | Para tahsil edilemiyor |
-| P1-7 | i18n ve country packs | Uluslararası hazırlık |
-| P1-8 | Belge zekâsı (OCR, alan çıkarımı, kaynak/güven, insan doğrulaması) — sahibi **M65** | Kanıt "işaretlendi" ≠ "doğrulandı"; doğrulanmamış bir alan doğrulanmış gibi gösterilemez |
-| P1-9 | Kaynak değişiklik farkı (diff) | Mevzuat değişikliği yakalanamıyor |
-| P1-10 | Analytics ve finansal etki raporlaması — sahibi **M66** | Finansal etki gösterilemiyor; ölçülmemiş değer `0` olarak yazılamaz, em-dash olarak görünür |
+| G1-1 | Görev ve takvim | Başvuru takibi yapılamaz |
+| G1-2 | Denetim izi ve onay listesi ekranları | Kurumsal müşteri denetim isteyecek |
+| G1-3 | Dijital ikiz (şirketin yaşayan modeli) | Vizyonun merkezi varlığı |
+| G1-4 | Senaryo ve simülasyon | "Ya şunu yapsam" sorusu cevapsız |
+| G1-5 | CRM ve danışmanlık hattı | İkinci gelir hattı yok |
+| G1-6 | Faturalama ve abonelik | Para tahsil edilemiyor |
+| G1-7 | i18n ve country packs | Uluslararası hazırlık |
+| G1-8 | Belge zekâsı (OCR, alan çıkarımı, kaynak/güven, insan doğrulaması) — frontend yüzeyi **V2-P1-59**, backend hattı **V2-P5-10/V2-P5-11** | Kanıt "işaretlendi" ≠ "doğrulandı"; doğrulanmamış bir alan doğrulanmış gibi gösterilemez |
+| G1-9 | Kaynak değişiklik farkı (diff) | Mevzuat değişikliği yakalanamıyor |
+| G1-10 | Analytics ve finansal etki raporlaması — frontend yüzeyi **V2-P1-62**, backend hattı **V2-P5-28/V2-P5-29** | Finansal etki gösterilemiyor; ölçülmemiş değer `0` olarak yazılamaz, em-dash olarak görünür |
 
-### 10.3 P2 — Sonraya (şimdi yapılırsa zarar verir)
+### 10.3 G2 — Sonraya (şimdi yapılırsa zarar verir)
 
 | # | Boşluk | Neden sonraya |
 |---|---|---|
-| P2-1 | Bilgi grafiği (fiziksel graph DB) | İlişkiler önce ilişkisel modelde yeterli |
-| P2-2 | Vektör arama / RAG | Doküman hacmi yokken erken |
-| P2-3 | Katmanlı hafıza terfi eşikleri | Kalibre edecek gerçek veri yok |
-| P2-4 | Plugin / skill marketi ve SDK | İkinci gerçek tüketici çıkmadan yanlış tasarlanır |
-| P2-5 | Öngörü ve tahmin katmanı | Geçmiş çağrı verisi olmadan tahmin = halüsinasyon |
-| P2-6 | Resmî kuruma otomatik başvuru gönderimi | Geri alınamaz, hukuki sonuçlu |
-| P2-7 | Taksonomi / meta motor | Önce 3-4 somut domain yazılmalı |
-| P2-8 | Platform evolution (kendini geliştirme) | En son katman |
+| G2-1 | Bilgi grafiği (fiziksel graph DB) | İlişkiler önce ilişkisel modelde yeterli |
+| G2-2 | Vektör arama / RAG | Doküman hacmi yokken erken |
+| G2-3 | Katmanlı hafıza terfi eşikleri | Kalibre edecek gerçek veri yok |
+| G2-4 | Plugin / skill marketi ve SDK | İkinci gerçek tüketici çıkmadan yanlış tasarlanır |
+| G2-5 | Öngörü ve tahmin katmanı | Geçmiş çağrı verisi olmadan tahmin = halüsinasyon |
+| G2-6 | Resmî kuruma otomatik başvuru gönderimi | Geri alınamaz, hukuki sonuçlu |
+| G2-7 | Taksonomi / meta motor | Önce 3-4 somut domain yazılmalı |
+| G2-8 | Platform evolution (kendini geliştirme) | En son katman |
 
 ### 10.4 Eksik ekranlar
 
@@ -776,40 +1008,79 @@ empty-state illustration set, motion primitives, toast system, onboarding tour.
 
 ---
 
-## 11. Uygulanacak 10 faz
+## 11. Uygulanacak makro faz sırası (v2)
 
-**İki ayrı numaralandırma vardır ve birbirine karıştırılmamalıdır:**
+> **v1 fazlandırması geri çekilmiştir.** Eski **F1–F10** sahibe dönük fazları ve eski
+> **M01–M68** milestone kimlikleri **aşılmış (superseded) v1 tarihidir**. Yeniden
+> numaralandırılmaz, silinmez ve yürürlükte değildir. Yürürlükte olan tek sıra aşağıdaki
+> **P0–P6** makro faz sırasıdır; yürütülebilir kimlik uzayı
+> `MULTI-AGENT-GELISTIRME-POLITIKASI-VE-YOL-HARITASI.md` Bölüm 7'deki **V2-** ad uzayıdır.
 
-- **F1–F10 — sahibe dönük (owner-facing) faz.** Sahibin ürünü hangi büyük adımlarla
-  göreceğini anlatır. Raporlama ve kabul dili bu numarayı kullanır.
-- **A–V — yürütme grubu (execution group).** `MULTI-AGENT-GELISTIRME-POLITIKASI-VE-YOL-HARITASI.md`
-  Bölüm 7'deki milestone tablolarının başlıklarıdır. Paket, writer ve bağımlılık dili bu
-  harfi kullanır.
+### 11.1 Makro sıra
 
-Bir F fazı bir veya birden çok yürütme grubunu kapsar. Kesin eşleme aşağıdadır ve
-`MULTI-AGENT...` Bölüm 7.1'deki tabloyla birebir aynıdır.
-
-| Faz | Ad | Yürütme grubu | Milestone aralığı | Kapsam | Çıktı |
+| Sıra | Faz | Ad | Milestone | Kimlik aralığı | Çıktı |
 |---|---|---|---|---|---|
-| **F1** | Yönetişim ve temel | A | **M01–M04** (4) | Belgeler, roller, kapılar, RED altyapısı, tasarım token'larının 320px doğrulaması | Ölçülebilir başlangıç çizgisi |
-| **F2** | 320px native kabuk ve görsel kimlik | B | **M05–M13** (9) | Mobile-first kabuk, layered header, sol/sağ panel, parliament blue + lemon, Flat 2.0, motion, dark/light | Ürün ilk kez "ürün gibi" görünür |
-| **F3** | Bilgi mimarisi ve navigasyon | C | **M14–M18** (5) | Rota haritası, global arama, komut paleti, bildirim merkezi, kiracı menüsü | Kullanıcı kaybolmaz |
-| **F4** | Kimlik ve organizasyon | D | **M19–M22** (4) | Parola sıfırlama, e-posta doğrulama, 2FA, oturumlar, organizasyon profili | Gerçek hesap yönetimi |
-| **F5** | Fırsat ve uygunluk | E, F | **M23–M28** (6) | Fırsat zekâsı, genişletilmiş program seti, kural motoru yüzeyi, kaynak tazeliği ve diff, karar tezgâhı | Ürünün çekirdek değeri |
-| **F6** | Enterprise grid ve görünümler | I | **M35–M40** (6) | Master DataGrid'in 11 görünüm modu, sunucu taraflı sözleşmeler ve M40'ın olgunluk adımları (bkz. 8.7.1) | Veri yoğun çalışma |
-| **F7** | Başvuru operasyonu | G, H, J, S | **M29–M34, M41–M43, M65** (10) | Başvuru hattı, görev, takvim, bildirim, belge kütüphanesi, taşıma katmanı ve **belge zekâsı (OCR)** | Ürünün ikinci yarısı |
-| **F8** | AI-first katman | K, L | **M44–M50** (7) | Sağlayıcı bağlantıları, master + uzman ajanlar, içgörü akışı, ECA, katmanlı hafıza, beceri sürümleme, dijital ikiz, simülasyon | Ürünün temel farkı |
-| **F9** | Ticarileşme | M, N, O, T | **M51–M56, M66** (7) | Ekip/rol/denetim, CRM, danışmanlık hattı, faturalama, abonelik, i18n, country packs ve **analitik/finansal etki** | Para tahsil edilebilir |
-| **F10** | Sertleştirme ve satılabilirlik | P, Q, R, U, V | **M57–M64, M67, M68** (10) | Performans, güvenlik, erişilebilirlik, çapraz tarayıcı, CI, Hetzner dağıtımı, satılabilir kamuya açık yüzey, **gerçek backend E2E** ve **final kapanış kararı** | Satılabilir SaaS |
+| 1 | **P0** | Yönetişim ve kanıt altyapısı | 5 | `V2-P0-01`–`V2-P0-05` | Ölçülebilir başlangıç çizgisi, tek komutlu kapı, tasarım ve soyağacı muhafızları |
+| 2 | **P1** | **Enterprise, olgun, waterfall frontend — ilk teslim** | 76 | `V2-P1-01`–`V2-P1-76` | Tüm yolculuklar, tüm ekranlar, tüm bileşen kademeleri, eksiksiz Storybook kataloğu |
+| — | **H1** | **Sahip ürünü müşteriye gösterir** | **0** | — | Devir/bilgilendirme noktası. **Kapı değildir** (bkz. 11.3) |
+| 3 | **P2** | Bileşen değiştirme / silme / ekleme talep alımı | 1 + sahibin verdiği her somut talep | `V2-P2-01`, sonra `V2-P2-C01…` | Talep başına test-first milestone üretme mekanizması |
+| 4 | **P3** | Backend çatısı | 8 | `V2-P3-01`–`V2-P3-08` | FastAPI çatısı, sözleşme kapısı, güvenlik ve CI temeli |
+| 5 | **P4** | Modül öncesi ortak ön gereksinimler | 12 | `V2-P4-01`–`V2-P4-12` | Modüllerden önce kurulması zorunlu ortak katmanlar |
+| 6 | **P5** | Modüler monolit modülleri | 33 | `V2-P5-01`–`V2-P5-33` | 27 alanın modül olarak geliştirilmesi |
+| 7 | **P6** | Modül sonrası iş ve enterprise sertleştirme | 12 | `V2-P6-01`–`V2-P6-12` | Gerçek backend E2E, ölçek, güvenlik, dağıtım, final karar |
+| | | **Toplam** | **147** | | **294 worker-day** |
 
-**Toplam: 68 milestone.** Aralıklar kesişmez ve M01–M68'in tamamını kapsar.
+**Aritmetik:** 5 + 76 + 1 + 8 + 12 + 33 + 12 = **147 milestone**; her milestone ortalama
+**2 gün** → **294 worker-day**. H1 bir milestone değildir ve efora girmez.
 
-> **Sıra uyarısı.** F fazları numara sırasına göre yürütülür, ancak **milestone
-> numaraları F sırasına göre kesintisiz değildir**: F6 (M35–M40), F7'nin ilk
-> milestone'undan (M29) sonra gelen bir numara aralığı taşır. Bağlayıcı olan
-> **bağımlılık sütunudur**, numara bitişikliği değil.
+### 11.2 P1 neden tek parça ve neden "ilk teslim"
 
----
+P1 seksene yakın milestone taşır ama **tek bir teslimdir**: sahip P1'in sonunda
+**eksiksiz, olgun ve gösterilebilir** bir frontend görür. P1 içinde bir ara teslim,
+bir "MVP sürümü" veya bir "iskelet aşaması" **yoktur**. Milestone bölünmesi işin
+yürütülmesi ve kanıtlanması içindir, teslim kademelendirmesi için değil.
+
+**Bağlayıcı kural:** P1'in hiçbir milestone'u "bu bileşen sonra olgunlaştırılacak"
+notuyla kapanamaz. Bir bileşen Bölüm 6.2'deki beş olgunluk şartını ve Bölüm 6.6'daki yedi
+katalog boyutunu **o milestone'da** karşılar veya milestone GREEN alamaz.
+
+### 11.3 H1 — müşteriye gösterim bir kapı değildir
+
+| Soru | Cevap |
+|---|---|
+| Gösterim geliştirmeyi durdurur mu? | **Hayır.** P2 talep alımı ve P3 backend çatısı gösterimden bağımsız ilerler |
+| Gösterim bir onay kapısı mıdır? | **Hayır.** Onay, dur/geç veya kabul kararı üretmez |
+| Müşteri ne diyecek? | **Bilinmiyor ve uydurulmaz.** Bu belge hiçbir müşteri geri bildirimi varsaymaz |
+| Gösterimden çıkan somut bir talep gelirse ne olur? | Sahip talebi verir; her somut **değiştirme / silme / ekleme** kendi test-first milestone'u olur (P2) |
+
+### 11.4 P2 — sonraki bileşen işinin adı
+
+**Bu faz "bileşen olgunlaştırma" değildir ve öyle adlandırılamaz.** P1'de teslim edilen
+bileşenler zaten enterprise ve olgundur. P2 yalnız üç işi tanır:
+
+| İş | Ne demek | Ne zaman milestone olur |
+|---|---|---|
+| **Değiştirme** | Var olan bir bileşenin davranış, varyant veya görünümünün sahibin verdiği somut talimatla değişmesi | Talep somutlaştığında |
+| **Silme** | Var olan bir bileşenin kütükten, kodundan ve katalogdan kaldırılması | Talep somutlaştığında |
+| **Ekleme** | Kütükte olmayan yeni bir bileşenin, soyağacı kuralına uyarak eklenmesi | Talep somutlaştığında |
+
+`V2-P2-01` bu üç işin **mekanizmasını** kurar (talep şablonu, soyağacı etkisi analizi,
+yeniden kullanılabilir RED şablonu, regresyon sözleşmesi). Somut talepler için milestone
+**önceden yazılmaz**; sahip talebi verdiğinde `V2-P2-C01`, `V2-P2-C02` … olarak açılır.
+
+### 11.5 Frontend'den sonraki zorunlu sıra
+
+```
+P3 backend çatısı
+   → P4 modüllerden önce planlanması/geliştirilmesi zorunlu ortak her şey
+      → P5 modüler monolit modülleri
+         → P6 modüller bittikten sonra gereken her şey
+```
+
+Bu sıra **atlanamaz**. Bir modül (P5), bağlı olduğu ortak ön gereksinim (P4) GREEN
+olmadan başlamaz; hiçbir P4 kalemi backend çatısı (P3) GREEN olmadan başlamaz.
+**Modüler monolit zorunludur; mikroservis değildir. Next.js ve MetaFramer yasaktır.
+S3 opsiyoneldir.**
 
 ## 12. Riskler
 
@@ -819,7 +1090,7 @@ Bir F fazı bir veya birden çok yürütme grubunu kapsar. Kesin eşleme aşağ�
 | R2 | Kalibre edilmemiş skorların tavsiye gibi görünmesi | İtibar kaybı, yanlış başvuru | Skorlar ya kaldırılır ya "editoryal, kalibre edilmemiş" etiketlenir |
 | R3 | Mevzuat tazeliğinin kaybolması | Doğrudan parasal zarar | Kaynak başına snapshot + hash + yürürlük tarihi zorunlu |
 | R4 | Masaüstüne mobil kapanmadan geçmek | 320px yeniden yazılır, iş iki kez yapılır | Faz kapısı: mobil GREEN olmadan masaüstü başlamaz |
-| R5 | Görsel tasarımın sonraya bırakılması | Ürün satılamaz hâlde kalır | Görsel kimlik F2'dedir, F10'da değil |
+| R5 | Görsel tasarımın sonraya bırakılması | Ürün satılamaz hâlde kalır | Görsel kimlik P1'in başındadır (`V2-P1-02`), sonuna bırakılmaz |
 | R6 | AI'ın yetki sınırının gevşemesi | Ürünün tüm güven modeli çöker | Yasaklı ifade muhafızı ve şema reddi testle korunur |
 | R7 | Tek writer kuralının delinmesi | Çakışan değişiklikler, izlenemez hata | Paket başına tek writer, ayrı reviewer |
 | R8 | Eşzamanlı ajan sayısının kontrolsüz büyümesi | Sistem kaynakları tükenir | `allowNewWorker` / `recommendedNewWorkers` admission kontrolü |
@@ -850,16 +1121,15 @@ sayısı, paket sınıfı, kanıt ve kapı sonucu.
 
 ## 14. Rollback
 
-Bu belge yalnızca dört dosyaya dokunur:
+Bu revizyon yalnızca üç kök Markdown dosyasına dokunur:
 
-1. `.gitignore` (eklenen satırlar)
-2. `ENTERPRISE-FRONTEND-TALEP-VE-GAP-RAPORU.md` (bu dosya)
-3. `FRONTEND-TECHSTACK.md`
-4. `MULTI-AGENT-GELISTIRME-POLITIKASI-VE-YOL-HARITASI.md`
+1. `ENTERPRISE-FRONTEND-TALEP-VE-GAP-RAPORU.md` (bu dosya)
+2. `FRONTEND-TECHSTACK.md`
+3. `MULTI-AGENT-GELISTIRME-POLITIKASI-VE-YOL-HARITASI.md`
 
-**Rollback yolu:** üç Markdown dosyasının silinmesi ve `.gitignore`'a eklenen satırların
-geri alınması. Sonuç, deponun bu paket hiç var olmamış hâlidir. Hiçbir ürün kodu, test,
-rapor veya yapılandırma etkilenmez.
+**Rollback yolu:** bu üç dosyanın bir önceki sürümüne döndürülmesi. Sonuç, deponun bu
+revizyon hiç yapılmamış hâlidir. Hiçbir ürün kodu, test, rapor, iş akışı, bağımlılık veya
+yapılandırma etkilenmez; bu paket hiçbirine dokunmamıştır.
 
 Rollback kararı ve yürütmesi **Codex Desktop MASTER**'ındır.
 
@@ -871,43 +1141,61 @@ Rollback kararı ve yürütmesi **Codex Desktop MASTER**'ındır.
 2. **Bugünkü sınıf: MVP altı prototip.** Erişilebilirlik ve token temeli korunur; ürün
    katmanı sıfırdan kurulur.
 3. **Bu belge salt okunurdur ve `capability_delta` değeri `0`'dır.**
-4. **Sıradaki iş F1'dir.** F1, `MULTI-AGENT-GELISTIRME-POLITIKASI-VE-YOL-HARITASI.md`
-   içindeki **A yürütme grubudur ve tam olarak dört milestone'dan oluşur: M01, M02, M03,
-   M04.** F1 bu dördü GREEN olunca kapanır; **F2 M05 ile başlar.** F1'in "ilk on
-   milestone" olduğu **iddia edilmez** — o on satırlık liste (`MULTI-AGENT...` Bölüm 15)
-   bir başlangıç *sırasıdır* ve F1 ile F2'nin başını birlikte kapsar, bir faz sınırı
-   değildir.
-5. **Hiçbir pakette Next.js veya MetaFramer önerilmez.**
-6. **Hiçbir pakette mock testi production kanıtı sayılmaz.**
-7. **Backend bu frontend programında geliştirilmez**; ancak her frontend paketi
-   backend-compatible olduğunu OpenAPI sözleşmesine karşı kanıtlar.
-8. **Git işlemleri yalnız MASTER'a aittir** ve yalnız GREEN kapılardan sonra yapılır.
+4. **Sıradaki iş P0'dır** ve `V2-P0-01` ile başlar. Eski **F1–F10** fazlandırması ve
+   **M01–M68** kimlikleri **aşılmış v1 tarihidir**; yürürlükte değildir.
+5. **İlk teslim P1'dir ve MVP değildir.** P1, eksiksiz, olgun, enterprise ve satılabilir
+   bir frontend teslimidir; içinde ara teslim, iskelet aşaması veya "sonra olgunlaştırma"
+   yoktur.
+6. **Müşteriye gösterim (H1) bir kapı değildir.** Onay, dur/geç veya kabul kararı
+   üretmez ve geliştirmeyi bloke etmez.
+7. **P2 olgunlaştırma değildir.** Yalnız sahibin verdiği somut değiştirme, silme ve
+   ekleme taleplerini test-first milestone'a çevirir. Müşteri geri bildirimi uydurulmaz.
+8. **Frontend'den sonraki sıra bağlayıcıdır:** P3 backend çatısı → P4 modül öncesi ortak
+   ön gereksinimler → P5 modüler monolit modülleri → P6 modül sonrası iş.
+9. **Hiçbir pakette Next.js veya MetaFramer önerilmez.** Modüler monolit zorunludur,
+   S3 opsiyoneldir.
+10. **Hiçbir pakette mock testi production kanıtı sayılmaz.**
+11. **Backend P1 fazında geliştirilmez** (P3'te başlar); ancak her P1 paketi
+    backend-compatible olduğunu tipli port sözleşmesine karşı kanıtlar.
+12. **Git işlemleri yalnız MASTER'a aittir** ve yalnız GREEN kapılardan sonra yapılır.
 
 ---
 
 ## 16. Owner özeti — sade Türkçe
 
 **once:** Elimizde teknik olarak düzgün, erişilebilir, testli ama ürün olarak ince bir
-frontend vardı ve bu "enterprise tamamlandı" diye raporlanmıştı.
+frontend vardı ve bu "enterprise tamamlandı" diye raporlanmıştı. Yol haritası da frontend'i
+on faza yayıyor, backend'i hiç planlamıyor ve bileşenlerin nasıl türeyeceğini yazmıyordu.
 
-**simdi:** Aynı frontend duruyor; **hiçbir kodu değişmedi.** Değişen şey, ne olduğunun
-doğru yazılmış olması: ürün, UX, yolculuk, fonksiyon ve görsel tasarım bakımından MVP
-altı bir prototip.
+**simdi:** Aynı frontend duruyor; **hiçbir kodu değişmedi.** Değişen şey plan ve tanım:
+(1) ilk teslim artık **eksiksiz, olgun, enterprise ve satılabilir bir frontend**dir — MVP,
+prototip veya iskelet değildir; (2) bileşen hiyerarşisi beş kademeyle ve türeme kuralıyla
+yazılıdır ve **her bileşen Storybook'ta yedi boyutuyla kataloglanır**; (3) müşteriye
+gösterim **bir onay kapısı değildir**; (4) sonraki bileşen işi olgunlaştırma değil, yalnız
+sahibin verdiği somut **değiştirme / silme / ekleme** işidir; (5) frontend'den sonra
+**backend çatısı → modül öncesi ortak gereksinimler → modüler monolit modülleri → modül
+sonrası iş** sırası bağlayıcıdır.
 
-**fark:** Artık kimse bu ürünün bittiğini sanmıyor. Ne eksik olduğu 15 P0, 10 P1 ve 8 P2
-başlığında, dosya yolu ve satır numarasıyla yazılı. Ne yapılacağı 10 faza bölünmüş.
+**fark:** Artık kimse bu ürünün bittiğini sanmıyor ve kimse "frontend bitince proje biter"
+sanmıyor. Ne eksik olduğu 15 G0, 10 G1 ve 8 G2 başlığında, dosya yolu ve satır numarasıyla
+yazılı. Ne yapılacağı **147 kilometre taşına** bölünmüş: 5 + 76 + 1 + 8 + 12 + 33 + 12,
+her biri ortalama 2 gün, toplam **294 worker-day**.
 
 **kullaniciYolculugu:** Bugün bir KOBİ yetkilisi kayıt olup giriş yapabiliyor, profilini
 girebiliyor, üç program için uygunluk değerlendirmesi çalıştırabiliyor, her kararın hangi
 kurala ve hangi resmî kaynağa dayandığını görebiliyor ve kendi onayını kaydedebiliyor.
 Bunun dışında hiçbir şey yapamıyor: dosya yükleyemiyor, başvuru takip edemiyor, bildirim
 alamıyor, ekip ekleyemiyor, yapay zekâ bağlayamıyor ve ürünü telefonda rahat kullanamıyor.
+P1 bittiğinde bu yolculukların **tamamının frontend'i** çalışır ve olgun olur; backend'e
+bağlı eylemler ise tipli port arkasında **dürüst mock/demo** durumunda görünür — hiçbiri
+"çalışıyor" diye raporlanmaz.
 
-**kalanEngel:** 15 P0 başlığının tamamı. En kritik üçü: (1) 320px native kabuk ve görsel
-kimlik, (2) başvuru hattı ve belge taşıma katmanı, (3) AI sağlayıcı bağlantısı ve
-AI-first davranış. Ayrıca program verisinin uzman doğrulamasıyla genişletilmesi bir
-**owner kararıdır** ve hiçbir mühendislik paketiyle kapanmaz.
+**kalanEngel:** 15 G0 başlığının tamamı. En kritik üçü: (1) 320px native kabuk ve görsel
+kimlik, (2) bileşen soyağacı ile bileşen düzeyinde Storybook kataloğu, (3) başvuru hattı,
+belge taşıma katmanı ve AI sağlayıcı yüzeyleri. Backend'in kendisi P3–P6'da yapılacaktır ve
+P1 boyunca **UNVERIFIED** kalır. Ayrıca program verisinin uzman doğrulamasıyla
+genişletilmesi bir **owner kararıdır** ve hiçbir mühendislik paketiyle kapanmaz.
 
 **capability_delta:** `0`. Bu belge hiçbir yetenek eklemedi. Yaptığı tek şey, neyin
-olmadığını kayda geçirmek — ve bu, bir sonraki paketin doğru işi yapabilmesinin ön
-şartıdır.
+olmadığını ve hangi sırayla yapılacağını kayda geçirmek — ve bu, bir sonraki paketin doğru
+işi yapabilmesinin ön şartıdır.

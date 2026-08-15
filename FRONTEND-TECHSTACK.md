@@ -3,6 +3,9 @@
 **Tarih:** 2026-08-15
 **Kapsam:** `platform/frontend/` — DestekTeşvik'in React tabanlı frontend uygulaması.
 **Belge sınıfı:** Karar belgesi. Yürürlüktedir; değişikliği yalnız yeni bir karar kaydı (ADR) yapar.
+**Revizyon:** **v2** — bileşen soyağacı (Bölüm 3), Storybook zorunlu katalog sözleşmesi
+(Bölüm 4) ve port/adaptör stratejisi (Bölüm 5) eklendi; faz dili `V2-` yol haritasıyla
+hizalandı.
 **Girdi:** `~/Desktop/frontend-tecstack.md` (dış teknik girdi, talimat değil) + repo gerçeği.
 **capability_delta:** `0` — bu belge kod değiştirmez; hangi teknolojinin neden seçildiğini kaydeder.
 
@@ -30,8 +33,9 @@ Sade Türkçe, dört cümle:
 3. **Tasarım katmanı topluca yeniden yazılmaz.** Mevcut bespoke, pixel-perfect CSS token
    sistemi korunur. Tailwind zorunlu değildir, shadcn/ui zorunlu değildir ve SCSS ancak
    ölçülmüş bir fayda varsa gelir.
-4. **Backend bu pakette geliştirilmez ama sözleşme bağlayıcıdır.** Frontend, FastAPI'nin
-   ürettiği OpenAPI sözleşmesine uyar; uydurma uç kullanmaz, SSR HTML ayrıştırmaz.
+4. **Backend P1 frontend fazında geliştirilmez ama sözleşme bağlayıcıdır.** Frontend, tipli
+   portlar üzerinden çalışır ve FastAPI'nin üreteceği OpenAPI sözleşmesine uyar; uydurma uç
+   kullanmaz, SSR HTML ayrıştırmaz. Backend **P3'te başlar** ve programın kapsamındadır.
 
 **Sahibin diliyle:** Bir CRM'iniz var. Motoru sağlam, direksiyonu çalışıyor, frenleri
 test edilmiş. Ama koltuk yok, cam yok, kontak paneli yok. Doğru karar motoru değiştirmek
@@ -45,7 +49,7 @@ değil; koltukları takmaktır.
 |---|---|---|
 | 1 | **Next.js yoktur** | Aday değil, geçiş hedefi değil, opsiyon değil. Hiçbir belgede, hiçbir karşılaştırmada önerilmez. |
 | 2 | **MetaFramer yoktur** | Aynı kapsam. |
-| 3 | **Backend bu pakette geliştirilmez** | Ama frontend **FastAPI / OpenAPI-compatible** olmak zorundadır. |
+| 3 | **Backend P1'de geliştirilmez** | Ama frontend **FastAPI / OpenAPI-compatible** olmak zorundadır. Backend P3–P6'da yapılır; "hiç yapılmayacak" demek değildir. |
 | 4 | **Modular monolith** | Mikroservis değil, mikro-frontend değil. Tek uygulama, iyi ayrılmış modüller. |
 | 5 | **Mobile-first, gerçek native 320px** | Kaynak düzen 320'de kurulur. "Responsive yaptık" bu sınırı karşılamaz. |
 | 6 | **Minimum görünür metin 1rem** | 1rem altı görünür metin ihlaldir. |
@@ -53,10 +57,135 @@ değil; koltukları takmaktır.
 | 8 | **Köşe yuvarlaklığı ≤ 12px** | Arama alanı tek bilinçli istisnadır. |
 | 9 | **Yerel depolama varsayılan, S3 opsiyonel** | Dosya depolama portu yerel adaptörle çalışır; S3 asla zorunlu bağımlılık olmaz. |
 | 10 | **Mock testi production kanıtı değildir** | Her paket gerçek backend kapısını ayrı raporlar. |
+| 11 | **İlk teslim MVP değildir** | P1 frontend teslimi eksiksiz, olgun, enterprise ve satılabilir olarak verilir; prototip, iskelet veya "sonra olgunlaştırılacak" bir taslak değildir. |
+| 12 | **Storybook zorunludur** | Görünür her bileşen, Bölüm 4'teki yedi boyutla kataloglanır. Katalog eksikse milestone GREEN alamaz. |
+| 13 | **Bileşen tekilliği** | Aynı rolü kuran ikinci bir bağımsız uygulama yazılamaz; soyağacı ve no-duplicate kuralı Bölüm 3'tedir. |
 
 ---
 
-## 3. Mevcut ve korunacak
+## 3. Bileşen mimarisi ve soyağacı (lineage)
+
+### 3.1 Beş kademe — kullanıcının ifadesi korunarak
+
+Kullanıcı bileşen sistemini beş kademeyle tanımladı. **İfade aynen korunur**; aşağıda her
+kademenin React'teki somut karşılığı ve dizin yeri vardır. "Kalıtım / türeme" kelimesi
+**silinmez**: React'te sınıf kalıtımı (`extends`) kullanılmadığı için türeme,
+**sarmalama (wrapping) + yapılandırma (configuration) + sözleşme daraltma** ile gerçekleşir.
+Bu bir kelime değişikliği değil, aynı niyetin React'teki doğru uygulamasıdır.
+
+| Kademe | Kullanıcının ifadesi | React karşılığı | Repo yeri |
+|---|---|---|---|
+| 1 | **Frontend bileşeni** | Render edilen her görünür React bileşeni | `src/components/**` |
+| 2 | **Ana bileşen (main)** | Bir davranışın tek sahibi (`Button`, `Dialog`, `Input`) | `primitives.tsx`, `composites.tsx` |
+| 3 | **Master bileşen** | Bütün bir alanın tek sözleşmesi (`DataGrid`, `MediaLibrary`, `AppShell`, `FormShell`) | `data-grid/`, `media/`, `adaptive/`, `forms/` |
+| 4 | **Master-main bileşen** | Master'ın içindeki, master sözleşmesini taşıyan ana parça (`GridToolbar`, `GridViewport`, `ShellHeader`) | İlgili master dizini |
+| 5 | **Türeyen bileşen** | Ana/master bileşeni sarmalayıp yapılandıran, kendi davranışını eklemeyen bileşen (`PrimaryButton`, `DangerDialog`, `ApplicationGrid`) | `domain.tsx`, `templates.tsx` |
+
+### 3.2 Türeme sözleşmesi — dört bağlayıcı kural
+
+1. **Tek ata.** Türeyen bir bileşenin **tam olarak bir** ana/master atası vardır ve bu ata
+   `registry.ts` kütüğünde adıyla yazılıdır.
+2. **Davranış eklemez, daraltır.** Türev yalnız varsayılan prop, varyant, kısıtlanmış
+   sözleşme ve alan anlamı ekler. Kendi odak tuzağını, kendi klavye haritasını veya kendi
+   ARIA yapısını kuruyorsa **o bir türev değildir**; yeni bir ana bileşendir ve öyle
+   kaydedilir.
+3. **Erişilebilirlik atadan gelir.** Türevde ikinci kez a11y kurulmaz; atanın a11y testi
+   türevi de korur.
+4. **No-duplicate.** Aynı görsel/davranışsal rolü kuran ikinci bir bağımsız uygulama
+   yazılamaz. Bir muhafız testi bunu koda karşı zorlar ve ihlalde paketi düşürür.
+
+### 3.3 Bugünkü repo gerçeği ve kapanacak fark
+
+`src/components/registry.ts` bugün kademe **listesi** tutar ve bir test kademe sayılarını
+koda karşı zorlar: **primitives 14 / composites 16 / patterns 10 / shells 5 / domain 18 /
+templates 12 = 75 kayıtlı bileşen.** Bunların dışında dört alt sistem vardır: `data-grid`,
+`media`, `provider-connections`, `adaptive`.
+
+**Eksik olan:** kütük **ata–türev ilişkisini tutmaz**. Yani bugün "bu bileşen hangi ana
+bileşenden türedi" sorusunun makine tarafından okunabilir bir cevabı yoktur ve
+**no-duplicate kuralı zorlanmamaktadır.** Kapanışı `V2-P0-05`'tedir.
+
+---
+
+## 4. Storybook — zorunlu katalog sözleşmesi
+
+**Bileşenin kaynağı repo kodudur. Storybook kalıcı katalog ve test yüzeyidir.** İkisi
+birbirinin yerine geçmez ve Storybook opsiyonel bir vitrin değildir; **bağlayıcı bir
+kapıdır.**
+
+### 4.1 Bir katalog girişinin taşımak zorunda olduğu yedi boyut
+
+| # | Boyut | Kabul |
+|---|---|---|
+| 1 | **Varyantlar** | Tanımlı her görsel/anlamsal varyant için story |
+| 2 | **Durumlar** | Yükleniyor, boş, sonuç yok, hata, kısmi, başarı, yetki, çevrimdışı — bileşen için anlamlı olanların hepsi |
+| 3 | **320px** | Kaynak düzende gerçek görünüm; yatay taşma yok |
+| 4 | **Dark ve light** | İkisi de ayrı story; biri diğerinin türevi değil |
+| 5 | **Etkileşim** | Odak, hover, aktif, devre dışı, geçersiz ve klavye yolu |
+| 6 | **Erişilebilirlik** | Story üzerinde axe koşar; critical/serious = 0 |
+| 7 | **Soyağacı** | Girişte atası ve türevleri adıyla yazılı |
+
+### 4.2 Bugünkü ölçüm ve kapsam farkı
+
+| Ölçü | Bugün | Hedef |
+|---|---|---|
+| Story dosyası | 10 | — |
+| Storybook `Meta` bildirimi (katalog girişi) | **10** | **75+** |
+| Toplam `Story` dışa aktarımı | 89 | Yedi boyutu karşılayacak kadar |
+| Katalog biçimi | Kademe başına "Genel bakış" (`1 Primitifler/Genel bakış` gibi) | Bileşen başına kendi girişi |
+| Kendi katalog girişi olan kayıtlı bileşen | **0 / 75** | **75 / 75** |
+
+**Doğru okuma:** Bugünkü Storybook boş değildir; 89 story gerçek ve testlidir. Ama katalog
+**kademe düzeyinde**dir, **bileşen düzeyinde** değil. Yapılacak iş bir yeniden yazma değil,
+bir **genişletmedir**: mevcut 89 story korunur ve bileşen girişlerine dağıtılır.
+
+**Bağlayıcı kapı:** Kütükteki bir bileşen yedi boyutu taşıyan bir katalog girişine sahip
+değilse, o bileşeni içeren milestone GREEN alamaz. Bu, P1 boyunca **her** milestone'un
+kabul kriteridir; ayrı ve sonraki bir "katalog fazı" **yoktur**.
+
+---
+
+## 5. Frontend-first sözleşme ve port / adaptör stratejisi
+
+### 5.1 Neden port
+
+Frontend **P1'de tek başına** teslim edilir; backend **P3'te** başlar. Aradaki boşluk
+uydurma uçla değil, **tipli port**la geçilir.
+
+```
+Bileşen  →  Port (tipli sözleşme, Zod ile doğrulanır)
+                 ├─ MockAdapter   (P1 boyunca; açıkça mock olarak işaretli)
+                 └─ HttpAdapter   (P3+ geldiğinde; OpenAPI'den üretilmiş istemci)
+```
+
+Bileşen hangi adaptörün arkada olduğunu bilmez. Adaptör değişimi **bileşeni değiştirmez** —
+P1'de yazılan yüzeylerin backend gelince yeniden yazılmamasının tek sebebi budur.
+
+### 5.2 Backend yokken ne kanıtlanır, ne kanıtlanmaz
+
+| Kanıtlanan | Kanıtlanmayan |
+|---|---|
+| Yüzeyin sekiz durumu render edilir ve testlidir | Gerçek sunucu davranışı |
+| Port sözleşmesi tiplidir ve `.strict()` Zod ile doğrulanır | Sözleşmenin gerçek OpenAPI çıktısıyla birebir uyuştuğu |
+| Mock adaptör **açıkça mock** olarak işaretlenir ve muhafız testiyle kilitlenir | Uçtan uca gerçek veri akışı |
+| Yetenek kütüğü, arkasında uç olmayan her yeteneği **engelli** ilan eder | Engelli yeteneğin ne zaman açılacağı |
+
+**Bağlayıcı kural:** Bir port'un mock adaptörle çalışması hiçbir yerde "bu fonksiyon
+çalışıyor" diye raporlanmaz. P1 tesliminin iddiası şudur ve yalnız şudur: **frontend
+eksiksiz, olgun, enterprise ve sözleşmeye bağlıdır; ürünün tamamı production'a hazır
+değildir.**
+
+### 5.3 Bugünkü repo gerçeği
+
+Desen bugün **doğru ama tekil**: tipli port yalnız
+`src/components/provider-connections/types.ts:379`'daki `ProviderConnectionPort`'tur. Medya
+yükleme yüzeyi de bir taşıma katmanı bekler ve verilmediği için **gerekçesiyle kapalıdır** —
+bu doğru davranıştır. Eksik olan, aynı disiplinin **uygulama geneline yayılmasıdır**
+(`V2-P1-23`, `V2-P1-24`).
+
+---
+
+## 6. Mevcut ve korunacak
 
 Bunlar repoda kuruludur, çalışır ve **değiştirilmez.**
 
@@ -78,14 +207,14 @@ Bunlar repoda kuruludur, çalışır ve **değiştirilmez.**
 | Tarayıcı test | Playwright | 1.62.1 | Son kaydedilen koşu: **57**; bu belge paketinde yeniden koşulmadı. Request routing kullanır, sayfaya worker kurmaz |
 | Mock | MSW | 2.15.0 | **Yalnız Vitest'in Node interceptor'ı için.** Tarayıcı worker'ı yoktur ve `no-mock-artifacts.test.ts` bunu kilitler |
 | Erişilebilirlik | axe-core + `@axe-core/playwright` + `eslint-plugin-jsx-a11y` | 4.13.0 / 4.11.2 / 6.10.2 | critical/serious = 0 kapısı |
-| Katalog | Storybook | 10.5.8 | Bileşen kataloğu; master-component disiplininin vitrini |
+| Katalog | Storybook | 10.5.8 | **Zorunlu** bileşen kataloğu ve test yüzeyi; sözleşmesi Bölüm 4'tedir |
 | Lint | ESLint + typescript-eslint | 9.39.5 / 8.67.0 | Kurulu ve çalışıyor |
 | Paket yöneticisi | pnpm (corepack) | 11.21.0 | `packageManager` alanında sabit |
 | Node | ≥ 22 | — | `engines` alanında sabit |
 
 ---
 
-## 4. Eklenecek — her biri bir ürün ihtiyacına bağlı
+## 7. Eklenecek — her biri bir ürün ihtiyacına bağlı
 
 Bunlar bugün yoktur ve yol haritasındaki ilgili milestone'da eklenir. Hiçbiri "iyi olur"
 diye eklenmez; her satırın karşısında onu zorunlu kılan ürün ihtiyacı vardır.
@@ -116,7 +245,7 @@ diye eklenmez; her satırın karşısında onu zorunlu kılan ürün ihtiyacı v
 
 ---
 
-## 5. Koşullu — değerlendirme sonrası
+## 8. Koşullu — değerlendirme sonrası
 
 Bunlar **yasak değildir**, ama bugün karar verilmez. Her biri kendi ölçüm kapısını geçmek
 zorundadır.
@@ -127,6 +256,7 @@ zorundadır.
 | 2 | **Tailwind v4** | Zorunlu değildir. Benimsenirse SCSS'ten tamamen vazgeçilir ve geçiş kademeli olur | Mevcut bespoke tasarımın topluca yeniden yazılmayacağının kanıtı |
 | 3 | **shadcn/ui** | Zorunlu değildir. Radix zaten davranışı veriyor | Hazır bileşenin tasarım sınırlarımızı (12px radius, Roboto 400+, 1rem) bozmadığının kanıtı |
 | 4 | **React Router v8** | **Otomatik upgrade yoktur.** Ayrı, kanıtlı bir migration milestone'u olabilir | Tüm rota testleri GREEN + rollback yolu denenmiş |
+| 13 | **Tailwind v4 / shadcn/ui / SCSS** | Bkz. satır 1-3; hiçbiri P1'in ön şartı değildir ve hiçbiri mevcut bespoke token sistemini topluca değiştirmek için kullanılamaz | Bölüm 9 satır 3'teki red gerekçesi ölçümle çürütülene kadar karar yok |
 | 5 | **WebSocket** | SSE yetmediği ölçülürse | Çift yönlü iletişim gerektiren somut bir yüzey |
 | 6 | **Telemetri (OpenTelemetry)** | Gerçek trafik başlayınca | Frontend trace'inin FastAPI trace'iyle ilişkilendirilebilmesi |
 | 7 | **Analitik (PostHog / Plausible, self-host)** | KVKK değerlendirmesinden sonra | Veri işleyen sıfatı ve saklama süresi kararı — **owner** |
@@ -138,7 +268,7 @@ zorundadır.
 
 ---
 
-## 6. Reddedilen
+## 9. Reddedilen
 
 | # | Reddedilen | Gerekçe |
 |---|---|---|
@@ -157,9 +287,9 @@ zorundadır.
 
 ---
 
-## 7. Depolama — yerel varsayılan, S3 opsiyonel
+## 10. Depolama — yerel varsayılan, S3 opsiyonel
 
-### 7.1 Port ve adaptör
+### 10.1 Port ve adaptör
 
 Frontend **depolama portu** üzerinden konuşur; hangi adaptörün arkada olduğunu bilmez.
 
@@ -175,7 +305,7 @@ UI  →  StoragePort  →  { LocalAdapter (varsayılan)  |  S3Adapter (opsiyonel
 | Ölçülmemiş değer | `null` olarak taşınır ve em-dash olarak görünür. **Asla `0` yazılmaz** — sıfır bir ölçümdür |
 | Taşıma katmanı yoksa | Yükleyici **devre dışı** görünür ve gerekçesini yazar. Sessizce dosya kabul edip atmak, bir belge ürününün yapabileceği en yıkıcı hatadır |
 
-### 7.2 Sahibin diliyle
+### 10.2 Sahibin diliyle
 
 Bir HRMS'e özlük dosyası yüklüyorsunuz. Yükleme çubuğu doluyor, "kaydedildi" yazıyor.
 Altı ay sonra denetimde dosya yok — çünkü arkada bir depolama yoktu.
@@ -186,14 +316,14 @@ nedeni ekranda yazılı. Yapılacak iş, kapalı olanı açmaktır; açık gör�
 
 ---
 
-## 8. Sağlayıcı bağlantı mimarisi
+## 11. Sağlayıcı bağlantı mimarisi
 
-### 8.1 Kapsam
+### 11.1 Kapsam
 
 Desteklenecek sağlayıcılar: **Gemini, OpenClaw, Claude, ChatGPT/OpenAI** — her biri için
 hem hesap tabanlı hem API tabanlı bağlantı.
 
-### 8.2 Değişmez güvenlik kuralları
+### 11.2 Değişmez güvenlik kuralları
 
 | # | Kural | Neden |
 |---|---|---|
@@ -206,7 +336,7 @@ hem hesap tabanlı hem API tabanlı bağlantı.
 | 7 | **Her bağlantı işlemi denetime yazılır** | Kim, ne zaman, hangi sağlayıcıyı bağladı/kaldırdı |
 | 8 | **Broker yoksa arayüz devre dışıdır** | Bugünkü durum tam olarak budur ve doğrudur |
 
-### 8.3 Bugünkü durum
+### 11.3 Bugünkü durum
 
 `platform/frontend/src/routes/providers.tsx` bu kuralların hepsine uyar: `port` verilmez,
 her izin `false`'tur, hiçbir gizli alan erişilebilir değildir ve bağlantı listesi gerçekten
@@ -214,9 +344,9 @@ boştur. Eksik olan **sunucu tarafı broker**'dır.
 
 ---
 
-## 9. Tarayıcı ve cihaz merdiveni
+## 12. Tarayıcı ve cihaz merdiveni
 
-### 9.1 Genişlik merdiveni
+### 12.1 Genişlik merdiveni
 
 | Genişlik | Rol |
 |---|---|
@@ -234,23 +364,23 @@ boştur. Eksik olan **sunucu tarafı broker**'dır.
 **Kural:** 320'den yukarı doğru progressive enhancement. Masaüstü gereklidir ama
 **mobil kapanmadan** masaüstüne geçilmez.
 
-### 9.2 Tarayıcı matrisi
+### 12.2 Tarayıcı matrisi
 
 | Tarayıcı | Durum | Hedef |
 |---|---|---|
 | Chromium (masaüstü) | ✅ Test ediliyor | Korunur |
 | Chromium tabanlı mobil emülasyon | ✅ Test ediliyor | Korunur |
-| WebKit / Safari | ❌ **UNVERIFIED** | F10'da kapatılır |
-| Firefox | ❌ **UNVERIFIED** | F10'da kapatılır |
-| Gerçek iOS Safari cihazı | ❌ **UNVERIFIED** | F10'da kapatılır |
+| WebKit / Safari | ❌ **UNVERIFIED** | `V2-P1-71`'de kapatılır |
+| Firefox | ❌ **UNVERIFIED** | `V2-P1-71`'de kapatılır |
+| Gerçek iOS Safari cihazı | ❌ **UNVERIFIED** | `V2-P1-71`'de kapatılır |
 
 ---
 
-## 10. Performans bütçeleri
+## 13. Performans bütçeleri
 
 | Ölçüt | Bütçe | Bugünkü durum |
 |---|---|---|
-| İlk yüklenen JS (gzip) | ≤ 180 kB | ~155 kB ölçüldü (eski ölçüm; her F fazında yeniden ölçülür) |
+| İlk yüklenen JS (gzip) | ≤ 180 kB | ~155 kB ölçüldü (eski ölçüm; her makro fazda yeniden ölçülür) |
 | Route başına lazy chunk | Zorunlu | ✅ Her rota `lazy` |
 | Ana pakette grafik kütüphanesi | **Yasak** | ✅ Yok |
 | Source map (production) | **Yok** | ✅ `sourcemap: false`, testle kilitli |
@@ -263,7 +393,7 @@ kapsam eşiklerinde uyguladığı disiplinin aynısıdır (eşik düşürülmedi
 
 ---
 
-## 11. Erişilebilirlik kapıları
+## 14. Erişilebilirlik kapıları
 
 | Kapı | Eşik | Zorlayan |
 |---|---|---|
@@ -274,13 +404,13 @@ kapsam eşiklerinde uyguladığı disiplinin aynısıdır (eşik düşürülmedi
 | Renk kontrastı | WCAG 2.2 AA | axe + tasarım token'ları |
 | Minimum metin boyutu | 1rem | Tasarım sözleşmesi testi |
 | `prefers-reduced-motion` | Mutlak saygı | Motion katmanı testi |
-| Ekran okuyucu manuel turu | Faz kapısı | ❌ **UNVERIFIED** — yapılmadı |
+| Ekran okuyucu manuel turu | Faz kapısı | ❌ **UNVERIFIED** — `V2-P1-70`'te kapatılır |
 
 ---
 
-## 12. Test piramidi ve RED→GREEN
+## 15. Test piramidi ve RED→GREEN
 
-### 12.1 Piramit
+### 15.1 Piramit
 
 | Seviye | Araç | Neyi kanıtlar | Bugünkü sayı |
 |---|---|---|---|
@@ -289,7 +419,7 @@ kapsam eşiklerinde uyguladığı disiplinin aynısıdır (eşik düşürülmedi
 | Mimari | Vitest + AST | Katman sınırları delinmemiş | Yukarıdakine dahil |
 | Sözleşme | Zod `.strict()` + build kapısı | Backend sözleşmesi kaymamış | Build'de |
 | Tarayıcı (e2e) | Playwright | Gerçek tarayıcıda yolculuk yürüyor | 57 (son kayıt) |
-| Gerçek backend E2E | Playwright, mock routing kapalı | Ürün gerçek backend ile çalışıyor | ❌ **UNVERIFIED** — M67'de kapatılır |
+| Gerçek backend E2E | Playwright, mock routing kapalı | Ürün gerçek backend ile çalışıyor | ❌ **UNVERIFIED** — `V2-P6-01`'de kapatılır |
 
 > **Sayıların okunma kuralı.** **941** ve **57**, en son kaydedilen tam koşuların
 > sonuçlarıdır; **bu belge paketinde suite yeniden koşulmamıştır** ve bu belge canlı bir
@@ -299,7 +429,7 @@ kapsam eşiklerinde uyguladığı disiplinin aynısıdır (eşik düşürülmedi
 > mobile) koşar. Bildirim sayısı ile koşum sayısı aynı şey değildir ve birbirinin yerine
 > yazılamaz.
 
-### 12.2 RED→GREEN komutları
+### 15.2 RED→GREEN komutları
 
 ```bash
 cd platform/frontend
@@ -318,13 +448,13 @@ pnpm storybook:build
 pnpm e2e
 ```
 
-### 12.3 RED'in geçerlilik kuralı
+### 15.3 RED'in geçerlilik kuralı
 
 Bir RED yalnızca **davranışsal** ise kanıttır. Modül çözümleme hatası (import edilemeyen
 dosya) RED sayılmaz — bu, testin değil kurulumun hatasıdır. Hedef modül kasıtlı olarak
 yanlış bir stub ile eklenir ve test **yanlış davranışı** yakalar.
 
-### 12.4 Sözleşme stratejisi
+### 15.4 Sözleşme stratejisi
 
 1. Backend `pydantic` şeması → OpenAPI spec.
 2. Spec → üretilmiş TypeScript istemcisi (`@hey-api/openapi-ts`).
@@ -335,7 +465,7 @@ Bu zincir, "backend değişti, frontend fark etmedi" hatasını yapısal olarak 
 
 ---
 
-## 13. Hetzner ve GitHub Actions taşınabilirliği
+## 16. Hetzner ve GitHub Actions taşınabilirliği
 
 | Konu | Karar |
 |---|---|
@@ -352,9 +482,9 @@ Bu zincir, "backend değişti, frontend fark etmedi" hatasını yapısal olarak 
 
 ---
 
-## 14. Karar kayıtları ve değişiklik kuralları
+## 17. Karar kayıtları ve değişiklik kuralları
 
-### 14.1 Bir teknolojiyi eklemek için gereken beş şey
+### 17.1 Bir teknolojiyi eklemek için gereken beş şey
 
 1. Onu zorunlu kılan **somut ürün ihtiyacı** (bir kullanıcı yolculuğu cümlesi).
 2. Reddedilen **en az bir alternatif** ve reddetme gerekçesi.
@@ -364,7 +494,7 @@ Bu zincir, "backend değişti, frontend fark etmedi" hatasını yapısal olarak 
 
 Beşi de yoksa teknoloji eklenmez.
 
-### 14.2 Migration kuralları
+### 17.2 Migration kuralları
 
 | Kural | Açıklama |
 |---|---|
@@ -373,7 +503,7 @@ Beşi de yoksa teknoloji eklenmez.
 | Bir migration paketinde başka iş yapılmaz | Migration + özellik aynı pakette olursa hata kaynağı ayrıştırılamaz |
 | Rollback yolu paket **başlamadan** bilinir | Bilinmiyorsa paket başlamaz |
 
-### 14.3 Rollback
+### 17.3 Rollback
 
 Frontend paketlerinin rollback'i, o paketin dosyalarının geri alınmasıdır. Backend,
 prototip ve diğer paketler etkilenmez. Rollback kararı ve yürütmesi **Codex Desktop
@@ -381,32 +511,40 @@ MASTER**'ındır.
 
 ---
 
-## 15. Owner özeti — sade Türkçe
+## 18. Owner özeti — sade Türkçe
 
 **once:** Frontend'in hangi teknolojiyle, neden yürüdüğü hiçbir yerde tek bir belgede
 yazılı değildi. Masaüstünde duran genel bir tavsiye belgesi vardı ama o belge başka
-ürünler için yazılmıştı ve repodaki gerçekle üç noktada çelişiyordu.
+ürünler için yazılmıştı ve repodaki gerçekle üç noktada çelişiyordu. Bileşenlerin
+birbirinden nasıl türeyeceği ve Storybook'un ne kadar zorunlu olduğu da yazılı değildi.
 
 **simdi:** Tek bir karar belgesi var. Neyin kurulu olduğu (sürüm sürüm), neyin ekleneceği
 (her biri bir ürün ihtiyacına bağlı), neyin koşullu olduğu (hangi ölçümü geçmesi gerektiği
-yazılı) ve neyin reddedildiği (gerekçesiyle) ayrı ayrı listelendi.
+yazılı) ve neyin reddedildiği (gerekçesiyle) ayrı ayrı listelendi. Buna üç yeni bölüm
+eklendi: **bileşen soyağacı** (beş kademe, türeme kuralı, no-duplicate), **Storybook zorunlu
+katalog sözleşmesi** (yedi boyut, bileşen başına giriş) ve **port/adaptör stratejisi**
+(backend yokken neyin kanıtlandığı, neyin kanıtlanmadığı).
 
-**fark:** Artık bir sonraki paket "hangi kütüphaneyi kullanalım" tartışmasıyla başlamaz.
-Karar verilmiş; verilmemiş olanların hangi ölçümle verileceği de yazılmış. En önemlisi:
-çalışan bespoke tasarım sistemi topluca yeniden yazılmayacak ve React Router v8'e
-otomatik geçilmeyecek — ikisi de aylarca kayıp anlamına gelirdi.
+**fark:** Artık bir sonraki paket "hangi kütüphaneyi kullanalım" tartışmasıyla başlamaz ve
+"bu buton nereden geliyor" sorusunun cevabı var. Karar verilmiş; verilmemiş olanların hangi
+ölçümle verileceği de yazılmış. En önemlisi: çalışan bespoke tasarım sistemi topluca
+yeniden yazılmayacak ve React Router v8'e otomatik geçilmeyecek — ikisi de aylarca kayıp
+anlamına gelirdi.
 
 **kullaniciYolculugu:** Bu belge kullanıcının doğrudan gördüğü bir şey değildir; ama
 kullanıcının göreceği her şeyin sınırını çizer. Örneğin bir KOBİ yetkilisi telefonundan
 başvuru belgesi yüklediğinde: dosya yerel depolamaya gider (S3 hesabı açmasına gerek yok),
 yükleme yarıda kesilirse kaldığı yerden devam eder, API anahtarı hiçbir zaman tarayıcısında
-saklanmaz ve ekranın hiçbir yerinde 1rem'den küçük metin görmez. Bu dört davranışın hepsi
-bu belgedeki birer karardır.
+saklanmaz ve ekranın hiçbir yerinde 1rem'den küçük metin görmez. Backend henüz yokken aynı
+kullanıcı yükleyiciyi **kapalı ve gerekçesi yazılı** görür — sessizce dosya kabul edip atan
+bir ekran görmez. Bu beş davranışın hepsi bu belgedeki birer karardır.
 
-**kalanEngel:** Eklenecek 17 yeteneğin tamamı henüz yoktur. Koşullu 12 kalemin hiçbirine
-karar verilmemiştir ve verilmesi için ölçüm gerekir. WebKit ve Firefox doğrulaması,
-LCP/INP/CLS ölçümü, gerçek backend E2E ve dual-host smoke **UNVERIFIED** durumdadır.
-Analitik ve telemetri kararları KVKK değerlendirmesine bağlıdır ve **owner** kararıdır.
+**kalanEngel:** Eklenecek 17 yeteneğin tamamı henüz yoktur. Koşullu kalemlerin hiçbirine
+karar verilmemiştir ve verilmesi için ölçüm gerekir. Bileşen soyağacı kütükte yazılı
+değildir ve no-duplicate kuralı zorlanmamaktadır; Storybook kataloğu bugün **0/75** bileşen
+düzeyinde giriş taşır. WebKit ve Firefox doğrulaması, LCP/INP/CLS ölçümü, gerçek backend
+E2E ve dual-host smoke **UNVERIFIED** durumdadır. Analitik ve telemetri kararları KVKK
+değerlendirmesine bağlıdır ve **owner** kararıdır.
 
 **capability_delta:** `0`. Bu belge tek bir satır ürün kodu değiştirmedi. Yaptığı şey, bir
-sonraki paketin yanlış teknolojiyle başlamasını engellemek.
+sonraki paketin yanlış teknolojiyle ve yanlış bileşen disipliniyle başlamasını engellemek.
