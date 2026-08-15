@@ -68,6 +68,17 @@ export default tseslint.config(
     },
   },
   {
+    // The acceptance gate runner. Plain Node, no TypeScript program behind it:
+    // it is the thing that *starts* the type checker, so it cannot be inside
+    // the project the type checker builds.
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      ecmaVersion: 2023,
+      sourceType: "module",
+      globals: { ...globals.node },
+    },
+  },
+  {
     // Playwright's fixture API is `async ({ page }, use) => { await use(x) }`.
     // That `use` is not React's, and there is no React in this directory.
     files: ["e2e/**"],

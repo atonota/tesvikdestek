@@ -28,6 +28,31 @@ import { defineConfig, devices } from "@playwright/test";
  */
 const PAGES_SPEC = /pages-static-demo\.spec\.ts/u;
 
+/**
+ * Whether the bundle under test was already built, moments ago, by the caller.
+ *
+ * `pnpm e2e` is self-contained on purpose: run on its own it builds the
+ * production bundle and serves it, so nobody can accidentally test yesterday's
+ * `dist/`. Inside `pnpm gate` that same self-containment is pure waste - the
+ * gate's build step has just produced these exact bytes with these exact
+ * settings, and building them again costs a full Vite build for no new
+ * information.
+ *
+ * So the gate sets `DT_GATE_PREBUILT=1`, and only the gate does: it sets it
+ * only on a run that also selected the build step (see `scripts/full-gate.mjs`),
+ * which is what makes "already built" true rather than hopeful. Any other
+ * invocation - a developer's `pnpm e2e`, CI's browser job - leaves it unset and
+ * gets the build.
+ */
+const PREBUILT = process.env["DT_GATE_PREBUILT"] === "1";
+
+/**
+ * Serve the built bundle. Local binaries directly, so the command does not
+ * depend on a package manager being on the spawned shell's PATH.
+ */
+const SERVE = "node_modules/.bin/vite preview --host 127.0.0.1 --port 4173 --strictPort";
+const BUILD_AND_SERVE = `node_modules/.bin/vite build && ${SERVE}`;
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -49,11 +74,10 @@ export default defineConfig({
     { name: "mobile", use: { ...devices["Pixel 5"] }, testIgnore: PAGES_SPEC },
   ],
   webServer: {
-    // Self-contained on purpose: builds and serves the real production bundle,
-    // with no test-only flag. Uses the local binaries directly so it does not
-    // depend on a package manager being on the spawned shell's PATH.
-    command:
-      "node_modules/.bin/vite build && node_modules/.bin/vite preview --host 127.0.0.1 --port 4173 --strictPort",
+    // Self-contained by default: builds and serves the real production bundle,
+    // with no test-only flag. The only thing that changes it is the gate having
+    // just built that same bundle; see `PREBUILT` above.
+    command: PREBUILT ? SERVE : BUILD_AND_SERVE,
     url: "http://127.0.0.1:4173/uygulama/",
     reuseExistingServer: !process.env["CI"],
     timeout: 120_000,

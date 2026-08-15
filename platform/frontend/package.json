@@ -10,6 +10,7 @@
   },
   "scripts": {
     "dev": "vite",
+    "gate": "node scripts/full-gate.mjs",
     "build": "tsc -b --noEmit && vite build && vitest run src/test/build-contract.test.ts src/test/no-mock-artifacts.test.ts",
     "preview": "vite preview",
     "lint": "eslint .",

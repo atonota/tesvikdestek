@@ -8,6 +8,15 @@
 # and guard suites above the coverage thresholds in vitest.config.ts, builds,
 # builds its Storybook, and passes its browser tests including axe checks.
 #
+# It no longer spells those steps out. They are defined once, in
+# `platform/frontend/scripts/full-gate.mjs`, which a developer runs whole as
+# `pnpm gate`; the two jobs below select halves of that same definition with
+# `--only=`. The split is real - the browser suite is slow and gets its own
+# runner - so this file does not claim to be a single command. What it claims
+# is that it runs no step the local gate does not, and skips none that it does:
+# `src/test/full-gate-contract.test.ts` fails if the two jobs' selections stop
+# covering all seven concerns exactly once between them.
+#
 # Test counts are deliberately not written here. A number in a comment goes
 # stale the moment a test is added, and this file has already carried a wrong
 # one; the suite reports its own total on every run.
@@ -65,21 +74,15 @@ jobs:
       - name: Install from the lockfile, exactly
         run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm lint
-
-      - name: Type check
-        run: pnpm typecheck
-
-      - name: Unit, component and guard tests with coverage thresholds
-        # Thresholds live in vitest.config.ts and fail the run on their own.
-        run: pnpm test:coverage
-
-      - name: Production build
-        run: pnpm build
-
-      - name: Storybook build
-        run: pnpm storybook:build
+      - name: The gate's quality half
+        # Not a list of steps any more: the six concerns below are selected out
+        # of the *same* runner a developer types as `pnpm gate`, so CI and a
+        # laptop cannot disagree about what the gate is. Adding a step to the
+        # gate reaches this job without anybody editing this file; removing one
+        # from here fails `full-gate-contract.test.ts`, which requires the two
+        # jobs' selections to cover all seven concerns exactly once between
+        # them. Thresholds still live in vitest.config.ts and fail on their own.
+        run: pnpm gate --only=lint,typecheck,test,coverage,build,storybook
 
       - name: Upload coverage report
         if: always()
@@ -103,12 +106,18 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Install Chromium
+        # A prerequisite, not a gate step. The gate refuses to run the browser
+        # suite without it and says so with its own exit code rather than
+        # installing the environment it is supposed to be measuring.
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Browser tests, responsive overflow and axe checks
+      - name: The gate's browser half
         # These use Playwright request routing, not a live backend. The job name
         # and every spec title say so; this is not real-backend E2E evidence.
-        run: pnpm e2e
+        # Selected out of the same runner as the quality job. This job did not
+        # build, so `DT_GATE_PREBUILT` stays unset and the Playwright config
+        # builds the bundle itself, exactly as a bare `pnpm e2e` does.
+        run: pnpm gate --only=e2e
 
       - name: Upload Playwright report
         if: always()
