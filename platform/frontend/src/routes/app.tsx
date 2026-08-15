@@ -26,6 +26,7 @@ import {
   AdaptiveAssistant,
   AdaptiveShell,
   ApprovalForm,
+  Badge,
   Button,
   Card,
   CapabilityMatrix,
@@ -63,6 +64,7 @@ import {
   type AssistantSuggestion,
   type ConversionAction,
 } from "@/components";
+import { demoBadgeLabel, useDemoSession } from "@/demo";
 import { calculateMaturity } from "@/domain/maturity";
 import { emptyProfileValues } from "@/domain/facts";
 import { useUiStore, type Density, type FontScale, type ThemeChoice } from "@/store/ui";
@@ -363,6 +365,7 @@ export function Shell({
 }) {
   const logout = useLogout();
   const navigate = useNavigate();
+  const demo = useDemoSession();
   return (
     <AdaptiveShell
       navItems={APP_NAV}
@@ -370,16 +373,35 @@ export function Shell({
       {...(title ? { title } : {})}
       {...(conversionAction ? { conversionAction } : {})}
       headerUtilities={
-        <Button
-          variant="ghost"
-          size="sm"
-          loading={logout.isPending}
-          onClick={() =>
-            logout.mutate(undefined, { onSuccess: () => void navigate("/giris") })
-          }
-        >
-          Çıkış
-        </Button>
+        <>
+          {/*
+            * The demo badge, in the header of every workspace screen.
+            *
+            * Here rather than on the dashboard alone, because the screenshot
+            * that ends up in somebody's deck is rarely the dashboard. It is a
+            * `warning` tone and it carries an `srDescription`: colour is never
+            * the only carrier in this design system, and "Demo" on its own does
+            * not tell a screen reader user that the figures are not theirs.
+            */}
+          {demo ? (
+            <Badge
+              tone="warning"
+              srDescription="Bu oturum bir arayüz demosudur; veriler örnektir ve sunucuya hiçbir kayıt yazılmaz."
+            >
+              {demoBadgeLabel(demo.role)}
+            </Badge>
+          ) : null}
+          <Button
+            variant="ghost"
+            size="sm"
+            loading={logout.isPending}
+            onClick={() =>
+              logout.mutate(undefined, { onSuccess: () => void navigate("/giris") })
+            }
+          >
+            Çıkış
+          </Button>
+        </>
       }
     >
       {children}

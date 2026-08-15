@@ -16,6 +16,7 @@ import {
   type ReadinessHealth,
   type Snapshot,
 } from "@/api/types";
+import type { DemoProfile, DemoRole } from "@/demo";
 import { CAPABILITIES, GROUP_LABELS, STATUS_LABELS, type Capability, type CapabilityGroup } from "@/domain/capabilities";
 import { ALL_FACTS, BOOLEAN_FACTS, INTEGER_FACTS, TEXT_FACTS, factLabel } from "@/domain/facts";
 import type { MaturityReport } from "@/domain/maturity";
@@ -412,6 +413,108 @@ export interface AuthFormProps {
   onSubmit: (values: { eposta: string; parola: string; organizasyon: string }) => void;
   submitting?: boolean;
   error?: string | null;
+  /**
+   * The one-click demo profiles, or nothing.
+   *
+   * Passed in rather than imported here so this template stays presentational -
+   * it renders what it is handed and decides nothing about sessions. Omitting
+   * the prop renders the screen exactly as it was before the demo existed,
+   * which is what the registration route relies on.
+   */
+  demoProfiles?: readonly DemoProfile[];
+  /** Called with the chosen profile's id. The route owns what happens next. */
+  onDemoStart?: (role: DemoRole) => void;
+  /** Which card is mid-entry, so only its own button shows the busy state. */
+  demoStarting?: DemoRole | null;
+}
+
+/**
+ * The demo entry block: a card per profile, stacked.
+ *
+ * Stacked at every width rather than a two-column grid. At 320px a grid has to
+ * collapse to one column anyway, and the card carries a heading, three emphasis
+ * chips, two credential rows and a full-width button - side by side, that is
+ * the layout that produces the horizontal overflow this repository measures
+ * for. One column is not a phone compromise here; it is the honest shape of
+ * the content, and it keeps the two actions far enough apart to be distinct.
+ */
+function DemoProfileCards({
+  profiles,
+  onStart,
+  starting = null,
+}: {
+  readonly profiles: readonly DemoProfile[];
+  readonly onStart: (role: DemoRole) => void;
+  readonly starting?: DemoRole | null;
+}) {
+  return (
+    <section className="dt-demo" aria-labelledby="demo-giris-basligi">
+      <h2 id="demo-giris-basligi" className="dt-demo__title">
+        Tek tıkla demo
+      </h2>
+      <p className="dt-demo__notice" data-testid="demo-giris-uyarisi">
+        Bu bir <strong>arayüz demosudur</strong>. Aşağıdaki iki seçenek yalnızca bir{" "}
+        <strong>etiket ve inceleme bağlamı</strong> seçer: her ikisi de aynı ekranları, aynı
+        gezinmeyi ve aynı örnek veriyi açar. Bir yetkilendirme vermez ve hiçbir ekranı
+        kısıtlamaz; backend'de rol modeli yoktur ve bu hesaplar hiçbir sunucuda tanımlı
+        değildir. Demoya geçmeden önce varsa açık sunucu oturumunuz gerçekten kapatılır. Demo
+        sırasında hiçbir kayıt sunucuya yazılmaz.
+      </p>
+      <ul className="dt-demo__list">
+        {profiles.map((profile) => (
+          <li key={profile.id}>
+            <article className="dt-demo__card">
+              <h3 className="dt-demo__card-title">{profile.title}</h3>
+              <p className="dt-demo__role">
+                Etiket: <strong>{profile.roleLabel}</strong>
+              </p>
+              <p>{profile.summary}</p>
+              <ul className="dt-demo__emphasis">
+                {profile.emphasis.map((item) => (
+                  <li key={item}>
+                    <Badge tone="neutral">{item}</Badge>
+                  </li>
+                ))}
+              </ul>
+              <dl className="dt-demo__credentials">
+                <div className="dt-demo__credential">
+                  <dt>Demo e-posta</dt>
+                  <dd>{profile.email}</dd>
+                </div>
+                <div className="dt-demo__credential">
+                  <dt>Demo parola</dt>
+                  <dd>{profile.password}</dd>
+                </div>
+              </dl>
+              <p className="dt-demo__credential-note">
+                Bu bilgiler gizli değildir ve gerçek bir hesaba ait değildir; yalnızca demonun
+                hangi profili açtığını göstermek için yazılıdır.
+              </p>
+              {/*
+                * While one demo is opening, the other card's action is
+                * disabled - not merely un-busy.
+                *
+                * Opening a demo signs the browser out first, so two clicks in
+                * flight are two logouts racing one navigation, and whichever
+                * resolves last decides the role the shell ends up showing. The
+                * busy spinner marks the card that was chosen; the disabled
+                * state on the other is what makes the choice binding.
+                */}
+              <Button
+                fullWidth
+                onClick={() => onStart(profile.id)}
+                loading={starting === profile.id}
+                disabled={starting !== null && starting !== profile.id}
+                loadingLabel="Demo açılıyor"
+              >
+                {profile.actionLabel}
+              </Button>
+            </article>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
 }
 
 /**
@@ -428,7 +531,58 @@ export interface AuthFormProps {
  * `organizasyon` stays in `defaultValues` in both modes, so the submitted shape
  * is the same object either way and the caller has no branch to get wrong.
  */
-export function AuthForm({ mode, onSubmit, submitting = false, error = null }: AuthFormProps) {
+export function AuthForm({
+  mode,
+  onSubmit,
+  submitting = false,
+  error = null,
+  demoProfiles = [],
+  onDemoStart,
+  demoStarting = null,
+}: AuthFormProps) {
+  const showDemo = demoProfiles.length > 0 && onDemoStart !== undefined;
+  return (
+    <div className="dt-stack">
+      {showDemo ? (
+        <>
+          <DemoProfileCards
+            profiles={demoProfiles}
+            onStart={onDemoStart}
+            starting={demoStarting}
+          />
+          {/*
+            * A separator with a word in it, not a bare rule.
+            *
+            * The two halves of this screen do different things - one enters a
+            * demo, the other signs in for real - and a hairline between them
+            * says "same form, more fields" to anyone skimming. The heading is
+            * `h2` so the demo block and the credential block sit at the same
+            * level under the page title rather than one appearing to own the
+            * other.
+            */}
+          <h2 className="dt-demo__divider">Ya da kendi hesabınızla girin</h2>
+        </>
+      ) : null}
+      <AuthCredentialForm
+        mode={mode}
+        onSubmit={onSubmit}
+        submitting={submitting}
+        error={error}
+      />
+    </div>
+  );
+}
+
+/** The credential half, unchanged in behaviour and separated only for reading. */
+function AuthCredentialForm({
+  mode,
+  onSubmit,
+  submitting,
+  error,
+}: Pick<AuthFormProps, "mode" | "onSubmit"> & {
+  readonly submitting: boolean;
+  readonly error: string | null;
+}) {
   return (
     <AppForm<AuthFormValues>
       label={mode === "register" ? "Hesap oluştur" : "Giriş yap"}
@@ -457,6 +611,7 @@ export function AuthForm({ mode, onSubmit, submitting = false, error = null }: A
     </AppForm>
   );
 }
+
 
 /* -------------------------------------------------------- ProfileWorkspace */
 

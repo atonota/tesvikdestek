@@ -373,7 +373,21 @@ export const CAPABILITIES: readonly Capability[] = [
     group: "organization",
     status: "blocked",
     enabled: false,
-    reason: "Rol modeli domainde tanımlı değil.",
+    /*
+     * Still blocked, and the demo does not move it.
+     *
+     * The login screen now offers a süperadmin and a müşteri demo profile, and
+     * without this sentence the next reader would find those two roles in the
+     * interface, find this entry saying roles do not exist, and conclude the
+     * ledger had gone stale. It has not: the demo role selects a label and a
+     * data set in one browser tab. It authorises nothing, because there is
+     * nothing to authorise - no role model, no permission check, no server that
+     * has heard of it. Marking this green on the strength of a frontend demo is
+     * exactly the unearned green this ledger exists to prevent.
+     */
+    reason:
+      "Rol modeli domainde tanımlı değil. Giriş ekranındaki demo rolleri yalnızca arayüz " +
+      "demosudur: tarayıcı belleğinde bir etiket ve örnek veri seçer, hiçbir yetki vermez.",
   },
   {
     id: "saved-opportunities",

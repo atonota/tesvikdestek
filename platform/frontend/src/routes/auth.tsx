@@ -4,8 +4,9 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
 import { describeError } from "@/api/client";
-import { useLogin, useRegister } from "@/api/queries";
+import { useLogin, useRegister, useStartDemo } from "@/api/queries";
 import { AuthForm, AuthShell, Link } from "@/components";
+import { DEMO_PROFILES } from "@/demo";
 
 /** The query parameter the workspace gate writes when it bounces a visitor. */
 export const RETURN_PARAM = "donus";
@@ -102,6 +103,7 @@ export function RegisterRoute() {
 
 export function LoginRoute() {
   const login = useLogin();
+  const startDemo = useStartDemo();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [error, setError] = useState<string | null>(null);
@@ -125,6 +127,25 @@ export function LoginRoute() {
         mode="login"
         submitting={login.isPending}
         error={error}
+        demoProfiles={DEMO_PROFILES}
+        demoStarting={startDemo.isPending ? startDemo.variables : null}
+        onDemoStart={(role) => {
+          setError(null);
+          /*
+           * Entering a demo really signs the browser out first.
+           *
+           * `useStartDemo` owns that sequence - logout, clear, start - because
+           * it has to be one indivisible step: a component that did it in
+           * pieces could navigate on a logout that failed, and the visitor
+           * would be inside a "demo" while their real cookie was still live.
+           * Here the route does only what a route should: it navigates on
+           * success and shows the reason on failure.
+           */
+          startDemo.mutate(role, {
+            onSuccess: () => void navigate(returnTo),
+            onError: (cause) => setError(describeError(cause)),
+          });
+        }}
         onSubmit={({ eposta, parola }) => {
           setError(null);
           login.mutate(

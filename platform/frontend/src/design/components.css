@@ -398,6 +398,65 @@
   .dt-auth__title { margin: 0; }
   .dt-auth__footer { border-block-start: 1px solid var(--dt-color-line); padding-block-start: 0.75rem; }
 
+  /*
+   * One-click demo entry.
+   *
+   * Single column at every width, and that is a content decision rather than a
+   * small-screen fallback: each card carries a heading, a role line, a summary,
+   * three chips, two credential rows and a full-width button, and two of those
+   * side by side is what produces the 320px overflow this design system
+   * measures for. The cards are also the one place on the login screen where
+   * picking the wrong control is the actual risk, so they are kept far apart.
+   *
+   * `--dt-target-touch` on the action rather than a hand-written 44px: the
+   * button already carries it through `.dt-btn`, and repeating the number here
+   * would be a second copy free to drift from the token.
+   */
+  .dt-demo { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem; }
+  .dt-demo__title { margin: 0; font-size: var(--dt-font-size-lg); }
+  .dt-demo__notice {
+    margin: 0;
+    padding: 0.75rem;
+    border: 1px solid var(--dt-color-line-strong);
+    border-radius: var(--dt-radius);
+    background: var(--dt-color-surface-sunken);
+  }
+  .dt-demo__list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem; list-style: none; margin: 0; padding: 0; }
+  .dt-demo__card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 1px solid var(--dt-color-line);
+    border-radius: var(--dt-radius-lg);
+    background: var(--dt-color-surface);
+  }
+  .dt-demo__card-title { margin: 0; font-size: var(--dt-font-size-lg); }
+  .dt-demo__card p { margin: 0; }
+  .dt-demo__emphasis { display: flex; flex-wrap: wrap; gap: 0.4rem; list-style: none; margin: 0; padding: 0; }
+  /*
+   * The credential rows.
+   *
+   * `overflow-wrap: anywhere` on the value is load-bearing: an e-mail address
+   * is one unbreakable token, and at 320px inside a 1rem-padded card it is
+   * wider than the line box. Without this the card does not clip it - it grows
+   * the page, which is the exact failure `.dt-card` is guarded against
+   * elsewhere in this file.
+   */
+  .dt-demo__credentials { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.35rem; margin: 0; }
+  .dt-demo__credential { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.1rem; }
+  .dt-demo__credential dt { color: var(--dt-color-fg-muted); }
+  .dt-demo__credential dd { margin: 0; font-family: var(--dt-font-mono); overflow-wrap: anywhere; }
+  .dt-demo__credential-note { color: var(--dt-color-fg-muted); }
+  .dt-demo__divider {
+    margin: 0;
+    padding-block-start: 0.75rem;
+    border-block-start: 1px solid var(--dt-color-line);
+    font-size: var(--dt-font-size-base);
+    font-weight: var(--dt-font-weight-medium);
+    color: var(--dt-color-fg-muted);
+  }
+
   .dt-print { padding: 1rem; }
   @media print {
     .dt-app__rail, .dt-app__bottom, .dt-app__header, .dt-public__header, .dt-public__footer { display: none !important; }

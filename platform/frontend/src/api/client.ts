@@ -14,6 +14,7 @@
 
 import type { ZodType } from "zod";
 
+import { DemoWriteRefusedError } from "@/demo";
 import {
   approvalSchema,
   csrfTokenSchema,
@@ -74,6 +75,15 @@ export class SessionExpiredError extends Error {
 
 /** Turkish, user-facing, and never inventing a request id we do not have. */
 export function describeError(error: unknown): string {
+  /*
+   * The demo refusal carries its own sentence and is first on purpose.
+   *
+   * It is the one error here that is not a failure: nothing broke, the write
+   * was declined because there is no server behind it. Falling through to
+   * "Beklenmeyen bir hata oluştu." would tell a reviewer the product is buggy
+   * when what it actually did was refuse to lie about a save.
+   */
+  if (error instanceof DemoWriteRefusedError) return error.message;
   if (error instanceof OfflineError) {
     return "Sunucuya ulaşılamıyor. Bağlantınızı kontrol edip tekrar deneyin.";
   }

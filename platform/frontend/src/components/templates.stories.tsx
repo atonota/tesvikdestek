@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 
+import { DEMO_PROFILES } from "@/demo";
 import { emptyProfileValues } from "@/domain/facts";
 import { calculateMaturity } from "@/domain/maturity";
 import {
@@ -57,6 +58,82 @@ export const Auth: Story = {
     <div className="dt-stack">
       <AuthForm mode="register" onSubmit={() => {}} />
       <AuthForm mode="login" onSubmit={() => {}} error="E-posta veya parola hatalı." />
+    </div>
+  ),
+};
+
+/*
+ * The demo entry: five stories.
+ *
+ * Five rather than one, because the states that go wrong are not the default
+ * one. `AuthDemo` is what the route renders. Each role appears alone so a
+ * reviewer can look at exactly the card they are about to put in front of a
+ * customer. `AuthDemoStarting` is the state the review found a real bug behind:
+ * one card busy while the other must be *disabled*, because opening a demo
+ * signs the browser out first and two of those in flight is two logouts racing
+ * one navigation. `AuthDemoNarrow` is 320px, where the credential row - one
+ * unbreakable e-mail token - is the thing that overflows.
+ */
+export const AuthDemo: Story = {
+  name: "AuthForm — tek tıkla demo (iki rol)",
+  render: () => (
+    <AuthForm
+      mode="login"
+      onSubmit={() => {}}
+      demoProfiles={DEMO_PROFILES}
+      onDemoStart={() => {}}
+    />
+  ),
+};
+
+export const AuthDemoSuperadmin: Story = {
+  name: "AuthForm — yalnızca süperadmin kartı",
+  render: () => (
+    <AuthForm
+      mode="login"
+      onSubmit={() => {}}
+      demoProfiles={DEMO_PROFILES.filter((profile) => profile.id === "superadmin")}
+      onDemoStart={() => {}}
+    />
+  ),
+};
+
+export const AuthDemoCustomer: Story = {
+  name: "AuthForm — yalnızca müşteri kartı",
+  render: () => (
+    <AuthForm
+      mode="login"
+      onSubmit={() => {}}
+      demoProfiles={DEMO_PROFILES.filter((profile) => profile.id === "customer")}
+      onDemoStart={() => {}}
+    />
+  ),
+};
+
+export const AuthDemoStarting: Story = {
+  name: "AuthForm — demo açılıyor (yalnızca seçilen kart meşgul)",
+  render: () => (
+    <AuthForm
+      mode="login"
+      onSubmit={() => {}}
+      demoProfiles={DEMO_PROFILES}
+      onDemoStart={() => {}}
+      demoStarting="customer"
+    />
+  ),
+};
+
+export const AuthDemoNarrow: Story = {
+  name: "AuthForm — demo, 320px",
+  parameters: { viewport: { defaultViewport: "mobile1" } },
+  render: () => (
+    <div style={{ inlineSize: "320px" }}>
+      <AuthForm
+        mode="login"
+        onSubmit={() => {}}
+        demoProfiles={DEMO_PROFILES}
+        onDemoStart={() => {}}
+      />
     </div>
   ),
 };
