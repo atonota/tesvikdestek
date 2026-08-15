@@ -6,7 +6,7 @@ import { useNavigate, useSearchParams } from "react-router";
 import { describeError } from "@/api/client";
 import { useLogin, useRegister, useStartDemo } from "@/api/queries";
 import { AuthForm, AuthShell, Link } from "@/components";
-import { DEMO_PROFILES } from "@/demo";
+import { DEMO_PROFILES, isStaticDemoOnly, matchDemoProfile } from "@/demo";
 
 /** The query parameter the workspace gate writes when it bounces a visitor. */
 export const RETURN_PARAM = "donus";
@@ -87,6 +87,7 @@ export function RegisterRoute() {
     >
       <AuthForm
         mode="register"
+        staticDemoOnly={isStaticDemoOnly()}
         submitting={register.isPending}
         error={error}
         onSubmit={(values) => {
@@ -125,7 +126,16 @@ export function LoginRoute() {
     >
       <AuthForm
         mode="login"
-        submitting={login.isPending}
+        staticDemoOnly={isStaticDemoOnly()}
+        /*
+         * The credential form is busy during a *demo* entry too.
+         *
+         * Since a printed pair typed into that form opens a demo, the button
+         * the visitor actually pressed is the form's - and a submit button
+         * that returns to idle while the entry is still in flight invites the
+         * second press that races the first.
+         */
+        submitting={login.isPending || startDemo.isPending}
         error={error}
         demoProfiles={DEMO_PROFILES}
         demoStarting={startDemo.isPending ? startDemo.variables : null}
@@ -148,6 +158,34 @@ export function LoginRoute() {
         }}
         onSubmit={({ eposta, parola }) => {
           setError(null);
+          /*
+           * The printed credentials work when they are typed, not only when
+           * they are clicked.
+           *
+           * The screen prints two e-mail addresses and two passwords, and a
+           * reviewer does the obvious thing with printed credentials. Before
+           * this branch existed that submission went to `POST /giris`, a
+           * backend that has never heard of `@demo.destektesvik.local`
+           * answered 401, and the form said "E-posta veya parola hatalı."
+           * about credentials the card above had just printed as correct.
+           *
+           * So a matching pair is routed into the *same* mutation the card
+           * uses - the same logout-then-start sequence, the same `returnTo` -
+           * rather than into a second implementation that could drift from it.
+           * `matchDemoProfile` reads `DEMO_PROFILES`, the very list rendered
+           * above, so there is one set of credentials on this screen and not
+           * two. Everything that does not match falls through untouched: a
+           * demo address with a mistyped password is not a demo, and the
+           * server, not this branch, is what answers it.
+           */
+          const demo = matchDemoProfile(eposta, parola);
+          if (demo !== null) {
+            startDemo.mutate(demo.id, {
+              onSuccess: () => void navigate(returnTo),
+              onError: (cause) => setError(describeError(cause)),
+            });
+            return;
+          }
           login.mutate(
             { eposta, parola },
             {

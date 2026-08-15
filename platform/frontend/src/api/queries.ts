@@ -22,6 +22,7 @@ import {
 
 import {
   DemoWriteRefusedError,
+  StaticDemoOnlyError,
   demoDecision,
   demoDecisions,
   demoPrograms,
@@ -29,6 +30,7 @@ import {
   demoSnapshots,
   endDemoSession,
   isDemoSession,
+  isStaticDemoOnly,
   startDemoSession,
   type DemoRole,
 } from "@/demo";
@@ -148,10 +150,25 @@ export function useSaveProfile() {
   });
 }
 
+/**
+ * The refusal that stands in for a backend the static build does not have.
+ *
+ * Placed at the query layer rather than in the route for the same reason the
+ * demo read branch is here: this is the last line before `client.ts`, and
+ * `client.ts` is the network. A guard in the route would be a guard one new
+ * caller can forget, and the thing it is guarding against is a login form on a
+ * public static page posting a password into a 404.
+ */
+function refuseWithoutBackend(): Promise<never> {
+  return Promise.reject(new StaticDemoOnlyError());
+}
+
 export function useRegister() {
   return useMutation({
     mutationFn: (fields: { eposta: string; parola: string; organizasyon: string }) =>
-      postForm(AUTH_PATHS.register, fields),
+      isStaticDemoOnly()
+        ? refuseWithoutBackend()
+        : postForm(AUTH_PATHS.register, fields),
   });
 }
 
@@ -169,6 +186,15 @@ export function useLogin() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (fields: { eposta: string; parola: string }) => {
+      /*
+       * Refused before anything is torn down, and that order matters.
+       *
+       * On the static build there is no sign-in to perform, so ending a demo
+       * and clearing the cache first would drop the visitor out of a working
+       * demo in order to fail at something that was never going to happen -
+       * a blank workspace as the reward for typing an address.
+       */
+      if (isStaticDemoOnly()) return refuseWithoutBackend();
       endDemoSession();
       client.clear();
       return postForm(AUTH_PATHS.login, fields);
@@ -209,12 +235,28 @@ export function useLogin() {
  *
  * Navigation is the caller's, in `onSuccess`, so a failed logout cannot
  * navigate. A failure leaves no demo session and surfaces its message.
+ *
+ * The static build is the one exception, and it is an exception on a fact
+ * rather than on a preference. `VITE_STATIC_DEMO_ONLY=true` is set by exactly
+ * one build, the GitHub Pages one, which is served by a file server with no
+ * FastAPI process behind it. There is provably no cookie for that origin to
+ * have issued and provably no endpoint to send the sign-out to: the request
+ * would 404, the mutation would reject, and demo entry - the only thing that
+ * works on that publication - would fail for a reason no visitor could act on.
+ * So the guard is *not* "skip the logout when it is inconvenient"; it is "skip
+ * the logout in the one deployment where there is nothing it could close". The
+ * ordinary build is untouched and `demo-login.test.tsx` asserts that both ways
+ * round.
+ *
+ * This is the single call site that reads the flag on the demo path, and it is
+ * read here rather than at module load so the two deployments are separable in
+ * one test process.
  */
 export function useStartDemo() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: async (role: DemoRole): Promise<DemoRole> => {
-      await postForm(AUTH_PATHS.logout, {});
+      if (!isStaticDemoOnly()) await postForm(AUTH_PATHS.logout, {});
       client.clear();
       startDemoSession(role);
       return role;

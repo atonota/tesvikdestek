@@ -46,7 +46,7 @@ import { http, HttpResponse } from "msw";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { RouterProvider } from "react-router";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { queryKeys } from "@/api/queries";
 import { createTestRouter } from "@/app/router";
@@ -65,6 +65,9 @@ import {
   demoSnapshots,
   endDemoSession,
   getDemoSession,
+  isStaticDemoOnly,
+  matchDemoProfile,
+  normalizeDemoEmail,
   startDemoSession,
 } from "@/demo";
 import { server } from "@/mocks/server";
@@ -100,9 +103,20 @@ afterEach(() => {
   for (const undo of cleanups) undo();
   // Module memory is the whole storage mechanism, so it outlives `cleanup()`.
   endDemoSession();
+  // The static-demo flag is build-time configuration, so a test that stubs it
+  // must hand it back or every later file in the run inherits a deployment it
+  // never asked for.
+  vi.unstubAllEnvs();
   window.localStorage.clear();
   window.sessionStorage.clear();
 });
+
+/** Fill the real credential form and submit it, as a reviewer would. */
+async function signInWith(eposta: string, parola: string): Promise<void> {
+  await userEvent.type(await screen.findByLabelText(/E-posta/u), eposta);
+  await userEvent.type(screen.getByLabelText(/Parola/u), parola);
+  await userEvent.click(screen.getByRole("button", { name: "Giriş yap" }));
+}
 
 /** The app, mounted like `render-app.tsx` but with the client kept in hand. */
 async function renderApp(path: string): Promise<{
@@ -685,6 +699,369 @@ describe("a demo write is refused in words rather than faked", () => {
     await screen.findByRole("alert");
 
     expect(screen.queryByText(/kaydedildi|başarıyla/iu)).not.toBeInTheDocument();
+  });
+});
+
+/* --------------------------- 9. the printed credentials are usable as typed */
+
+/**
+ * The regression this group exists for, and why it is not a nicety.
+ *
+ * The login screen prints two e-mail addresses and two passwords in a card
+ * headed "Tek tıkla demo". A reviewer who has ever used a demo before does the
+ * obvious thing with printed credentials: types them into the form directly
+ * below them. Before this change that submission went to `POST /giris`, where
+ * a backend that has never heard of `@demo.destektesvik.local` answered 401,
+ * and the screen said "E-posta veya parola hatalı." about credentials the same
+ * screen had just printed as correct.
+ *
+ * That is worse than a broken button. The interface contradicted itself in the
+ * one place a first-time visitor has no way to adjudicate, and the wrong half
+ * was the half that looked authoritative. So both doors now open the same
+ * room: the card and the form run the *same* `useStartDemo` mutation, through
+ * the *same* safe-return contract, and the credentials are matched against the
+ * *same* `DEMO_PROFILES` the card renders - not a second copy that can drift.
+ */
+describe("typing the printed credentials opens the same demo the card opens", () => {
+  it.each(DEMO_PROFILES.map((entry) => [entry.id, entry.email, entry.password] as const))(
+    "%s signs in from the form and lands on the dashboard",
+    async (id, email, password) => {
+      await renderApp("/giris");
+      await signInWith(email, password);
+
+      expect(await screen.findByRole("heading", { level: 1, name: "Kokpit" })).toBeInTheDocument();
+      expect(getDemoSession()?.role).toBe(id);
+    },
+  );
+
+  it.each(DEMO_PROFILES.map((entry) => [entry.id, entry.email, entry.password] as const))(
+    "%s gets the shell badge naming its own role, not the other one",
+    async (id, email, password) => {
+      await renderApp("/giris");
+      await signInWith(email, password);
+
+      expect(await screen.findByText(demoBadgeLabel(id))).toBeInTheDocument();
+      const other = DEMO_PROFILES.find((entry) => entry.id !== id);
+      expect(screen.queryByText(demoBadgeLabel(other!.id))).not.toBeInTheDocument();
+    },
+  );
+
+  it("honours the same safe return path the one-click card honours", async () => {
+    await renderApp(`/giris?donus=${encodeURIComponent("/organizasyon/hazirlik")}`);
+    const customer = profile("customer");
+    await signInWith(customer.email, customer.password);
+
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Organizasyon hazırlığı" }),
+    ).toBeInTheDocument();
+  });
+
+  it.each([
+    "https://evil.example/panel",
+    "//evil.example/panel",
+    "javascript:alert(1)",
+    "/\\evil.example",
+  ])("refuses the hostile return path %s on the typed route too", async (hostile) => {
+    await renderApp(`/giris?donus=${encodeURIComponent(hostile)}`);
+    const superadmin = profile("superadmin");
+    await signInWith(superadmin.email, superadmin.password);
+
+    expect(await screen.findByRole("heading", { level: 1, name: "Kokpit" })).toBeInTheDocument();
+  });
+
+  /**
+   * The assertion the whole regression reduces to.
+   *
+   * A demo credential must never reach the sign-in endpoint - not because the
+   * request would fail, but because it would *succeed at being answered*, and
+   * the answer would be a refusal of credentials this application printed.
+   */
+  it("never posts a printed demo credential to the sign-in endpoint", async () => {
+    const requests = recordRequests();
+    await renderApp("/giris");
+    const superadmin = profile("superadmin");
+    await signInWith(superadmin.email, superadmin.password);
+    await screen.findByRole("heading", { level: 1, name: "Kokpit" });
+
+    expect(requests.seen).not.toContain("POST /giris");
+    // Entry still signs the browser out for real, exactly as the card does.
+    expect(requests.seen.filter((entry) => entry.startsWith("POST"))).toEqual(["POST /cikis"]);
+  });
+
+  it("does not open the demo from the form either when the logout fails", async () => {
+    server.use(http.post("/cikis", () => new HttpResponse(null, { status: 500 })));
+    await renderApp("/giris");
+    const customer = profile("customer");
+    await signInWith(customer.email, customer.password);
+
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+    expect(getDemoSession()).toBeNull();
+    expect(screen.getByRole("heading", { level: 1, name: "Giriş" })).toBeInTheDocument();
+  });
+
+  /**
+   * A demo address with the wrong password is not a demo.
+   *
+   * The match is on the pair, never on the address alone. Matching the address
+   * would mean any password at all opened the demo, which turns a printed
+   * e-mail into a skeleton key for a screen that is about to say "Demo" - and
+   * it would also swallow a genuine typo instead of letting the server answer.
+   */
+  it("sends a demo address with the wrong password to the real sign-in", async () => {
+    const requests = recordRequests();
+    await renderApp("/giris");
+    await signInWith(profile("superadmin").email, "bu-parola-yanlis-2026");
+
+    await waitFor(() => expect(requests.seen).toContain("POST /giris"));
+    expect(getDemoSession()).toBeNull();
+  });
+
+  it("leaves an ordinary sign-in on the real backend path, untouched", async () => {
+    const requests = recordRequests();
+    await renderApp("/giris");
+    await signInWith("biri@ornek.com.tr", "cok-guclu-parola-2026");
+
+    await screen.findByRole("heading", { level: 1, name: "Kokpit" });
+    expect(requests.seen).toContain("POST /giris");
+    expect(getDemoSession()).toBeNull();
+  });
+
+  /**
+   * Normalisation, bounded on purpose.
+   *
+   * A reviewer copying an address out of a card picks up a trailing space, and
+   * a phone keyboard capitalises the first letter. Neither is a different
+   * account, so neither should be a refusal. What is *not* done is as
+   * deliberate: the password is compared byte for byte, because trimming a
+   * password silently accepts one the user did not type, and the lowercasing
+   * is ASCII-only, because Turkish `I` lowercases to `ı` under a tr-TR locale
+   * and `MUSTERI@…` would then stop matching `musteri@…`.
+   */
+  it("accepts the address with surrounding space and shifted capitals", async () => {
+    await renderApp("/giris");
+    const superadmin = profile("superadmin");
+    await signInWith(`  ${superadmin.email.toUpperCase()}  `, superadmin.password);
+
+    expect(await screen.findByRole("heading", { level: 1, name: "Kokpit" })).toBeInTheDocument();
+    expect(getDemoSession()?.role).toBe("superadmin");
+  });
+
+  it("lowercases only ASCII letters, so a Turkish capital I is not folded to ı", () => {
+    expect(normalizeDemoEmail("  MUSTERI@Demo.DestekTesvik.LOCAL  ")).toBe(
+      "musteri@demo.destektesvik.local",
+    );
+    // The dotless ı is a different character and must survive untouched.
+    expect(normalizeDemoEmail("mIrasçı@ornek.tr")).toBe("mirasçı@ornek.tr");
+  });
+
+  it("refuses a password that differs only by surrounding whitespace", () => {
+    const superadmin = profile("superadmin");
+    expect(matchDemoProfile(superadmin.email, ` ${superadmin.password} `)).toBeNull();
+    expect(matchDemoProfile(superadmin.email, superadmin.password)?.id).toBe("superadmin");
+  });
+
+  it("matches every printed pair, and no pair that was not printed", () => {
+    for (const entry of DEMO_PROFILES) {
+      expect(matchDemoProfile(entry.email, entry.password)?.id).toBe(entry.id);
+    }
+    // The two profiles' halves may not be mixed into a third identity.
+    const [first, second] = DEMO_PROFILES;
+    expect(matchDemoProfile(first!.email, second!.password)).toBeNull();
+    expect(matchDemoProfile("", "")).toBeNull();
+    expect(matchDemoProfile("biri@ornek.com.tr", "cok-guclu-parola-2026")).toBeNull();
+  });
+
+  /**
+   * One list, not two.
+   *
+   * The card renders `DEMO_PROFILES` and the form matches against it. If a
+   * credential literal ever appears in the route or the template, the two have
+   * been forked, and the failure that follows is the worst kind: the card
+   * prints one password while the form accepts another.
+   */
+  it("keeps the credentials in exactly one module", () => {
+    for (const file of [
+      join(SRC, "routes", "auth.tsx"),
+      join(SRC, "components", "templates.tsx"),
+      join(SRC, "api", "queries.ts"),
+    ]) {
+      const source = readFileSync(file, "utf8");
+      for (const entry of DEMO_PROFILES) {
+        expect(source, `${file} demo e-postasını kopyalamış`).not.toContain(entry.email);
+        expect(source, `${file} demo parolasını kopyalamış`).not.toContain(entry.password);
+      }
+    }
+  });
+
+  it("enters the demo through the shared mutation rather than a second path", () => {
+    const route = readFileSync(join(SRC, "routes", "auth.tsx"), "utf8");
+    expect(route).toMatch(/matchDemoProfile\(/u);
+    // Still the mutation, still never the raw session setter.
+    expect(route).toMatch(/startDemo\.mutate\(/u);
+    expect(route).not.toMatch(/startDemoSession\(/u);
+  });
+
+  it("says on screen that the printed credentials can be typed into the form", async () => {
+    await renderApp("/giris");
+    const notes = await screen.findAllByTestId("demo-kimlik-notu");
+    expect(notes.length).toBe(DEMO_PROFILES.length);
+    for (const note of notes) {
+      expect(note.textContent).toMatch(/forma|form alanlarına|aşağıdaki forma/iu);
+      expect(note.textContent).toMatch(/yazabilir|girebilir|kopyalayabilir/iu);
+      // The sentence this replaces said the opposite, and it was wrong.
+      expect(note.textContent).not.toMatch(/yalnızca .*göstermek için yazılıdır/iu);
+    }
+  });
+
+  it("no longer claims anywhere that the demo pair would be refused by a server", () => {
+    const source = readFileSync(join(SRC, "demo", "profiles.ts"), "utf8");
+    for (const claim of [
+      /must find them refused by the server/iu,
+      /refused by the server rather than/iu,
+      /sunucu(da)? (tarafından )?reddedil/iu,
+    ]) {
+      expect(source, `profiles.ts artık doğru olmayan bir iddia taşıyor: ${String(claim)}`).not.toMatch(
+        claim,
+      );
+    }
+  });
+});
+
+/* ----------------------------------- 10. the static, backend-free deployment */
+
+/**
+ * What `VITE_STATIC_DEMO_ONLY=true` means, and what it must not be allowed to
+ * mean.
+ *
+ * The GitHub Pages publication is a bundle on a file server. There is no
+ * FastAPI process behind it: `POST /cikis` would 404, `POST /giris` would 404,
+ * and neither failure is recoverable by the visitor. So the flag changes two
+ * things and only two:
+ *
+ *   1. demo entry stops sending the sign-out. Not because sending it is
+ *      undesirable - it is the correct thing in a real deployment and stays
+ *      there - but because on Pages there is provably no server session to
+ *      close, and a request that cannot succeed would make demo entry fail for
+ *      a reason the reviewer cannot act on.
+ *   2. a real sign-in or registration is refused *before* it reaches the
+ *      network, and refused out loud. The alternative is a form that collects
+ *      an address and a password and drops them into a 404 - which is the
+ *      single most dishonest thing this screen could do.
+ *
+ * The flag is read at call time rather than captured at module load, so these
+ * two deployments can be exercised in one process; a module-level constant
+ * would make the second describe block silently test the first one's build.
+ */
+describe("the static Pages build has no backend and says so", () => {
+  function buildStaticDemoOnly(): void {
+    vi.stubEnv("VITE_STATIC_DEMO_ONLY", "true");
+  }
+
+  it("is off unless the build explicitly turned it on", () => {
+    expect(isStaticDemoOnly()).toBe(false);
+    buildStaticDemoOnly();
+    expect(isStaticDemoOnly()).toBe(true);
+  });
+
+  it("treats any value other than true as off, so a typo cannot disable the backend", () => {
+    for (const value of ["false", "1", "yes", "TRUE", ""]) {
+      vi.stubEnv("VITE_STATIC_DEMO_ONLY", value);
+      expect(isStaticDemoOnly(), `"${value}" statik yayın sayıldı`).toBe(false);
+    }
+  });
+
+  it("opens the demo from the card with no request at all", async () => {
+    buildStaticDemoOnly();
+    const requests = recordRequests();
+    await renderApp("/giris");
+    await userEvent.click(
+      await screen.findByRole("button", { name: profile("superadmin").actionLabel }),
+    );
+
+    expect(await screen.findByRole("heading", { level: 1, name: "Kokpit" })).toBeInTheDocument();
+    expect(await screen.findByText(demoBadgeLabel("superadmin"))).toBeInTheDocument();
+    expect(requests.seen).toEqual([]);
+  });
+
+  it("opens the demo from the typed form with no request at all", async () => {
+    buildStaticDemoOnly();
+    const requests = recordRequests();
+    await renderApp("/giris");
+    const customer = profile("customer");
+    await signInWith(customer.email, customer.password);
+
+    expect(await screen.findByRole("heading", { level: 1, name: "Kokpit" })).toBeInTheDocument();
+    expect(await screen.findByText(demoBadgeLabel("customer"))).toBeInTheDocument();
+    expect(requests.seen).toEqual([]);
+  });
+
+  it("refuses a real sign-in without sending it, and explains the deployment", async () => {
+    buildStaticDemoOnly();
+    const requests = recordRequests();
+    await renderApp("/giris");
+    await signInWith("biri@ornek.com.tr", "cok-guclu-parola-2026");
+
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toMatch(/statik|sunucu yok|backend/iu);
+    expect(alert.textContent).toMatch(/demo/iu);
+    expect(requests.seen).toEqual([]);
+    expect(getDemoSession()).toBeNull();
+    // And the visitor is still on the login screen rather than a broken one.
+    expect(screen.getByRole("heading", { level: 1, name: "Giriş" })).toBeInTheDocument();
+  });
+
+  it("refuses registration the same way, rather than posting into a 404", async () => {
+    buildStaticDemoOnly();
+    const requests = recordRequests();
+    await renderApp("/kayit");
+
+    await userEvent.type(await screen.findByLabelText(/E-posta/u), "biri@ornek.com.tr");
+    await userEvent.type(screen.getByLabelText(/Parola/u), "cok-guclu-parola-2026");
+    await userEvent.click(screen.getByRole("button", { name: "Hesap oluştur" }));
+
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toMatch(/statik|sunucu yok|backend/iu);
+    expect(requests.seen).toEqual([]);
+  });
+
+  it("tells the visitor on the login screen that only the demo works here", async () => {
+    buildStaticDemoOnly();
+    await renderApp("/giris");
+
+    const notice = await screen.findByTestId("statik-yayin-uyarisi");
+    expect(notice.textContent).toMatch(/statik/iu);
+    expect(notice.textContent).toMatch(/demo/iu);
+    expect(notice.textContent).toMatch(/giriş|kayıt/iu);
+  });
+
+  it("shows that notice on the registration screen too", async () => {
+    buildStaticDemoOnly();
+    await renderApp("/kayit");
+    expect(await screen.findByTestId("statik-yayin-uyarisi")).toBeInTheDocument();
+  });
+
+  it("shows no such notice in the normal deployment", async () => {
+    await renderApp("/giris");
+    await screen.findByRole("heading", { level: 1, name: "Giriş" });
+    expect(screen.queryByTestId("statik-yayin-uyarisi")).not.toBeInTheDocument();
+  });
+
+  /**
+   * The normal deployment is not weakened by any of the above.
+   *
+   * Re-asserted here rather than left to the earlier group, because the risk
+   * this flag introduces is precisely that its branch leaks into the default
+   * build - and the failure would be silent: a demo that no longer signs the
+   * browser out, in a deployment where a live tenant session exists.
+   */
+  it("still sends the real logout when the flag is absent", async () => {
+    const requests = recordRequests();
+    await renderApp("/giris");
+    const customer = profile("customer");
+    await signInWith(customer.email, customer.password);
+    await screen.findByRole("heading", { level: 1, name: "Kokpit" });
+
+    expect(requests.seen.filter((entry) => entry.startsWith("POST"))).toEqual(["POST /cikis"]);
   });
 });
 

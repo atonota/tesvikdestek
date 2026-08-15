@@ -426,6 +426,35 @@ export interface AuthFormProps {
   onDemoStart?: (role: DemoRole) => void;
   /** Which card is mid-entry, so only its own button shows the busy state. */
   demoStarting?: DemoRole | null;
+  /**
+   * Whether this bundle was built for the backend-free static publication.
+   *
+   * A prop rather than a flag this template reads for itself, and for the same
+   * reason `demoProfiles` is a prop: the template renders what it is handed and
+   * decides nothing about deployments. It also keeps the value readable at call
+   * time by the route, which is what lets one test process exercise both
+   * builds.
+   */
+  staticDemoOnly?: boolean;
+}
+
+/**
+ * The one thing a visitor to the static publication has to be told.
+ *
+ * Shown above the credential fields rather than below them, because a warning
+ * that arrives after the password has been typed is not a warning. It says what
+ * the page is, what will not work, and - the part that makes it usable rather
+ * than merely honest - what does.
+ */
+function StaticDeploymentNotice() {
+  return (
+    <p className="dt-demo__notice" role="note" data-testid="statik-yayin-uyarisi">
+      Bu sayfa <strong>statik bir yayındır</strong>: arkasında sunucu yoktur. Gerçek{" "}
+      <strong>giriş</strong> ve <strong>kayıt</strong> burada çalışmaz ve denendiğinde hiçbir
+      bilgi gönderilmez. Bu yayında yalnızca demo girişi kullanılabilir: bir demo kartını
+      seçebilir ya da kartta yazan demo e-posta ve parolayı aşağıdaki forma yazabilirsiniz.
+    </p>
+  );
 }
 
 /**
@@ -486,9 +515,22 @@ function DemoProfileCards({
                   <dd>{profile.password}</dd>
                 </div>
               </dl>
-              <p className="dt-demo__credential-note">
-                Bu bilgiler gizli değildir ve gerçek bir hesaba ait değildir; yalnızca demonun
-                hangi profili açtığını göstermek için yazılıdır.
+              {/*
+                * What the printed pair is *for*, corrected.
+                *
+                * This sentence used to say the credentials were written here
+                * "only to show which profile the demo opens" - and the code
+                * agreed with it: typing them into the form below posted them
+                * to the backend, which refused credentials this very card had
+                * printed as correct. Both halves were wrong. They are usable,
+                * they are the second door into the same demo, and the card
+                * now says so, because a printed password nobody may type is
+                * an invitation to a dead end.
+                */}
+              <p className="dt-demo__credential-note" data-testid="demo-kimlik-notu">
+                Bu bilgiler gizli değildir ve hiçbir sunucuda tanımlı bir hesaba ait değildir.
+                Düğmeye basabilir ya da bu e-posta ve parolayı aşağıdaki forma yazabilirsiniz;
+                ikisi de aynı demoyu açar ve hiçbir bilgi sunucuya gönderilmez.
               </p>
               {/*
                 * While one demo is opening, the other card's action is
@@ -539,10 +581,20 @@ export function AuthForm({
   demoProfiles = [],
   onDemoStart,
   demoStarting = null,
+  staticDemoOnly = false,
 }: AuthFormProps) {
   const showDemo = demoProfiles.length > 0 && onDemoStart !== undefined;
   return (
     <div className="dt-stack">
+      {/*
+        * Above the demo block, not between it and the form.
+        *
+        * On the registration screen there is no demo block at all, and this is
+        * then the first thing on the page - which is correct, because on the
+        * static publication registration is the one action that cannot work
+        * and has no substitute.
+        */}
+      {staticDemoOnly ? <StaticDeploymentNotice /> : null}
       {showDemo ? (
         <>
           <DemoProfileCards

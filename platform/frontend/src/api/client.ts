@@ -14,7 +14,7 @@
 
 import type { ZodType } from "zod";
 
-import { DemoWriteRefusedError } from "@/demo";
+import { DemoWriteRefusedError, StaticDemoOnlyError } from "@/demo";
 import {
   approvalSchema,
   csrfTokenSchema,
@@ -84,6 +84,15 @@ export function describeError(error: unknown): string {
    * when what it actually did was refuse to lie about a save.
    */
   if (error instanceof DemoWriteRefusedError) return error.message;
+  /*
+   * The static publication's refusal, for the same reason and one step earlier.
+   *
+   * Nothing broke here either: the bundle on GitHub Pages has no backend, the
+   * request was never sent, and the sentence the error carries already says
+   * that and says what does work instead. Falling through would report a
+   * network failure for a request that deliberately never left.
+   */
+  if (error instanceof StaticDemoOnlyError) return error.message;
   if (error instanceof OfflineError) {
     return "Sunucuya ulaşılamıyor. Bağlantınızı kontrol edip tekrar deneyin.";
   }

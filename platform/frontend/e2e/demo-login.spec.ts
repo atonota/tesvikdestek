@@ -140,6 +140,79 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByText(entry.badge)).toBeVisible();
       });
     }
+
+    /**
+     * The same two profiles, entered the other way: typed.
+     *
+     * A reviewer reads printed credentials and types them. Before this change
+     * that submission reached `POST /giris`, a backend that has never heard of
+     * these addresses answered 401, and the screen refused credentials it had
+     * printed itself two centimetres higher. The unit suite pins the wiring;
+     * this walks it in a browser at both widths, because the typed path also
+     * has to *stay reachable* - the form must not be pushed off screen or
+     * behind an overflow by the demo block sitting above it.
+     */
+    for (const entry of DEMO_ACTIONS) {
+      test(`${entry.role}: typing the printed credentials opens the same demo`, async ({
+        page,
+      }) => {
+        await noBackend(page);
+        await page.goto("./giris");
+
+        const sent: string[] = [];
+        page.on("request", (request) => {
+          const url = new URL(request.url());
+          if (/^\/uygulama\/(assets|@)/u.test(url.pathname)) return;
+          if (url.pathname.endsWith(".js") || url.pathname.endsWith(".css")) return;
+          sent.push(`${request.method()} ${url.pathname}`);
+        });
+
+        // Read out of the rendered card rather than from a constant, so the
+        // screen and the assertion cannot drift apart.
+        const card = page.locator(".dt-demo__card", { hasText: entry.action });
+        const email = (await card.locator("dd").first().textContent())?.trim() ?? "";
+        const password = (await card.locator("dd").nth(1).textContent())?.trim() ?? "";
+        expect(email).toContain("@demo.destektesvik.local");
+        expect(password.length).toBeGreaterThan(0);
+
+        await page.getByLabel(/E-posta/u).fill(email);
+        await page.getByLabel(/Parola/u).fill(password);
+        await page.getByRole("button", { name: "Giriş yap" }).click();
+
+        await expect(page.getByRole("heading", { level: 1, name: "Kokpit" })).toBeVisible();
+        await expect(page.getByText(entry.badge)).toBeVisible();
+
+        // The printed pair never reaches the sign-in endpoint, and entry still
+        // performs the genuine sign-out.
+        expect(sent).not.toContain("POST /giris");
+        expect(sent.filter((one) => one.startsWith("POST"))).toEqual(["POST /cikis"]);
+      });
+    }
+
+    test("the credential form stays usable and the page still does not scroll sideways", async ({
+      page,
+    }) => {
+      await noBackend(page);
+      await page.goto("./giris");
+      await page.waitForLoadState("networkidle");
+
+      // The note that tells the visitor the credentials are typeable is part
+      // of the layout being measured, not decoration added after it.
+      await expect(page.getByTestId("demo-kimlik-notu").first()).toBeVisible();
+
+      const email = page.getByLabel(/E-posta/u);
+      await expect(email).toBeVisible();
+      await email.fill("superadmin@demo.destektesvik.local");
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(overflow, "giriş ekranı yatay taşıyor").toBeLessThanOrEqual(0);
+
+      const box = await page.getByRole("button", { name: "Giriş yap" }).boundingBox();
+      expect(box, "giriş düğmesi ölçülemedi").not.toBeNull();
+      expect(box!.height).toBeGreaterThanOrEqual(44);
+    });
   });
 }
 

@@ -1,0 +1,182 @@
+# Publish the frontend to GitHub Pages as a static, backend-free demo.
+#
+# What is published, said plainly because the distinction is the whole point:
+# a bundle on a file server. There is no FastAPI process behind
+# `atonota.github.io`, no database, no session cookie and no account. So the
+# build sets `VITE_STATIC_DEMO_ONLY=true`, and the application reads that flag
+# to refuse a real sign-in or registration *before* it reaches the network and
+# to say so on screen. A login form on a public static page that posts a
+# password into a 404 is the failure this file exists to make impossible.
+#
+# The base path is overridden on the command line rather than in
+# `vite.config.ts`. The committed config keeps `/uygulama/`, which is what the
+# ordinary deployment behind the FastAPI origin needs; only this workflow
+# builds for `/tesvikdestek/uygulama/`. Editing the config instead would make
+# every developer's build and the backend deployment carry a path that belongs
+# to one publication.
+#
+# The site layout, and why each piece is there:
+#
+#   _site/index.html   a redirect to ./uygulama/, so the repository's Pages
+#                      root leads somewhere rather than 404ing.
+#   _site/uygulama/    the application, at the path its base was built for.
+#   _site/404.html     the application again. Pages serves this for any path
+#                      that is not a file, which is every deep link the SPA
+#                      router owns - `/tesvikdestek/uygulama/giris` first
+#                      among them. Its asset URLs are absolute (they carry the
+#                      base), so it boots correctly from any depth.
+#   _site/.nojekyll    without it Jekyll drops every directory starting with
+#                      an underscore, and Vite emits none today - but a future
+#                      chunk name is not worth a silent blank page.
+#
+# `.github/workflows/../../platform/frontend/src/test/pages-deployment-contract.test.ts`
+# pins the claims above, and that test runs below before anything is built.
+#
+# Nothing here reads a secret. `contents: read` is deliberate: a deployment
+# that can write to the repository is a deployment that can rewrite the thing
+# it deployed.
+
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One publication at a time, and a queued one is not cancelled: cancelling a
+# deploy mid-flight is how a site ends up half-updated.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  build:
+    name: Check, build the static demo, assemble the site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Enable pnpm through corepack
+        # The version comes from `packageManager` in package.json, exactly as
+        # frontend-ci.yml does it, so the two workflows cannot resolve
+        # different dependency trees for the same commit.
+        run: corepack enable
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: platform/frontend/pnpm-lock.yaml
+
+      - name: Install from the lockfile, exactly
+        working-directory: platform/frontend
+        run: pnpm install --frozen-lockfile
+
+      # The gates. All three run before a single asset is emitted, so a red
+      # check cannot be discovered after the artifact already exists.
+      - name: Lint
+        working-directory: platform/frontend
+        run: pnpm lint
+
+      - name: Type check
+        working-directory: platform/frontend
+        run: pnpm typecheck
+
+      - name: Demo login and Pages contract tests
+        # Targeted rather than the whole suite: frontend-ci.yml already runs
+        # the full suite with coverage thresholds on every push. What this job
+        # adds is the two files that describe *this* publication - the demo
+        # entry a static visitor depends on, and the contract for this file.
+        working-directory: platform/frontend
+        run: >-
+          pnpm exec vitest run
+          src/test/demo-login.test.tsx
+          src/test/pages-deployment-contract.test.ts
+
+      - name: Build the static demo
+        working-directory: platform/frontend
+        env:
+          VITE_STATIC_DEMO_ONLY: "true"
+        # The base is written out in full rather than held in an `env:` key.
+        # It is the published address, `pages-deployment-contract.test.ts`
+        # asserts on it as text, and an indirection would let the contract pass
+        # while the path it names had quietly changed one level up.
+        run: pnpm exec vite build --base /tesvikdestek/uygulama/
+
+      - name: Assemble _site
+        # `set -euo pipefail` so a failed copy stops the job instead of
+        # uploading a site that is missing half its assets.
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _site
+          mkdir -p _site/uygulama
+          cp -R platform/frontend/dist/. _site/uygulama/
+
+          # The SPA fallback: the app itself, served for every unmatched path.
+          cp _site/uygulama/index.html _site/404.html
+
+          # Jekyll off.
+          touch _site/.nojekyll
+
+          # The root of the published site forwards into the application.
+          # Relative, so it survives the repository being renamed, and it
+          # carries a real link for the case where the redirect is blocked.
+          cat > _site/index.html <<'HTML'
+          <!doctype html>
+          <html lang="tr">
+            <head>
+              <meta charset="utf-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1" />
+              <meta http-equiv="refresh" content="0; url=./uygulama/" />
+              <link rel="canonical" href="./uygulama/" />
+              <title>DestekTesvik demo</title>
+            </head>
+            <body>
+              <p>
+                Bu yayın yalnızca arayüz demosudur; arkasında sunucu yoktur.
+                <a href="./uygulama/">Demoya gidin</a>.
+              </p>
+              <script>
+                location.replace("./uygulama/");
+              </script>
+            </body>
+          </html>
+          HTML
+
+      - name: Verify the assembled site before uploading it
+        # Cheap, and it is the last point at which a missing file is still a
+        # red job rather than a published blank page.
+        shell: bash
+        run: |
+          set -euo pipefail
+          for required in _site/index.html _site/404.html _site/.nojekyll _site/uygulama/index.html; do
+            test -f "$required" || { echo "eksik: $required" >&2; exit 1; }
+          done
+          grep -q './uygulama/' _site/index.html
+          grep -q '/tesvikdestek/uygulama/' _site/uygulama/index.html
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
