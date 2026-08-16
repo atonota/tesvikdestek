@@ -12,9 +12,7 @@
  * rather than implying a model was asked.
  */
 
-import { Link } from "@/components";
-import { Button } from "@/components/ui";
-import { AppIcon } from "@/components/icons";
+import { Button, Link } from "@/foundation";
 import { useContent } from "@/content";
 
 export interface CockpitEvidenceSuggestion {
@@ -100,7 +98,7 @@ export function CognitiveEvidenceRail({
       )}
 
       <p className="cognitive-evidence-rail__provider-note" role="note">
-        <AppIcon name="info" /> {providerReason}
+        {providerReason}
       </p>
 
       <div className="cognitive-evidence-rail__status" role="status">

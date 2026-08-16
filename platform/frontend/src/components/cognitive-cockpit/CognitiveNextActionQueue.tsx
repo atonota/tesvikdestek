@@ -7,8 +7,7 @@
  * heading - it was overlapping the title at 320px in the previous layout.
  */
 
-import { Link } from "@/components";
-import { Button } from "@/components/ui";
+import { Button, Link } from "@/foundation";
 import { useContent } from "@/content";
 
 export interface CockpitQueueItem {

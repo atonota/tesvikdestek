@@ -2,7 +2,6 @@
  * The account control in the Spotlight header: tenant identity, settings, sign out.
  */
 
-import { Link } from "@/components";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,8 +9,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui";
-import { AppIcon } from "@/components/icons";
+  FoundationIcon,
+  Link,
+} from "@/foundation";
 import { useContent } from "@/content";
 
 export interface CognitiveAccountMenuProps {
@@ -42,18 +42,15 @@ export function CognitiveAccountMenu({
           className="cognitive-account-menu__trigger"
           aria-label={triggerAriaLabel}
         >
-          <AppIcon name="people" />
           <span className="cognitive-account-menu__label">{roleLabel}</span>
-          <AppIcon name="expand" />
+          <FoundationIcon name="expand" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="cognitive-account-menu__content">
         <DropdownMenuLabel>{organisationLabel}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link to="/ayarlar/gorunum">
-            <AppIcon name="settings" /> {settingsLabel}
-          </Link>
+          <Link to="/ayarlar/gorunum">{settingsLabel}</Link>
         </DropdownMenuItem>
         <DropdownMenuItem
           disabled={loggingOut}
@@ -62,7 +59,7 @@ export function CognitiveAccountMenu({
             onLogout?.();
           }}
         >
-          <AppIcon name="signOut" /> {loggingOut ? loggingOutLabel : logoutLabel}
+          {loggingOut ? loggingOutLabel : logoutLabel}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

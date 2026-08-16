@@ -14,8 +14,8 @@
 
 import { Suspense, lazy, useState } from "react";
 
-import { SkeletonChart } from "@/components/ui";
-import type { CountedSlice, Distribution } from "@/components/analytics/model";
+import { SkeletonChart } from "@/foundation";
+import type { CountedSlice, Distribution } from "@/domain/analytics";
 import { useContent } from "@/content";
 
 const CognitiveChartCanvas = lazy(() =>
@@ -38,16 +38,16 @@ function readTokens() {
   const styles = getComputedStyle(document.documentElement);
   const token = (name: string): string => styles.getPropertyValue(name).trim();
   return {
-    foreground: token("--dt-color-fg") || "currentColor",
-    line: token("--dt-color-line") || "currentColor",
-    primary: token("--dt-color-primary") || "currentColor",
-    secondary: token("--dt-color-secondary") || "currentColor",
-    danger: token("--dt-color-danger") || "currentColor",
-    muted: token("--dt-color-fg-muted") || "currentColor",
-    candidate: token("--dt-outcome-candidate-line"),
-    ineligible: token("--dt-outcome-ineligible-line"),
-    conditional: token("--dt-outcome-conditional-line"),
-    insufficient: token("--dt-outcome-insufficient-line"),
+    foreground: token("--fd-color-fg") || "currentColor",
+    line: token("--fd-color-line") || "currentColor",
+    primary: token("--fd-color-primary") || "currentColor",
+    secondary: token("--fd-color-secondary") || "currentColor",
+    danger: token("--fd-color-danger") || "currentColor",
+    muted: token("--fd-color-fg-muted") || "currentColor",
+    candidate: token("--fd-outcome-candidate-line"),
+    ineligible: token("--fd-outcome-ineligible-line"),
+    conditional: token("--fd-outcome-conditional-line"),
+    insufficient: token("--fd-outcome-insufficient-line"),
   };
 }
 

@@ -9,9 +9,7 @@
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
 
-import { Link } from "@/components";
-import { Badge, SheetTrigger } from "@/components/ui";
-import { AppIcon } from "@/components/icons";
+import { Badge, FoundationIcon, Link, SheetTrigger } from "@/foundation";
 import { useContent } from "@/content";
 
 export interface CockpitSearchItem {
@@ -79,7 +77,7 @@ export function CognitiveSpotlightHeader({
     <header className="cognitive-spotlight" data-open={open}>
       <SheetTrigger asChild>
         <button type="button" className="cognitive-spotlight__hamburger" aria-label={menuOpenLabel}>
-          <AppIcon name="menu" />
+          <FoundationIcon name="menu" />
         </button>
       </SheetTrigger>
 
@@ -93,7 +91,7 @@ export function CognitiveSpotlightHeader({
       <div className="cognitive-spotlight__search" data-open={open}>
         {open ? (
           <div className="cognitive-spotlight__panel" role="search">
-            <AppIcon name="search" />
+            <FoundationIcon name="search" />
             <input
               ref={inputRef}
               type="text"
@@ -112,7 +110,7 @@ export function CognitiveSpotlightHeader({
               }}
               aria-label={searchClose}
             >
-              <AppIcon name="close" />
+              <FoundationIcon name="close" />
             </button>
             {query.trim() !== "" ? (
               <ul id={listboxId} className="cognitive-spotlight__results">
@@ -124,7 +122,7 @@ export function CognitiveSpotlightHeader({
                       <Link to={item.to} onClick={() => onOpenChange(false)}>
                         {item.label}
                         {item.hint ? (
-                          <span className="dt-muted">
+                          <span className="fd-muted">
                             {hintSeparator}
                             {item.hint}
                           </span>
@@ -143,7 +141,7 @@ export function CognitiveSpotlightHeader({
             onClick={() => onOpenChange(true)}
             aria-expanded={false}
           >
-            <AppIcon name="search" />
+            <FoundationIcon name="search" />
             <span>{searchTrigger}</span>
             <kbd>{shortcut}</kbd>
           </button>
@@ -155,7 +153,7 @@ export function CognitiveSpotlightHeader({
         className="cognitive-spotlight__notifications"
         aria-label={notificationCount > 0 ? notificationsLabelWithCount : notificationsLabel}
       >
-        <AppIcon name="notifications" />
+        <FoundationIcon name="notifications" />
         {notificationCount > 0 ? (
           <Badge className="cognitive-spotlight__notifications-badge">{notificationCount}</Badge>
         ) : null}

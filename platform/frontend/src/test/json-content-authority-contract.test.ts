@@ -110,6 +110,7 @@ function visibleLiterals(sourcePath: string, functionName?: string): readonly st
   const looksLikeVisiblePunctuation = (value: string) => /^[·—–…]$/u.test(value.trim());
   const isTechnicalLiteral = (value: string) =>
     /^(?:Escape|Enter|Tab|Arrow(?:Up|Down|Left|Right))$/u.test(value) ||
+    value === "noreferrer noopener" ||
     /^\(prefers-[^)]+\)$/u.test(value) ||
     value.startsWith(".") ||
     value.startsWith("#");
@@ -136,7 +137,12 @@ function visibleLiterals(sourcePath: string, functionName?: string): readonly st
         return;
       }
       const attribute = jsxAttributeAncestor(node);
-      if (attribute && ["className", "id", "type", "to", "href", "name"].includes(attribute)) return;
+      if (
+        attribute &&
+        ["className", "id", "type", "to", "href", "name", "rel", "target"].includes(attribute)
+      ) {
+        return;
+      }
       if (looksVisible(node.text) && !isTechnicalLiteral(node.text)) found.push(node.text);
     }
     if (ts.isTemplateExpression(node)) {
@@ -316,8 +322,18 @@ describe("JSON content is the canonical frontend content authority", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("leaves no cockpit composition copy embedded in DashboardRoute", () => {
-    const appRoute = path.resolve(process.cwd(), "src/routes/app.tsx");
-    expect(visibleLiterals(appRoute, "DashboardRoute")).toEqual([]);
+  it("keeps the clean panel route and workspace gate fully JSON-authored", () => {
+    const surfaces = [
+      "src/routes/panel.tsx",
+      "src/routes/workspace-gate.tsx",
+      "src/domain/assistant.ts",
+      "src/foundation/link.tsx",
+      "src/foundation/states.tsx",
+    ];
+    const offenders = surfaces.flatMap((surface) => {
+      const file = path.resolve(process.cwd(), surface);
+      return visibleLiterals(file).map((literal) => `${surface}: ${literal}`);
+    });
+    expect(offenders).toEqual([]);
   });
 });

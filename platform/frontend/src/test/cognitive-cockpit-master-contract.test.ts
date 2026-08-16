@@ -47,7 +47,7 @@ describe("00aa cognitive cockpit is the canonical Storybook and application surf
       "cognitive-cockpit",
       "cognitive-cockpit.stories.tsx",
     );
-    const app = read("src", "routes", "app.tsx");
+    const app = read("src", "routes", "panel.tsx");
     expect(story).toMatch(/import\s+\{?\s*CognitiveCockpitDashboard/u);
     expect(app).toMatch(
       /import\s+\{[^}]*CognitiveCockpitDashboard[^}]*\}\s+from\s+["']@\/components\/cognitive-cockpit["']/su,
@@ -56,9 +56,9 @@ describe("00aa cognitive cockpit is the canonical Storybook and application surf
   });
 
   it("removes the rejected AdaptiveShell from the active dashboard route only", () => {
-    const app = read("src", "routes", "app.tsx");
+    const app = read("src", "routes", "panel.tsx");
     const dashboardRoute =
-      /export function DashboardRoute\(\)[\s\S]*?(?=\/\*\s*-+\s*discovery)/u.exec(app)?.[0] ?? "";
+      /export function DashboardRoute\(\)[\s\S]*/u.exec(app)?.[0] ?? "";
     expect(dashboardRoute).toContain("<CognitiveCockpitDashboard");
     expect(dashboardRoute).not.toContain("<Shell");
     expect(dashboardRoute).not.toContain("<AdaptiveShell");

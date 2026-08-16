@@ -7,13 +7,13 @@
  */
 
 import {
+  Skeleton,
   SkeletonCard,
   SkeletonChart,
   SkeletonControl,
   SkeletonList,
   SkeletonTable,
-} from "@/components/ui";
-import { Skeleton } from "@/components/ui";
+} from "@/foundation";
 import { useContent } from "@/content";
 
 export function CognitiveCockpitSkeleton() {

@@ -25,6 +25,12 @@
  *
  * The one rule that matters most is the last: a decision with missing facts is
  * described as *unanswered*, never as failing. UNKNOWN is not false.
+ *
+ * This module carries its own copy, separately from the clean-room
+ * `@/domain/assistant`, which returns content ids instead. The two are not the
+ * same module on purpose - this one belongs to `AdaptiveAssistant` and the old
+ * component subtree, and duplicating the small amount of logic here keeps that
+ * subtree working unchanged while `/panel` reads copy from JSON exclusively.
  */
 
 import type { Decision, Snapshot } from "@/api/types";

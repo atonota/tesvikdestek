@@ -12,9 +12,7 @@
  * spend on a rail of links beside every card.
  */
 
-import type { IconName } from "@/components/icons";
-import { AppIcon } from "@/components/icons";
-import { SheetBody, SheetClose, SheetContent, SheetHeader, SheetTitle } from "@/components/ui";
+import { FoundationIcon, SheetBody, SheetClose, SheetContent, SheetHeader, SheetTitle } from "@/foundation";
 import { NavLink } from "react-router";
 
 import { resolveContent, useContent } from "@/content";
@@ -22,20 +20,19 @@ import { resolveContent, useContent } from "@/content";
 interface CommandDestination {
   readonly to: string;
   readonly contentId: string;
-  readonly icon: IconName;
 }
 
 const DESTINATIONS: readonly CommandDestination[] = [
-  { to: "/panel", contentId: "cockpit.drawer.nav.dashboard", icon: "dashboard" },
-  { to: "/degerlendirmeler", contentId: "cockpit.drawer.nav.decisions", icon: "decisions" },
-  { to: "/firsatlar", contentId: "cockpit.drawer.nav.opportunities", icon: "opportunities" },
-  { to: "/kaynaklar", contentId: "cockpit.drawer.nav.sources", icon: "sources" },
-  { to: "/organizasyon/hazirlik", contentId: "cockpit.drawer.nav.readiness", icon: "readiness" },
-  { to: "/olgunluk", contentId: "cockpit.drawer.nav.maturity", icon: "maturity" },
-  { to: "/operasyon/saglik", contentId: "cockpit.drawer.nav.health", icon: "health" },
-  { to: "/dosyalar", contentId: "cockpit.drawer.nav.files", icon: "files" },
-  { to: "/yetenekler", contentId: "cockpit.drawer.nav.capabilities", icon: "capabilities" },
-  { to: "/ayarlar/gorunum", contentId: "cockpit.drawer.nav.settings", icon: "settings" },
+  { to: "/panel", contentId: "cockpit.drawer.nav.dashboard" },
+  { to: "/degerlendirmeler", contentId: "cockpit.drawer.nav.decisions" },
+  { to: "/firsatlar", contentId: "cockpit.drawer.nav.opportunities" },
+  { to: "/kaynaklar", contentId: "cockpit.drawer.nav.sources" },
+  { to: "/organizasyon/hazirlik", contentId: "cockpit.drawer.nav.readiness" },
+  { to: "/olgunluk", contentId: "cockpit.drawer.nav.maturity" },
+  { to: "/operasyon/saglik", contentId: "cockpit.drawer.nav.health" },
+  { to: "/dosyalar", contentId: "cockpit.drawer.nav.files" },
+  { to: "/yetenekler", contentId: "cockpit.drawer.nav.capabilities" },
+  { to: "/ayarlar/gorunum", contentId: "cockpit.drawer.nav.settings" },
 ];
 
 export interface CognitiveCommandDrawerProps {
@@ -63,7 +60,7 @@ export function CognitiveCommandDrawer({
         <SheetTitle>{brand}</SheetTitle>
         <SheetClose asChild>
           <button type="button" className="cognitive-command-drawer__close" aria-label={closeLabel}>
-            <AppIcon name="close" />
+            <FoundationIcon name="close" />
           </button>
         </SheetClose>
       </SheetHeader>
@@ -81,7 +78,6 @@ export function CognitiveCommandDrawer({
                   .join(" ")
               }
             >
-              <AppIcon name={destination.icon} />
               <span>{resolveContent(destination.contentId)}</span>
             </NavLink>
           ))}

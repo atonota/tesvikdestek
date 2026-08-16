@@ -51,6 +51,13 @@ const publicModule = () => import("@/routes/public");
 const authModule = () => import("@/routes/auth");
 const appModule = () => import("@/routes/app");
 /**
+ * The W0 clean-room boundary: `/panel` and its session gate, each its own
+ * module loader so the route table never resolves them through `app.tsx` and
+ * its old visual component graph.
+ */
+const panelModule = () => import("@/routes/panel");
+const workspaceGateModule = () => import("@/routes/workspace-gate");
+/**
  * Two centres that carry their own stylesheet - and, for one of them, its code.
  *
  * They are separate modules rather than more exports of `app.tsx` for a reason
@@ -78,6 +85,8 @@ type AuthExport = keyof Awaited<ReturnType<typeof authModule>>;
 type AppExport = keyof Awaited<ReturnType<typeof appModule>>;
 type MediaExport = keyof Awaited<ReturnType<typeof mediaModule>>;
 type ProvidersExport = keyof Awaited<ReturnType<typeof providersModule>>;
+type PanelExport = keyof Awaited<ReturnType<typeof panelModule>>;
+type WorkspaceGateExport = keyof Awaited<ReturnType<typeof workspaceGateModule>>;
 
 const fromPublic = (name: PublicExport) => async () => ({
   Component: (await publicModule())[name] as React.ComponentType,
@@ -93,6 +102,12 @@ const fromMedia = (name: MediaExport) => async () => ({
 });
 const fromProviders = (name: ProvidersExport) => async () => ({
   Component: (await providersModule())[name] as React.ComponentType,
+});
+const fromPanel = (name: PanelExport) => async () => ({
+  Component: (await panelModule())[name] as React.ComponentType,
+});
+const fromWorkspaceGate = (name: WorkspaceGateExport) => async () => ({
+  Component: (await workspaceGateModule())[name] as React.ComponentType,
 });
 
 /* --------------------------------------------------------- route registry */
@@ -202,9 +217,9 @@ export const routes: RouteObject[] = [
        * past it.
        */
       {
-        lazy: fromApp("WorkspaceGate"),
+        lazy: fromWorkspaceGate("WorkspaceGate"),
         children: [
-          { path: "panel", lazy: fromApp("DashboardRoute") },
+          { path: "panel", lazy: fromPanel("DashboardRoute") },
           { path: "firsatlar", lazy: fromApp("OpportunitiesRoute") },
           { path: "firsatlar/:code", lazy: fromApp("OpportunityDetailRoute") },
           { path: "kaynaklar", lazy: fromApp("SourceRegistryRoute") },

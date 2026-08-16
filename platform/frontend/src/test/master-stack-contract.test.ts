@@ -359,14 +359,16 @@ describe("Phosphor is the icon set, and Lucide is absent", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("routes icons through one adapter rather than importing the set everywhere", () => {
-    const adapter = readSource("src", "components", "icons.tsx");
-    expect(adapter).toMatch(/@phosphor-icons\/react/u);
+  it("routes each visual generation through its own adapter rather than importing the set everywhere", () => {
+    const legacyAdapter = readSource("src", "components", "icons.tsx");
+    const cleanAdapter = readSource("src", "foundation", "icons.tsx");
+    expect(legacyAdapter).toMatch(/@phosphor-icons\/react/u);
+    expect(cleanAdapter).toMatch(/@phosphor-icons\/react/u);
     const importers = filesUnderSrc()
-      .filter((file) => file !== join(SRC, "components", "icons.tsx"))
       .filter((file) => /from\s+["']@phosphor-icons\/react/u.test(readFileSync(file, "utf8")))
-      .map((file) => file.replace(`${ROOT}/`, ""));
-    expect(importers).toEqual([]);
+      .map((file) => file.replace(`${ROOT}/`, ""))
+      .sort();
+    expect(importers).toEqual(["src/components/icons.tsx", "src/foundation/icons.tsx"]);
   });
 
   it("the shell's navigation renders real icons instead of typographic glyphs", () => {
@@ -441,7 +443,8 @@ describe("ECharts is real, tree-shaken and lazy", () => {
      * numbers for no gain. What must never be statically imported is anything
      * that pulls the engine in - the adapter and the section that renders it.
      */
-    const CHART_BEARING = /["'][^"']*components\/analytics\/(EChart|PortfolioAnalytics)/u;
+    const CHART_BEARING =
+      /["'](?:[^"']*components\/analytics\/(?:EChart|PortfolioAnalytics)|\.\/CognitiveChartCanvas)/u;
     const staticImporters = filesUnderSrc()
       .filter((file) => !file.startsWith(ANALYTICS))
       .filter((file) => {
@@ -453,8 +456,15 @@ describe("ECharts is real, tree-shaken and lazy", () => {
       .map((file) => file.replace(`${ROOT}/`, ""));
     expect(staticImporters).toEqual([]);
 
-    const app = readSource("src", "routes", "app.tsx");
-    expect(app).toMatch(/lazy\(\s*\(\)\s*=>\s*import\(\s*["'][^"']*components\/analytics/u);
+    const cockpitAnalytics = readSource(
+      "src",
+      "components",
+      "cognitive-cockpit",
+      "CognitiveAnalyticsPanel.tsx",
+    );
+    expect(cockpitAnalytics).toMatch(
+      /lazy\(\s*\(\)\s*=>\s*import\(\s*["']\.\/CognitiveChartCanvas["']/u,
+    );
   });
 
   it("is not re-exported from the shared component barrel", () => {

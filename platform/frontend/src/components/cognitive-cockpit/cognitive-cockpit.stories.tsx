@@ -12,7 +12,7 @@
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import type { Distribution } from "@/components/analytics/model";
+import type { Distribution } from "@/domain/analytics";
 import { resolveContent } from "@/content";
 
 import { CognitiveAccessScopePanel } from "./CognitiveAccessScopePanel";

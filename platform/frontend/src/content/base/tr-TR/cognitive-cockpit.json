@@ -2092,6 +2092,295 @@
         "kind": "repository-json",
         "ref": "cognitive-cockpit-v1"
       }
+    },
+    {
+      "id": "cockpit.gate.loading.session",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Oturum doğrulanıyor",
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.gate.loading.demo",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Demo yeniden kuruluyor",
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.gate.session_required.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Oturum gerekli",
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.gate.session_required.reason",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu ekran organizasyonunuza ait verileri gösterir ve yalnızca giriş yaptıktan sonra açılır. Giriş yaptığınızda buraya geri dönersiniz.",
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.gate.session_required.login_action",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Giriş yap",
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.gate.session_required.register_action",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Hesap oluştur",
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.gate.server_error.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Çalışma alanı açılamadı",
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.gate.server_error.heading",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Sunucu yanıt vermedi",
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.gate.server_error.footnote",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu bir oturum sorunu değildir ve verinizin boş olduğu anlamına gelmez; sunucu bu isteği yanıtlayamadı. Okunamayan veri bu ekranda sıfır olarak gösterilmez.",
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.gate.server_error.detail_summary",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Teknik ayrıntı",
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.action.retry",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Tekrar dene",
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.banner.partial.label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kısmi veri:",
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.offline.label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Çevrimdışı.",
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.offline.message_with_last_read",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Gösterilen veriler {{when}} tarihinde okundu. Kayıt işlemleri kuyruğa alınmaz; bağlantı gelince tekrar deneyin.",
+      "variables": ["when"],
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.offline.message_no_data",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Yeni veri okunamıyor. Kayıt işlemleri kuyruğa alınmaz; bağlantı gelince tekrar deneyin.",
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.provider.no_provider_reason",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu kurulumda bağlı bir yapay zekâ sağlayıcısı yok. Aşağıdaki öneriler ekrandaki verilerden kural ile üretilir; hiçbiri bir modele sorulmadı.",
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.suggestion.missing_facts.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "{{count}} kararda yanıtlanmamış olgu var",
+      "variables": ["count"],
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.suggestion.missing_facts.why",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Yüklenmiş {{total}} kararın {{count}} tanesinde en az bir olgu yanıtlanmamış. Yanıtlanmamış olgu olumsuz sayılmaz; motor bunu bilinmiyor olarak işler ve sonuç yetersiz veri çıkabilir.",
+      "variables": ["total", "count"],
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.suggestion.missing_facts.action_label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Eksik olguları tamamla",
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.suggestion.missing_snapshot.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "{{count}} kararın kaynak anlık görüntüsü yok",
+      "variables": ["count"],
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.suggestion.missing_snapshot.why",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Yüklenmiş kararlardan {{count}} tanesi bir mevzuat anlık görüntüsüne bağlı değil. Kaynağı olmayan bir karar denetlenemez.",
+      "variables": ["count"],
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.suggestion.missing_snapshot.action_label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kaynak kaydını aç",
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.suggestion.profile_gaps.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Profilde {{count}} olgu yanıtlanmamış",
+      "variables": ["count"],
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.suggestion.profile_gaps.why",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Şu olgular bilinmiyor: {{facts}}. Bunlar yanıtlanmadan uygunluk yalnızca yetersiz veri olarak sonuçlanabilir.",
+      "variables": ["facts"],
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.suggestion.profile_gaps.action_label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Profili aç",
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.suggestion.unfetched_sources.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "{{count}} kaynağın yakalanma zamanı bilinmiyor",
+      "variables": ["count"],
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.suggestion.unfetched_sources.why",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Yüklenmiş {{total}} kaynağın {{count}} tanesinde yakalanma zamanı boş. Tazeliği bilinmeyen bir kaynak güncel sayılmaz.",
+      "variables": ["total", "count"],
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
+    },
+    {
+      "id": "cockpit.suggestion.unfetched_sources.action_label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kaynak kaydını aç",
+      "source": { "kind": "repository-json", "ref": "cognitive-cockpit-v1" }
     }
   ]
 }

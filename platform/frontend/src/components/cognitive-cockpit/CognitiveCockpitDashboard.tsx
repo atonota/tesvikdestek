@@ -15,9 +15,7 @@
 
 import { useMemo, useState, type ReactNode } from "react";
 
-import { Button, Sheet } from "@/components/ui";
-import { Badge, EmptyState, ErrorState, OfflineBanner, PartialDataNotice } from "@/components";
-import { AppIcon } from "@/components/icons";
+import { Badge, Button, EmptyState, ErrorState, OfflineBanner, PartialDataNotice, Sheet } from "@/foundation";
 import { useUiStore } from "@/store/ui";
 import { resolveContent, useContent } from "@/content";
 
@@ -115,7 +113,7 @@ function CockpitStaleBanner({
   });
   const refreshLabel = useContent("cockpit.action.refresh");
   return (
-    <div className="dt-banner dt-banner--stale" role="status">
+    <div className="fd-banner fd-banner--stale" role="status">
       <span>
         {notice}
         {updatedAt ? lastRead : ""}
@@ -133,9 +131,9 @@ function CockpitPermissionBlock({ action }: { readonly action: string }) {
   const title = useContent("cockpit.state.permission.title");
   const reason = useContent("cockpit.state.permission.action_reason", { values: { action } });
   return (
-    <div className="dt-state dt-state--denied" role="alert">
-      <h3 className="dt-state__title">{title}</h3>
-      <p className="dt-state__reason">{reason}</p>
+    <div className="fd-state fd-state--denied" role="alert">
+      <h3 className="fd-state__title">{title}</h3>
+      <p className="fd-state__reason">{reason}</p>
     </div>
   );
 }
@@ -203,9 +201,16 @@ export function CognitiveCockpitDashboard({
   const freshnessReadAt = useContent("cockpit.identity.freshness_read_at", {
     values: { readAt: readAt ?? "" },
   });
+  const partialLabel = useContent("cockpit.banner.partial.label");
   const partialWhat = useContent("cockpit.banner.partial.what");
   const partialBecause = useContent("cockpit.banner.partial.because");
   const permissionAction = useContent("cockpit.state.permission.view_action");
+  const offlineLabel = useContent("cockpit.offline.label");
+  const offlineMessageWithLastRead = useContent("cockpit.offline.message_with_last_read", {
+    values: { when: updatedAt ? new Date(updatedAt).toLocaleString("tr-TR") : "" },
+  });
+  const offlineMessageNoData = useContent("cockpit.offline.message_no_data");
+  const retryLabel = useContent("cockpit.action.retry");
 
   return (
     <div
@@ -215,10 +220,7 @@ export function CognitiveCockpitDashboard({
       data-reduced-motion={reducedMotion ? "true" : "false"}
     >
       <div className="cognitive-cockpit__identity" aria-label={identityAriaLabel}>
-        <span className="cognitive-cockpit__org">
-          <AppIcon name="organisation" />
-          {identity.organisationLabel}
-        </span>
+        <span className="cognitive-cockpit__org">{identity.organisationLabel}</span>
         <span className="cognitive-cockpit__role">{identity.roleLabel}</span>
         {identity.isDemo ? (
           <Badge tone="warning" srDescription={demoBadgeSrDescription}>
@@ -268,10 +270,13 @@ export function CognitiveCockpitDashboard({
           />
         ) : null}
         {state === "offline" ? (
-          <OfflineBanner lastUpdated={updatedAt ? new Date(updatedAt).toISOString() : null} />
+          <OfflineBanner
+            label={offlineLabel}
+            message={updatedAt ? offlineMessageWithLastRead : offlineMessageNoData}
+          />
         ) : null}
         {state === "partial" ? (
-          <PartialDataNotice what={partialWhat} because={partialBecause} />
+          <PartialDataNotice label={partialLabel} what={partialWhat} because={partialBecause} />
         ) : null}
 
         {effectiveState === "loading" ? <CognitiveCockpitSkeleton /> : null}
@@ -280,7 +285,7 @@ export function CognitiveCockpitDashboard({
           <ErrorState
             title={copy.title}
             message={errorMessage ?? copy.reason}
-            {...(onRetry ? { onRetry } : {})}
+            {...(onRetry ? { onRetry, retryLabel } : {})}
           />
         ) : null}
         {effectiveState === "empty" ? <EmptyState title={copy.title} reason={copy.reason} /> : null}
