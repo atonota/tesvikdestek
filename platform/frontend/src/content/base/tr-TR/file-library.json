@@ -166,7 +166,7 @@
       "revision": 1,
       "status": "published",
       "kind": "text",
-      "value": "Son okunan liste {when} tarihine ait.",
+      "value": "Son okunan liste {{when}} tarihine ait.",
       "variables": ["when"],
       "source": { "kind": "repository-json", "ref": "file-library-v1" }
     },
@@ -187,7 +187,7 @@
       "revision": 1,
       "status": "published",
       "kind": "text",
-      "value": "Kayıtlı dosya sayısı: {count}",
+      "value": "Kayıtlı dosya sayısı: {{count}}",
       "variables": ["count"],
       "source": { "kind": "repository-json", "ref": "file-library-v1" }
     },

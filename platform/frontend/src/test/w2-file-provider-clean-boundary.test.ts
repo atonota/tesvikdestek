@@ -51,6 +51,22 @@ describe("W2 clean file and provider routes", () => {
     }
   });
 
+  it("uses the renderer's double-brace syntax for every declared JSON variable", () => {
+    for (const path of [
+      "src/content/base/tr-TR/file-library.json",
+      "src/content/base/tr-TR/ai-provider-center.json",
+    ]) {
+      const bundle = JSON.parse(source(path)) as {
+        entries: Array<{ id: string; value: string; variables?: string[] }>;
+      };
+      for (const entry of bundle.entries) {
+        for (const variable of entry.variables ?? []) {
+          expect(entry.value, `${entry.id}:${variable}`).toContain(`{{${variable}}}`);
+        }
+      }
+    }
+  });
+
   it("removes the rejected media and provider visual implementation", () => {
     for (const path of forbiddenLegacyFiles) expect(existsSync(join(root, path)), path).toBe(false);
   });
