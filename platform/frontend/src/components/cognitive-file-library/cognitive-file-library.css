@@ -1,0 +1,153 @@
+/**
+ * The cognitive file library's own stylesheet.
+ *
+ * Adaptive-fluid: every size below is a `clamp()` inside a `@container` query
+ * keyed to `.cognitive-file-library`'s own inline size, never a media query
+ * tied to the screen. Radii stay at or under `var(--fd-radius-lg)` (12px).
+ * Every colour is a `var(--fd-*)` semantic token. No visible text drops below
+ * `1rem`.
+ */
+
+.cognitive-file-library {
+  container-type: inline-size;
+  container-name: cognitive-file-library;
+
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  min-inline-size: 0;
+  background: var(--fd-color-bg);
+  color: var(--fd-color-fg);
+  font-family: var(--fd-font-sans);
+  font-size: max(1rem, var(--fd-font-size-base));
+  font-weight: var(--fd-font-weight-regular);
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+.cognitive-file-library__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cognitive-file-library__title {
+  font-size: clamp(1.25rem, 2vw + 1rem, 1.75rem);
+  font-weight: var(--fd-font-weight-semibold, 600);
+  margin: 0;
+}
+
+.cognitive-file-library__lede {
+  color: var(--fd-color-fg-muted);
+  margin: 0;
+  max-inline-size: 60ch;
+}
+
+.cognitive-file-library__summary {
+  font-size: var(--fd-font-size-sm, 1rem);
+  color: var(--fd-color-fg-muted);
+}
+
+.cognitive-file-library__section-title {
+  font-size: var(--fd-font-size-sm, 1rem);
+  font-weight: var(--fd-font-weight-semibold, 600);
+  margin: 0 0 0.5rem 0;
+}
+
+.cognitive-file-library__storage,
+.cognitive-file-library__blocked {
+  border: 1px solid var(--fd-color-line);
+  border-radius: var(--fd-radius-lg, 12px);
+  background: var(--fd-color-surface);
+  padding: clamp(0.75rem, 1.5vw, 1.25rem);
+}
+
+.cognitive-file-library__storage-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.cognitive-file-library__storage-figure {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  border: 1px solid var(--fd-color-line);
+  border-radius: var(--fd-radius, 8px);
+  padding: 0.75rem;
+}
+
+.cognitive-file-library__storage-figure-label {
+  font-size: var(--fd-font-size-sm, 1rem);
+  color: var(--fd-color-fg-muted);
+}
+
+.cognitive-file-library__storage-figure-value {
+  font-size: clamp(1rem, 1vw + 0.75rem, 1.25rem);
+  font-weight: var(--fd-font-weight-semibold, 600);
+}
+
+.cognitive-file-library__targets {
+  list-style: none;
+  margin: 0.75rem 0 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cognitive-file-library__target {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: var(--fd-radius, 8px);
+}
+
+.cognitive-file-library__blocked-intro {
+  color: var(--fd-color-fg-muted);
+  margin: 0 0 0.75rem 0;
+}
+
+.cognitive-file-library__blocked-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cognitive-file-library__blocked-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  border-radius: var(--fd-radius, 8px);
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--fd-color-line);
+}
+
+.cognitive-file-library__blocked-item:last-child {
+  border-bottom: none;
+}
+
+.cognitive-file-library__skeleton {
+  border-radius: var(--fd-radius-lg, 12px);
+}
+
+@container cognitive-file-library (min-width: 36rem) {
+  .cognitive-file-library__storage-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cognitive-file-library__target {
+    flex-wrap: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cognitive-file-library * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

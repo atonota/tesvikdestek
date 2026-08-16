@@ -58,33 +58,24 @@ const appModule = () => import("@/routes/app");
 const panelModule = () => import("@/routes/panel");
 const workspaceGateModule = () => import("@/routes/workspace-gate");
 /**
- * Two centres that carry their own stylesheet - and, for one of them, its code.
+ * The W2 clean-room boundary: `/dosyalar` and `/ayarlar/yapay-zeka`, each its
+ * own module loader so the route table never resolves them through the
+ * rejected visual component graph.
  *
- * They are separate modules rather than more exports of `app.tsx` for a reason
- * that is measured rather than aesthetic: each imports a stylesheet the eleven
- * other workspace screens have no use for, and kept in `app.tsx` those rules
- * would land in the chunk every signed-in visitor downloads on their way to the
- * dashboard.
- *
- * The two are not symmetrical, and saying they were would be a claim the build
- * contradicts. **Provider connections are lazy in both halves**: the subsystem
- * is not re-exported from `@/components`, so its JavaScript *and* its CSS reach
- * only the person who opens `/ayarlar/yapay-zeka`, and
- * `build-contract.test.ts` proves the JavaScript half against the built entry
- * chunk. **The media library is lazy in its stylesheet only**: `@/components`
- * re-exports `./media`, every route imports that barrel, so the media
- * components are in the shared component chunk whatever this route table does.
- * That re-export is a pinned contract, not an oversight, and this comment
- * records its cost rather than pretending it away.
+ * Both stay lazy in the same way panel and workspace-gate do: each imports
+ * its own package's stylesheet (`cognitive-file-library.css`,
+ * `cognitive-provider-center.css`), and neither package is re-exported from
+ * `@/components`, so both the JavaScript and the CSS reach only the person
+ * who opens the corresponding route.
  */
-const mediaModule = () => import("@/routes/media");
-const providersModule = () => import("@/routes/providers");
+const filesModule = () => import("@/routes/files");
+const aiProvidersModule = () => import("@/routes/ai-providers");
 
 type PublicExport = keyof Awaited<ReturnType<typeof publicModule>>;
 type AuthExport = keyof Awaited<ReturnType<typeof authModule>>;
 type AppExport = keyof Awaited<ReturnType<typeof appModule>>;
-type MediaExport = keyof Awaited<ReturnType<typeof mediaModule>>;
-type ProvidersExport = keyof Awaited<ReturnType<typeof providersModule>>;
+type FilesExport = keyof Awaited<ReturnType<typeof filesModule>>;
+type AiProvidersExport = keyof Awaited<ReturnType<typeof aiProvidersModule>>;
 type PanelExport = keyof Awaited<ReturnType<typeof panelModule>>;
 type WorkspaceGateExport = keyof Awaited<ReturnType<typeof workspaceGateModule>>;
 
@@ -97,11 +88,11 @@ const fromAuth = (name: AuthExport) => async () => ({
 const fromApp = (name: AppExport) => async () => ({
   Component: (await appModule())[name] as React.ComponentType,
 });
-const fromMedia = (name: MediaExport) => async () => ({
-  Component: (await mediaModule())[name] as React.ComponentType,
+const fromFiles = (name: FilesExport) => async () => ({
+  Component: (await filesModule())[name] as React.ComponentType,
 });
-const fromProviders = (name: ProvidersExport) => async () => ({
-  Component: (await providersModule())[name] as React.ComponentType,
+const fromAiProviders = (name: AiProvidersExport) => async () => ({
+  Component: (await aiProvidersModule())[name] as React.ComponentType,
 });
 const fromPanel = (name: PanelExport) => async () => ({
   Component: (await panelModule())[name] as React.ComponentType,
@@ -235,12 +226,12 @@ export const routes: RouteObject[] = [
           { path: "olgunluk", lazy: fromApp("MaturityRoute") },
           { path: "operasyon/saglik", lazy: fromApp("OpsHealthRoute") },
           { path: "yetenekler", lazy: fromApp("CapabilityMatrixRoute") },
-          { path: "dosyalar", lazy: fromMedia("MediaRoute") },
+          { path: "dosyalar", lazy: fromFiles("FilesRoute") },
           { path: "ayarlar", element: <Navigate to="/ayarlar/gorunum" replace /> },
           { path: "ayarlar/gorunum", lazy: fromApp("AppearanceSettingsRoute") },
           { path: "ayarlar/erisilebilirlik", lazy: fromApp("AccessibilitySettingsRoute") },
           { path: "ayarlar/guvenlik", lazy: fromApp("SecuritySettingsRoute") },
-          { path: "ayarlar/yapay-zeka", lazy: fromProviders("ProviderConnectionsRoute") },
+          { path: "ayarlar/yapay-zeka", lazy: fromAiProviders("AiProvidersRoute") },
         ],
       },
 

@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 1,
+  "namespace": "ai-provider-center",
+  "locale": "tr-TR",
+  "revision": 1,
+  "status": "published",
+  "source": {
+    "kind": "repository-json",
+    "ref": "ai-provider-center-v1"
+  },
+  "entries": [
+    {
+      "id": "ai_provider_center.page.title",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Yapay zekâ sağlayıcıları",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.lede",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Her sağlayıcının resmî olarak yayımladığı bağlantı yolları burada listelenir. Bir sunucu ucu olmadığı için hiçbir yöntem kurulamaz; her biri gerekçesiyle gösterilir.",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.state.loading.title",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Katalog yükleniyor",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.state.loading.reason",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Sağlayıcı kataloğu okunuyor.",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.state.empty.title",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Katalog boş",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.state.empty.reason",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu kurulumda tanımlı bir sağlayıcı yok.",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.state.error.title",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Katalog okunamadı",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.state.error.reason",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Sağlayıcı kataloğu okunurken bir hata oluştu.",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.state.permission.title",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu merkezi görüntüleme yetkiniz yok",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.state.permission.reason",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Oturumunuz bu ekranı görüntüleme iznine sahip değil.",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.state.offline.title",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Çevrimdışı",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.state.offline.reason",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bağlantı geri gelene kadar katalog güncellenemez.",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.state.success.title",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Katalog hazır",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.state.success.reason",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Katalog güncel.",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.offline.label",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Çevrimdışı.",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.offline.message",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Son okunan katalog {when} tarihine ait.",
+      "variables": ["when"],
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.action.retry",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Yeniden dene",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.catalog.heading",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Sağlayıcı kataloğu",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.catalog.method.available",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kullanılabilir",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.catalog.method.unavailable",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kullanılamaz",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.catalog.docs_link",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Resmî belge",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.catalog.docs_link_external_note",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "yeni sekmede açılır",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.blocked.heading",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bağlantı için sunucuda olması gerekenler",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    },
+    {
+      "id": "ai_provider_center.blocked.intro",
+      "namespace": "ai-provider-center",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Aşağıdaki yetenekler arayüz tarafında hazırdır ve sunucu tarafında yoktur. Bu yüzden hiçbir sağlayıcı bağlanamaz.",
+      "source": { "kind": "repository-json", "ref": "ai-provider-center-v1" }
+    }
+  ]
+}

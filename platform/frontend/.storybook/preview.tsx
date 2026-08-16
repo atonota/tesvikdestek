@@ -13,18 +13,14 @@ import "../src/design/tailwind.css";
 import "../src/design/tokens.css";
 import "../src/design/base.css";
 import "../src/design/components.css";
-// The grid and media stylesheets were missing here, so grid-backed stories
-// rendered unstyled in Storybook while looking correct in the app.
+// The grid stylesheet was missing here, so grid-backed stories rendered
+// unstyled in Storybook while looking correct in the app. The W2 clean-room
+// file library and provider center packages import their own stylesheets
+// directly, so this file no longer needs `media.css` or
+// `provider-connections.css` — both were deleted with the rejected visual
+// implementation.
 import "../src/design/data-grid.css";
 import "../src/design/adaptive.css";
-import "../src/design/media.css";
-// The application does not need this line: `/ayarlar/yapay-zeka` loads
-// `provider-connections.css` through its own lazy route module. Storybook has
-// no application route modules, so the sheet is imported globally here, which
-// is what lets the provider subsystem's stories render under production rules.
-// This import describes Storybook only and claims nothing about the
-// application's eager bundle - build-contract owns that measured claim.
-import "../src/design/provider-connections.css";
 
 /**
  * Every story renders inside a router: several components link, and a story

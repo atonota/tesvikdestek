@@ -16,9 +16,11 @@ function storyFiles(directory: string): string[] {
 }
 
 describe("W1 legacy Storybook purge", () => {
-  it("keeps only the new cognitive cockpit master story", () => {
+  it("keeps only clean-room master stories", () => {
     expect(storyFiles(srcRoot).sort()).toEqual([
       "src/components/cognitive-cockpit/cognitive-cockpit.stories.tsx",
+      "src/components/cognitive-file-library/cognitive-file-library.stories.tsx",
+      "src/components/cognitive-provider-center/cognitive-provider-center.stories.tsx",
     ]);
   });
 });

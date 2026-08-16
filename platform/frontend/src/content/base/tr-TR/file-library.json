@@ -1,0 +1,255 @@
+{
+  "schemaVersion": 1,
+  "namespace": "file-library",
+  "locale": "tr-TR",
+  "revision": 1,
+  "status": "published",
+  "source": {
+    "kind": "repository-json",
+    "ref": "file-library-v1"
+  },
+  "entries": [
+    {
+      "id": "file_library.page.title",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Dosya kütüphanesi",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.lede",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kütüphane bu ekrana verilen satırlar üzerinde çalışır. Bir sunucu ucu olmadığı için yükleme, indirme ve kalıcı üstveri kapalıdır; her biri aşağıda gerekçesiyle listelenir.",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.state.loading.title",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kütüphane yükleniyor",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.state.loading.reason",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Dosya listesi okunuyor.",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.state.empty.title",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kütüphane boş",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.state.empty.reason",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu kiracıda henüz kayıtlı bir dosya yok.",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.state.error.title",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kütüphane okunamadı",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.state.error.reason",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Dosya listesi okunurken bir hata oluştu.",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.state.permission.title",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu kütüphaneyi görüntüleme yetkiniz yok",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.state.permission.reason",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Oturumunuz bu ekranı görüntüleme iznine sahip değil.",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.state.offline.title",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Çevrimdışı",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.state.offline.reason",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bağlantı geri gelene kadar liste güncellenemez.",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.state.success.title",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kütüphane hazır",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.state.success.reason",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Liste güncel.",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.offline.label",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Çevrimdışı.",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.offline.message",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Son okunan liste {when} tarihine ait.",
+      "variables": ["when"],
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.action.retry",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Yeniden dene",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.summary.asset_count",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kayıtlı dosya sayısı: {count}",
+      "variables": ["count"],
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.storage.heading",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Depolama",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.storage.used_label",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kullanılan alan (bayt)",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.storage.quota_label",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kota (bayt)",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.storage.value_dash",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "—",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.blocked.heading",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bugün yapılamayanlar",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    },
+    {
+      "id": "file_library.blocked.intro",
+      "namespace": "file-library",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Aşağıdaki yetenekler arayüz tarafında hazırdır ve sunucu tarafında yoktur. Hiçbiri taklit edilmez.",
+      "source": { "kind": "repository-json", "ref": "file-library-v1" }
+    }
+  ]
+}

@@ -11,12 +11,20 @@
  * `ApprovalForm` - are exported from the barrel but deliberately not counted
  * here; padding the number would defeat its purpose.
  *
- * Two subsystems sit outside the count for the same reason: the data grid
- * (`components/data-grid`) and the media library (`components/media`). Each has
- * one stable public surface exported from `@/components`, and each declares its
- * own capability ledger rather than borrowing this one. The media subsystem is
- * rendered by `/dosyalar`, and the provider connection centre - reached by its
- * own path rather than through this barrel - by `/ayarlar/yapay-zeka`.
+ * One subsystem sits outside the count for the same reason: the data grid
+ * (`components/data-grid`). It has one stable public surface exported from
+ * `@/components` and declares its own capability ledger rather than borrowing
+ * this one.
+ *
+ * The media library and the provider connection centre were previously
+ * registered here as subsystems too. W2 removed every visual component from
+ * both packages - `src/components/media` and
+ * `src/components/provider-connections` are now logic-only (types,
+ * capability ledgers, state machines) - and replaced them with the
+ * clean-room `CognitiveFileLibrary` and `CognitiveProviderCenter` masters,
+ * which render `/dosyalar` and `/ayarlar/yapay-zeka` respectively. Neither
+ * package is registered as a subsystem barrel below; there is nothing left
+ * in either one for this registry to classify.
  */
 
 export const COMPONENT_LEVELS = {
@@ -185,73 +193,40 @@ export const COMPONENT_SURFACES: Readonly<Record<string, ComponentSurface>> =
 /* ------------------------------------------- the subsystems, classified too */
 
 /**
- * The five barrels whose components are outside the 75 and inside the product.
+ * The three barrels whose components are outside the 75 and inside the product.
  *
  * The classification above was exhaustive over the wrong universe. It covered
- * the 75 core names and stopped, which meant the data grid, the adaptive shell,
- * the form layer, the media library and the provider connection centre - five
- * finished subsystems, twenty-four components, two whole product routes - were
- * not classified at all. Nothing recorded which of them the product renders and
- * which of them only Storybook does, so "is this subsystem shipped?" was again
- * a question with no mechanical answer.
+ * the 75 core names and stopped, which meant the data grid, the adaptive shell
+ * and the form layer were not classified at all. Nothing recorded which of
+ * them the product renders and which of them only Storybook does, so "is this
+ * subsystem shipped?" was again a question with no mechanical answer.
  *
  * `route-registry.test.ts` reads the real export list off each of these barrels
  * and fails if a PascalCase component export is missing from the map below, in
  * either direction. Adding a component to a subsystem is therefore the same
  * two-line act as adding one to the core system: export it, and say where it
  * appears.
+ *
+ * The media library and the provider connection centre are deliberately not
+ * listed here - see the comment above `COMPONENT_LEVELS` for why.
  */
-export const SUBSYSTEM_BARRELS = [
-  "data-grid",
-  "adaptive",
-  "forms",
-  "media",
-  "provider-connections",
-] as const;
+export const SUBSYSTEM_BARRELS = ["data-grid", "adaptive", "forms"] as const;
 
 /**
- * Where each subsystem component appears, and why the Storybook half is not a
- * backlog.
+ * Where each subsystem component appears.
  *
- * 6 of these are `storybook` - two media names, three provider names and one
- * scroll region - and each one is a deliberate refusal rather than an
- * unfinished screen:
- *
- *   `MediaDetails`, `MediaGovernancePanel` need a real asset. There is no media
- *       table and no storage adapter, so mounting them would mean inventing a
- *       file to describe - a size, a hash, a scan verdict - which is precisely
- *       the fabrication `/dosyalar` exists to avoid.
- *   `ConnectionHealthPanel`, `RoutingPolicyBuilder`, `ProviderAuditTimeline`
- *       need a real connection: a credential store, a health prober and an
- *       audit log the backend does not have.
- *   `ProviderComparison` is a scroll region that needs a keyboard fix in the
- *       component itself before it can go on a route; working around that in a
- *       route would hide the defect rather than fix it.
- *
- * That is the whole Storybook half: 2 + 3 + 1, and no other name belongs in it.
- * The digit above is checked against the map by `route-registry.test.ts`, which
- * counts the `storybook` values rather than trusting this sentence.
- *
- * `SecretField` is the one `route-gated` name, and both halves of that word are
- * measurements rather than policy. Reachable: `ConnectionWizard` renders it and
- * `/ayarlar/yapay-zeka` renders the wizard, which the test proves by following
- * the import graph rather than by being told. Gated: that route injects
- * `NO_BACKEND_CAPABILITIES`, whose `backend` list is empty, and every method in
- * the provider catalogue declares a `requires` entry - so `methodOfferability`
- * refuses every connection method, every method radio in the wizard renders
- * disabled with its reason, and the verification step that holds the secret
- * field cannot be reached by an operator today.
- *
- * That is a missing server, not a missing component and not a missing provider
- * implementation: there is no credential store, no OAuth broker and no gateway
- * for a typed key to go to. The correct response is therefore neither to mount
- * the field behind a fake connection nor to call it Storybook-only, but to say
- * exactly this - which is what the third value is for. Nothing here enables a
- * connection, and no fake one is to be introduced to make the classification
- * simpler.
- *
- * `FolderTree` is `route` for the same reason, through `MediaOrganizer`, which
- * `/dosyalar` renders with no folders and no write callback.
+ * The media library and the provider connection centre used to be registered
+ * here too - `MediaLibrary`, `MediaUploadPanel`, `MediaStoragePanel`,
+ * `MediaOrganizer`, `FolderTree`, `MediaDetails`, `MediaGovernancePanel`,
+ * `ProviderCatalogView`, `DataRoutingDisclosure`, `ConnectionWizard`,
+ * `ConnectionInventory`, `SecretField`, `ProviderComparison`,
+ * `ConnectionHealthPanel`, `RoutingPolicyBuilder`, `ProviderAuditTimeline` -
+ * and are gone with the rejected visual implementation those names belonged
+ * to. `/dosyalar` and `/ayarlar/yapay-zeka` now render the clean-room
+ * `CognitiveFileLibrary` and `CognitiveProviderCenter` masters instead, which
+ * are registered separately - see `COGNITIVE_COCKPIT_DASHBOARD` below for how
+ * a master surface outside the primitives/composites/patterns/shells/domain/
+ * templates ladder is named in this file.
  */
 export const SUBSYSTEM_COMPONENT_SURFACES: Readonly<Record<string, ComponentSurface>> = {
   // data-grid
@@ -269,24 +244,6 @@ export const SUBSYSTEM_COMPONENT_SURFACES: Readonly<Record<string, ComponentSurf
   AppForm: "route",
   SelectField: "route",
   TextField: "route",
-  // media
-  MediaLibrary: "route",
-  MediaUploadPanel: "route",
-  MediaStoragePanel: "route",
-  MediaOrganizer: "route",
-  FolderTree: "route",
-  MediaDetails: "storybook",
-  MediaGovernancePanel: "storybook",
-  // provider-connections
-  ProviderCatalogView: "route",
-  DataRoutingDisclosure: "route",
-  ConnectionWizard: "route",
-  ConnectionInventory: "route",
-  SecretField: "route-gated",
-  ProviderComparison: "storybook",
-  ConnectionHealthPanel: "storybook",
-  RoutingPolicyBuilder: "storybook",
-  ProviderAuditTimeline: "storybook",
 };
 
 /**
