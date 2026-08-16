@@ -288,7 +288,7 @@ function ShellDrawer({
 const NOTIFICATIONS_REASON_ID = "dt-shell-notifications-reason";
 
 export interface ShellNotificationsTriggerProps {
-  readonly count?: number;
+  readonly count?: number | undefined;
 }
 
 export function ShellNotificationsTrigger({ count }: ShellNotificationsTriggerProps) {
