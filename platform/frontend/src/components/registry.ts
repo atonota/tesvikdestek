@@ -302,6 +302,19 @@ export const CLASSIFIED_COMPONENT_SURFACES: Readonly<Record<string, ComponentSur
   ...SUBSYSTEM_COMPONENT_SURFACES,
 };
 
+/**
+ * The cognitive cockpit, registered outside the 75-component count.
+ *
+ * `src/components/cognitive-cockpit` is a master *surface* - one dashboard and
+ * its own chrome - rather than a member of the primitives/composites/patterns/
+ * shells/domain/templates ladder above, so it is named here rather than folded
+ * into `COMPONENT_LEVELS` or `SUBSYSTEM_COMPONENT_SURFACES`, both of which are
+ * checked for exact equality against their own barrels elsewhere. It renders
+ * `/panel` and is registered before its skeleton is checked in
+ * `skeleton-map.ts`.
+ */
+export const COGNITIVE_COCKPIT_DASHBOARD = "CognitiveCockpitDashboard" as const;
+
 /** The six states every pattern/page layer must be able to show. */
 export const DOCUMENTED_STATES = [
   "loading",

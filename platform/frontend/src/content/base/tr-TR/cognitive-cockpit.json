@@ -1,0 +1,2097 @@
+{
+  "schemaVersion": 1,
+  "namespace": "cognitive-cockpit",
+  "locale": "tr-TR",
+  "revision": 1,
+  "status": "published",
+  "source": {
+    "kind": "repository-json",
+    "ref": "cognitive-cockpit-v1"
+  },
+  "entries": [
+    {
+      "id": "cockpit.page.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kokpit",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.header.menu.open",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Menüyü aç",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.header.search.label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kokpit içinde ara",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.header.notifications.label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bildirimler",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.action.run_evaluation",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Değerlendirmeyi çalıştır",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.analytics.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Analiz",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.evidence.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Eksik kanıt",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.audit.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Denetim izi",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.catalog.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kaynak ve katalog",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.context.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bağlam",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.access.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Yetki kapsamı",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.loading.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kokpit yükleniyor",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.empty.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Henüz veri yok",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.no_result.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Sonuç yok",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.error.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kokpit yüklenemedi",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.partial.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kısmi veri",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.permission.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Yetki gerekli",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.offline.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Çevrimdışı",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.stale.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bayat kaynak",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.loading.reason",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kararlar, programlar ve kaynaklar okunuyor.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.empty.reason",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu kurum için kayıtlı bir karar, program veya kaynak bulunmuyor.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.no_result.reason",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Arama terimiyle eşleşen bir kayıt bulunamadı.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.error.reason",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Sunucudan okuma yapılamadı.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.partial.reason",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bazı kaynaklar okunamadı; sıfır olarak gösterilmez.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.success.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Güncel",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.success.reason",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Tüm okumalar tamamlandı.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.permission.reason",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu veriler için oturumunuzun yetkisi yok.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.offline.reason",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Tarayıcı ağa bağlı değil; önbellekteki veri gösteriliyor.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.stale.reason",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kaynak kütüğü yakın zamanda yenilenmedi.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.permission.action_reason",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "{{action}} için oturumunuzun yetkisi yok.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      },
+      "variables": [
+        "action"
+      ]
+    },
+    {
+      "id": "cockpit.state.permission.view_action",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu kokpiti görüntülemek",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.state.stale.notice",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kaynak kütüğü son 15 dakikadır yenilenmedi.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.identity.aria_label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kurum ve rol",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.badge.demo",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Demo",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.badge.demo_sr",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu oturum bir arayüz demosudur; veriler örnektir ve sunucuya hiçbir kayıt yazılmaz.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.identity.freshness",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "{{org}} · {{role}}",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      },
+      "variables": [
+        "org",
+        "role"
+      ]
+    },
+    {
+      "id": "cockpit.identity.freshness_read_at",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": " · {{readAt}}'de okundu",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      },
+      "variables": [
+        "readAt"
+      ]
+    },
+    {
+      "id": "cockpit.identity.fallback_org",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kurum",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.identity.role.superadmin",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Süper yönetici",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.identity.role.user",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kullanıcı",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.banner.stale.last_read",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": " (son okuma: {{when}})",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      },
+      "variables": [
+        "when"
+      ]
+    },
+    {
+      "id": "cockpit.action.refresh",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Yenile",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.banner.partial.what",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bazı kartlar tam gösterilemiyor.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.banner.partial.because",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "En az bir okuma başarısız oldu. Okunamayan bir veri sıfır sayılmaz.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.data.reading",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "okunuyor",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.data.read_failed",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "okunamadı",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.header.brand.tile",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "DT",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.header.brand.word",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "DestekTeşvik",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.header.search.placeholder",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Karar, program veya kaynak ara",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.header.search.close",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Aramayı kapat",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.header.search.no_result",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Sonuç yok.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.header.search.trigger",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Ara",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.header.notifications.label_with_count",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bildirimler, {{count}} yeni",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      },
+      "variables": [
+        "count"
+      ]
+    },
+    {
+      "id": "cockpit.drawer.aria_label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Uygulama menüsü",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.drawer.close",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Menüyü kapat",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.drawer.nav.aria_label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Uygulama gezinmesi",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.drawer.identity",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "{{org}} · {{role}}",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      },
+      "variables": [
+        "org",
+        "role"
+      ]
+    },
+    {
+      "id": "cockpit.drawer.nav.dashboard",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kokpit",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.drawer.nav.decisions",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kararlar",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.drawer.nav.opportunities",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Fırsatlar",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.drawer.nav.sources",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kaynaklar",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.drawer.nav.readiness",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Hazırlık",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.drawer.nav.maturity",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Olgunluk",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.drawer.nav.health",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Sağlık",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.drawer.nav.files",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Dosyalar",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.drawer.nav.capabilities",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Yetenekler",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.drawer.nav.settings",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Ayarlar",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.drawer.brand",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "DestekTeşvik",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.account.trigger_aria_label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Hesap menüsü, {{org}}, {{role}}",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      },
+      "variables": [
+        "org",
+        "role"
+      ]
+    },
+    {
+      "id": "cockpit.account.settings",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Ayarlar",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.account.logout",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Çıkış yap",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.account.logging_out",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Çıkış yapılıyor…",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.access.tenant_label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kiracı",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.access.role_label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Rol",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.access.role_demo_suffix",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": " (demo)",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.access.approval_label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Onay yetkisi",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.access.approval_reason",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "bu istemciye raporlanmıyor",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.access.audit_label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Denetim izi",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.access.audit_reason",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "yetki dışı",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.access.financial_label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Finansal etki",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.access.financial_reason",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "ölçülemiyor",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.access.note",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Gerçek RBAC bu kurulumda tanımsız; kiracı ve rol yalnızca bu oturumun demo bağlamını yansıtır.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.analytics.tabs_aria_label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Analiz görünümü",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.analytics.table.reading",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "okunuyor…",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.analytics.table.read_failed",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "okunamadı: {{reason}}",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      },
+      "variables": [
+        "reason"
+      ]
+    },
+    {
+      "id": "cockpit.analytics.table.empty",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "kayıt yok",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.analytics.table.decision_column",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Karar",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.analytics.caption",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Program grubu, karar sonucu ve kaynak inceleme durumuna göre karar sayısı",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.analytics.tab.portfolio",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Portföy",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.analytics.tab.outcomes",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Sonuç",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.analytics.tab.evidence",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kanıt",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.audit.status",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "listelenemiyor",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.audit.description",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu istemcinin okuyabildiği bir denetim kaydı ucu yok. Bu ekrandaki işlemler sunucuda gerçekleşir, ancak burada listelenip listelenmediği bu tarayıcıdan doğrulanamaz.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.catalog.empty",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kayıtlı kaynak yakalaması yok.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.catalog.count.programs",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Program",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.catalog.count.decisions",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Karar",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.catalog.count.sources",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kaynak",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.evidence.empty",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Yüklenen kararlarda yanıtlanmamış bir olgu yok.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.evidence.blocked_detail",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "{{count}} kararı blokluyor",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      },
+      "variables": [
+        "count"
+      ]
+    },
+    {
+      "id": "cockpit.evidence.status_unanswered",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "yanıtlanmadı",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.context.empty",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Yüklenen verilerden şu an için bir öneri çıkarılamadı.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.context.status_reading",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": " okunuyor…",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.context.status_error",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": ": {{error}}",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      },
+      "variables": [
+        "error"
+      ]
+    },
+    {
+      "id": "cockpit.context.status_last_read",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": " — son okuma {{when}}",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      },
+      "variables": [
+        "when"
+      ]
+    },
+    {
+      "id": "cockpit.context.partial",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bazı veriler eksik; eksik olan sıfır veya olumsuz sayılmaz.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.context.missing_suffix",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": ": —",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.context.status_label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Karar listesi ve kaynak kütüğü",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.kpi.aria_label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kokpit özeti",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.kpi.pending_evidence.label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kanıt bekleyen karar",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.kpi.pending_evidence.hint",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "decisions · missing_facts",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.kpi.unverified_sources.label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Doğrulanmamış kaynak",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.kpi.unverified_sources.hint",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "snapshots · review_status",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.kpi.open_calls.label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Açık çağrı",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.kpi.open_calls.hint",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "programs · call_window_state",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.kpi.platform_status.label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Platform durumu",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.kpi.platform_status.hint",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "readiness · status",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.next_action.aria_label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Sıradaki eylem",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.next_action.running",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Çalıştırılıyor…",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.next_action.empty",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kanıt bekleyen karar yok. Yeni bir karar üretmek için değerlendirmeyi çalıştırın.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.meta.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kognitif kokpit/Panel",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.meta.description",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "loading · empty · no-result · error · partial · success · permission · offline · stale.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.identity.org",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Anka Metal A.Ş.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.identity.demo_org",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Demo · Süper yönetici",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.name.demo_320",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "demo — 320px",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.error_message",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Sunucudan yanıt alınamadı (500).",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.stale_notice",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kaynak kütüğü 3 gündür yenilenmedi.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.provider_reason",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu kurulumda bağlı bir yapay zekâ sağlayıcısı yok. Aşağıdaki öneriler ekrandaki verilerden kural ile üretilir; hiçbiri bir modele sorulmadı.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.search.rd_center.label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Ar-Ge merkezi desteği",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.search.rd_center.hint",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "AGM-2026-014",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.search.export.label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "İhracat destek programı",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.search.export.hint",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "IHR-2026-002",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.distribution.portfolio.grant",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Ar-Ge ve yenilik",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.distribution.portfolio.export",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "İhracat destekleri",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.distribution.portfolio.employment",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "İstihdam teşvikleri",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.distribution.outcomes.candidate",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Aday uygunluk",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.distribution.outcomes.conditional",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Koşullu",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.distribution.outcomes.ineligible",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Uygun değil",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.distribution.outcomes.insufficient",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Yetersiz veri",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.distribution.evidence.verified",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Doğrulanmış",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.distribution.evidence.pending",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "İnceleme bekliyor",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.queue.item.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "{{outcomeLabel}} · {{programCode}}",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      },
+      "variables": [
+        "outcomeLabel",
+        "programCode"
+      ]
+    },
+    {
+      "id": "cockpit.queue.item.detail",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "{{count}} olgu yanıtlanmadı",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      },
+      "variables": [
+        "count"
+      ]
+    },
+    {
+      "id": "cockpit.story.source.official_gazette.publisher",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Resmî Gazete",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.source.official_gazette.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "2026/14 sayılı tebliğ",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.source.kosgeb.publisher",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "KOSGEB",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.source.kosgeb.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Ar-Ge destek duyurusu",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.suggestion.missing_facts.title",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "2 kararda yanıtlanmamış olgu var",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.suggestion.missing_facts.why",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Yüklenmiş kararların bir kısmında en az bir olgu yanıtlanmamış.",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.suggestion.missing_facts.action_label",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Eksik olguları tamamla",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.story.search.no_match_query",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "bulunamayan terim",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.access.value_dash",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "—",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.kpi.provenance.source_id",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "sourceId",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.kpi.provenance.captured_at",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "capturedAt",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.kpi.provenance.rule_version",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "ruleVersion",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.kpi.provenance.calibration_status",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "calibrationStatus",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.header.search.hint_separator",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": " · ",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    },
+    {
+      "id": "cockpit.header.search.shortcut",
+      "namespace": "cognitive-cockpit",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "⌘K",
+      "source": {
+        "kind": "repository-json",
+        "ref": "cognitive-cockpit-v1"
+      }
+    }
+  ]
+}

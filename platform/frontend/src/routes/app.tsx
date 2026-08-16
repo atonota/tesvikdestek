@@ -1,6 +1,6 @@
 /** Authenticated surfaces: dashboard, discovery, decision workspace, settings, ops. */
 
-import { Suspense, lazy, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   NavLink,
   Navigate,
@@ -24,18 +24,15 @@ import {
   useSnapshotsQuery,
 } from "@/api/queries";
 import {
-  AdaptiveAssistant,
   AdaptiveShell,
   ApprovalForm,
   Badge,
   Button,
-  Card,
   CapabilityMatrix,
   CatalogList,
   DecisionCompare,
   DecisionDetail,
   DecisionList,
-  DefinitionList,
   EligibilityWizard,
   EmptyState,
   ErrorState,
@@ -43,14 +40,12 @@ import {
   MaturityRadar,
   OpportunityDetail,
   OpsHealth,
-  OutcomeDistribution,
   PartialDataNotice,
   ProfileWorkspace,
   PublicShell,
   ReadinessTemplate,
   SettingsPanel,
   SkeletonBlock,
-  SourceFreshnessMeter,
   SourceRegistry,
   SourceSnapshotCard,
   Switch,
@@ -62,17 +57,27 @@ import {
   readSourceRegistry,
   suggestFromLoadedData,
   uniqueMissingFacts,
-  type AssistantSuggestion,
   type ConversionAction,
 } from "@/components";
+import {
+  CognitiveAccessScopePanel,
+  CognitiveAuditTruthBlock,
+  CognitiveCatalogPanel,
+  CognitiveCockpitDashboard,
+  CognitiveEvidenceGapList,
+  CognitiveEvidenceRail,
+  CognitiveAnalyticsPanel,
+  CognitiveKpiStrip,
+  CognitiveNextActionQueue,
+  type CockpitReadState,
+} from "@/components/cognitive-cockpit";
 /**
  * The distribution maths, imported normally on purpose.
  *
- * It is plain TypeScript with no chart engine behind it, so putting it inside
- * the lazy boundary would delay three numbers behind a megabyte of canvas code
- * for no gain. Only the drawing is lazy.
+ * It is plain TypeScript with no chart engine behind it, so a screen that
+ * only needs the numbers never pays for the drawing. `CognitiveAnalyticsPanel`
+ * is what now owns the drawing half, behind its own lazy boundary.
  */
-import { AnalyticsSkeleton } from "@/components/analytics/AnalyticsSkeleton";
 import {
   evidenceByReviewStatus,
   outcomeDistribution,
@@ -92,6 +97,7 @@ import {
   withoutDemoRole,
 } from "@/demo";
 import { supportTypeLabel, reviewStatusLabel } from "@/api/types";
+import { resolveContent, useContent } from "@/content";
 import { calculateMaturity } from "@/domain/maturity";
 import { emptyProfileValues } from "@/domain/facts";
 import { useUiStore, type Density, type FontScale, type ThemeChoice } from "@/store/ui";
@@ -593,22 +599,6 @@ export function Shell({
 /* -------------------------------------------------------------- analytics */
 
 /**
- * The dense analytics section, fetched only by the person who sees it.
- *
- * `React.lazy` rather than a static import, and that is the whole reason this
- * one component is reached through a dynamic boundary while everything else on
- * the screen is not. ECharts is the largest single dependency in the package;
- * `FRONTEND-TECHSTACK.md` records "ECharts never enters the main bundle" as a
- * refusal, `build-contract.test.ts` proves it against the emitted chunks, and a
- * static import here would quietly break both.
- *
- * The distribution maths is *not* behind this boundary - it lives in
- * `components/analytics/model.ts`, is plain TypeScript, and is imported
- * normally. Only the drawing costs a megabyte.
- */
-const PortfolioAnalytics = lazy(() => import("@/components/analytics/PortfolioAnalytics"));
-
-/**
  * Adapts a query to the four-state vocabulary the analytics model speaks.
  *
  * The three booleans are copied rather than the query handed over whole, so
@@ -640,46 +630,113 @@ function readStateOf<T>(
 
 /* ------------------------------------------------------------------ panel */
 
+/**
+ * The one read state the cockpit renders, derived from the four queries
+ * `DashboardRoute` owns.
+ *
+ * Precedence matters: a pending read outranks everything (nothing has failed
+ * yet, it just has not arrived), a session error outranks a generic one (the
+ * fix is signing in, not retrying), and "every read failed" is a different
+ * fact from "one read failed while the others are fine" - the first is
+ * `"error"`, the second is `"partial"`, and neither is silently treated as an
+ * empty tenant.
+ */
+function deriveCockpitReadState(reads: {
+  readonly decisions: ReturnType<typeof useDecisionsQuery>;
+  readonly snapshots: ReturnType<typeof useSnapshotsQuery>;
+  readonly programs: ReturnType<typeof useProgramsQuery>;
+}): CockpitReadState {
+  const { decisions, snapshots, programs } = reads;
+  const all = [decisions, snapshots, programs];
+
+  if (all.some((query) => query.isPending)) return "loading";
+  if (typeof navigator !== "undefined" && !navigator.onLine) return "offline";
+  if (all.some((query) => query.isError && isSessionError(query.error))) return "permission";
+
+  const failed = all.filter((query) => query.isError);
+  if (failed.length === all.length) return "error";
+  if (failed.length > 0) return "partial";
+
+  if ((decisions.data ?? []).length === 0 && (programs.data ?? []).length === 0) return "empty";
+
+  const staleAfterMs = 15 * 60 * 1000;
+  if (decisions.dataUpdatedAt > 0 && Date.now() - decisions.dataUpdatedAt > staleAfterMs) {
+    return "stale";
+  }
+
+  return "success";
+}
+
 export function DashboardRoute() {
   const decisions = useDecisionsQuery();
   const programs = useProgramsQuery();
   const snapshots = useSnapshotsQuery();
   const health = useReadinessQuery();
   const evaluate = useRunEvaluation();
+  const logout = useLogout();
+  const navigate = useNavigate();
+  const demo = useDemoSession();
+
+  const fallbackOrg = useContent("cockpit.identity.fallback_org");
+  const superadminRole = useContent("cockpit.identity.role.superadmin");
+  const userRole = useContent("cockpit.identity.role.user");
+  const staleNotice = useContent("cockpit.state.stale.notice");
+  const analyticsCaption = useContent("cockpit.analytics.caption");
+  const portfolioTabLabel = useContent("cockpit.analytics.tab.portfolio");
+  const outcomesTabLabel = useContent("cockpit.analytics.tab.outcomes");
+  const evidenceTabLabel = useContent("cockpit.analytics.tab.evidence");
+  const programsCountLabel = useContent("cockpit.catalog.count.programs");
+  const decisionsCountLabel = useContent("cockpit.catalog.count.decisions");
+  const sourcesCountLabel = useContent("cockpit.catalog.count.sources");
+  const pendingEvidenceLabel = useContent("cockpit.kpi.pending_evidence.label");
+  const pendingEvidenceHint = useContent("cockpit.kpi.pending_evidence.hint");
+  const unverifiedSourcesLabel = useContent("cockpit.kpi.unverified_sources.label");
+  const unverifiedSourcesHint = useContent("cockpit.kpi.unverified_sources.hint");
+  const openCallsLabel = useContent("cockpit.kpi.open_calls.label");
+  const openCallsHint = useContent("cockpit.kpi.open_calls.hint");
+  const platformStatusLabel = useContent("cockpit.kpi.platform_status.label");
+  const platformStatusHint = useContent("cockpit.kpi.platform_status.hint");
+  const readingLabel = useContent("cockpit.data.reading");
+  const readFailedLabel = useContent("cockpit.data.read_failed");
+  const contextStatusLabel = useContent("cockpit.context.status_label");
+
+  const organisationLabel = demo ? demoBadgeLabel(demo.role) : fallbackOrg;
+  const roleLabel = demo?.role === "superadmin" ? superadminRole : userRole;
+
+  const loadedDecisions = decisions.data ?? [];
+  const loadedPrograms = programs.data ?? [];
+  const loadedSnapshots = snapshots.data ?? [];
+
+  const readState = deriveCockpitReadState({ decisions, snapshots, programs });
+  const searchItems = loadedDecisions.map((decision) => ({
+    id: decision.id,
+    label: decision.outcome_label,
+    hint: decision.program_code,
+    to: `/degerlendirmeler/${decision.id}`,
+  }));
 
   /**
-   * The assistant's input, built only from what this page already loaded.
+   * The cockpit's wide contextual rail: facts only, no visual component.
    *
-   * No extra request is made to populate it: a suggestion about a record the
-   * page never fetched would be a claim about data this client has not seen.
+   * `suggestFromLoadedData` and `deriveDataStatus` are data rules, not the old
+   * `AdaptiveAssistant` panel - they are read here for what they compute, and
+   * the result is mapped into `CognitiveEvidenceRail`'s own, clean-room prop
+   * shape rather than passed to any old visual component.
    */
-  const loadedDecisions = decisions.data ?? [];
-  const loadedSnapshots = snapshots.data ?? [];
-  /**
-   * Suggestions are made from data that arrived, or they are not made.
-   *
-   * A failed snapshot read used to fall through `?? []` into the suggestion
-   * rules, which then said perfectly confident things about a source registry
-   * nobody had managed to read. The assistant's own `dataStatus` reports the
-   * failure below; an empty suggestion list beside it is the honest pairing.
-   */
-  const suggestions =
+  const rawSuggestions =
     decisions.isSuccess && snapshots.isSuccess
       ? suggestFromLoadedData({ decisions: loadedDecisions, sources: loadedSnapshots })
       : [];
-
-  /**
-   * The panel's self-description, derived from the two queries that feed it.
-   *
-   * All three of these were previously asserted rather than measured: the
-   * missing-fact list was hard-coded empty while the decisions on screen
-   * carried facts nobody had answered, `partial` was the constant `true`, and
-   * the timestamp was presented as though it were when the data became true
-   * rather than when this browser fetched it. `deriveDataStatus` computes them
-   * from `isPending`, `isError` and `dataUpdatedAt`, and nothing else.
-   */
-  const dataStatus = deriveDataStatus({
-    label: "Karar listesi ve kaynak kütüğü",
+  const railSuggestions = rawSuggestions.map((suggestion) => ({
+    id: suggestion.id,
+    title: suggestion.title,
+    why: suggestion.why,
+    actionLabel: suggestion.nextAction.label,
+    ...(suggestion.nextAction.to ? { to: suggestion.nextAction.to } : {}),
+    ...(suggestion.nextAction.onRun ? { onRun: suggestion.nextAction.onRun } : {}),
+  }));
+  const rawDataStatus = deriveDataStatus({
+    label: contextStatusLabel,
     missing: uniqueMissingFacts(loadedDecisions),
     queries: [
       {
@@ -696,6 +753,124 @@ export function DashboardRoute() {
       },
     ],
   });
+  const railStatus = {
+    label: rawDataStatus.label,
+    lastLoadedAt: rawDataStatus.lastLoadedAt,
+    missing: rawDataStatus.missing,
+    partial: rawDataStatus.partial,
+    ...(rawDataStatus.loading !== undefined ? { loading: rawDataStatus.loading } : {}),
+    ...(rawDataStatus.error !== undefined ? { error: rawDataStatus.error } : {}),
+  };
+
+  /**
+   * The KPI strip's four tiles and its provenance row - counts and record
+   * identity read directly off the loaded lists, never a fabricated figure.
+   * A read that has not arrived or has failed renders an em dash with a
+   * reason on the tile itself, not a silent zero.
+   */
+  const pendingEvidenceCount = loadedDecisions.filter((d) => d.missing_facts.length > 0).length;
+  const unverifiedSourceCount = loadedSnapshots.filter((s) => s.review_status !== "verified").length;
+  const openCallCount = loadedPrograms.filter((p) => p.call_window_state === "open").length;
+  const kpiTiles = [
+    {
+      id: "pending-evidence",
+      label: pendingEvidenceLabel,
+      value: decisions.isSuccess ? String(pendingEvidenceCount) : "—",
+      hint: pendingEvidenceHint,
+      unavailableReason: decisions.isSuccess
+        ? null
+        : decisions.isPending
+          ? readingLabel
+          : readFailedLabel,
+    },
+    {
+      id: "unverified-sources",
+      label: unverifiedSourcesLabel,
+      value: snapshots.isSuccess ? String(unverifiedSourceCount) : "—",
+      hint: unverifiedSourcesHint,
+      unavailableReason: snapshots.isSuccess
+        ? null
+        : snapshots.isPending
+          ? readingLabel
+          : readFailedLabel,
+    },
+    {
+      id: "open-calls",
+      label: openCallsLabel,
+      value: programs.isSuccess ? String(openCallCount) : "—",
+      hint: openCallsHint,
+      unavailableReason: programs.isSuccess
+        ? null
+        : programs.isPending
+          ? readingLabel
+          : readFailedLabel,
+    },
+    {
+      id: "platform-status",
+      label: platformStatusLabel,
+      value: health.isSuccess ? health.data.status : "—",
+      hint: platformStatusHint,
+      unavailableReason: health.isSuccess ? null : health.isPending ? readingLabel : readFailedLabel,
+    },
+  ];
+  const latestSnapshot = [...loadedSnapshots].sort((a, b) =>
+    b.captured_at.localeCompare(a.captured_at),
+  )[0];
+  const ruleVersionCounts = new Map<string, number>();
+  for (const d of loadedDecisions) {
+    ruleVersionCounts.set(d.rule_set_version_id, (ruleVersionCounts.get(d.rule_set_version_id) ?? 0) + 1);
+  }
+  const dominantRuleVersion = [...ruleVersionCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+  const kpiProvenance = {
+    sourceId: latestSnapshot?.id ?? "—",
+    capturedAt: latestSnapshot?.captured_at ?? "—",
+    ruleVersion: dominantRuleVersion ?? "—",
+    calibrationStatus: health.isSuccess ? health.data.status : "—",
+  };
+
+  /** The next-action queue: one row per decision still missing a fact. */
+  const queueItems = loadedDecisions
+    .filter((d) => d.missing_facts.length > 0)
+    .sort((a, b) => b.missing_facts.length - a.missing_facts.length)
+    .map((d) => ({
+      id: d.id,
+      title: resolveContent("cockpit.queue.item.title", {
+        values: { outcomeLabel: d.outcome_label, programCode: d.program_code },
+      }),
+      detail: resolveContent("cockpit.queue.item.detail", {
+        values: { count: String(d.missing_facts.length) },
+      }),
+      to: `/degerlendirmeler/${d.id}`,
+    }));
+
+  /** The evidence-gap list: every unanswered fact, aggregated once. */
+  const gapCounts = new Map<string, number>();
+  for (const d of loadedDecisions) {
+    for (const fact of d.missing_facts) {
+      gapCounts.set(fact, (gapCounts.get(fact) ?? 0) + 1);
+    }
+  }
+  const evidenceGaps = [...gapCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([fact, count]) => ({ fact, blockedDecisionCount: count }));
+
+  /** The catalog panel: real counts and the most recently captured sources. */
+  const catalogCounts = [
+    { label: programsCountLabel, value: countLabel(programs) },
+    { label: decisionsCountLabel, value: countLabel(decisions) },
+    { label: sourcesCountLabel, value: countLabel(snapshots) },
+  ];
+  const catalogSources = snapshots.isSuccess
+    ? [...loadedSnapshots]
+        .sort((a, b) => b.captured_at.localeCompare(a.captured_at))
+        .slice(0, 5)
+        .map((s) => ({
+          id: s.id,
+          publisher: s.publisher,
+          title: s.title,
+          capturedAt: new Date(s.captured_at).toLocaleString("tr-TR"),
+        }))
+    : [];
 
   /**
    * The three distributions, computed once per real change.
@@ -736,126 +911,80 @@ export function DashboardRoute() {
   );
 
   return (
-    <Shell
-      title="Kokpit"
-      conversionAction={{
-        label: "Uygunluk sihirbazını başlat",
-        to: "/uygunluk/sihirbaz",
-        hint: "Ön değerlendirme üretir; kurum kararı değildir.",
+    <CognitiveCockpitDashboard
+      state={readState}
+      identity={{
+        organisationLabel,
+        roleLabel,
+        isDemo: demo !== null,
+        staleSourceNotice: readState === "stale" ? staleNotice : null,
       }}
-      contextRail={
-        <AdaptiveAssistant
-          capabilities={NO_ASSISTANT_PROVIDER}
-          suggestions={suggestions satisfies readonly AssistantSuggestion[]}
-          dataStatus={dataStatus}
-        />
+      errorMessage={
+        decisions.isError
+          ? describeError(decisions.error)
+          : snapshots.isError
+            ? describeError(snapshots.error)
+            : programs.isError
+              ? describeError(programs.error)
+              : null
       }
-    >
-      <div className="dt-stack">
-        <h1>Kokpit</h1>
-        <QueryBoundary query={decisions} loadingLabel="Kararlar yükleniyor">
-          {(list) => (
-            <>
-              <Card title="Sonuç dağılımı" headingLevel={2}>
-                <OutcomeDistribution decisions={list} />
-              </Card>
-              <Card
-                title="Sıradaki eylem"
-                headingLevel={2}
-                actions={
-                  /*
-                   * Secondary, deliberately.
-                   *
-                   * The shell already puts one primary on this page - the
-                   * conversion action that starts the wizard - and this button
-                   * was a second one, in the first content card, styled
-                   * identically. Two primaries is not a style slip: it is two
-                   * answers to "what should I do next?", and the answer that
-                   * converts is the one that loses. Running an evaluation is a
-                   * real action and stays a real button; it is simply not the
-                   * page's headline.
-                   */
-                  <Button
-                    variant="secondary"
-                    loading={evaluate.isPending}
-                    onClick={() => evaluate.mutate()}
-                  >
-                    Değerlendirmeyi çalıştır
-                  </Button>
-                }
-              >
-                {evaluate.isError ? (
-                  <ErrorState message={describeError(evaluate.error)} />
-                ) : null}
-                {list.length === 0 ? (
-                  <p>
-                    Henüz karar yok. Önce <Link to="/organizasyon/profil">profili doldurun</Link>,
-                    sonra değerlendirmeyi çalıştırın.
-                  </p>
-                ) : (
-                  <p>
-                    {list.filter((d) => d.missing_facts.length > 0).length} kararda eksik olgu var.{" "}
-                    <Link to="/organizasyon/hazirlik">Hazırlık ekranına git</Link>
-                  </p>
-                )}
-              </Card>
-            </>
-          )}
-        </QueryBoundary>
-
-        {/*
-          * Counts, and what they say when there is nothing to count *with*.
-          *
-          * Every figure here was `?? 0`. A catalogue read that failed rendered
-          * as "Program 0" - a confident, wrong, measured-looking claim, and the
-          * one a reader is least likely to question because zero is a perfectly
-          * ordinary answer. `countLabel` says "okunamadı" instead, and the
-          * freshness meter is not drawn at all: a meter over an unread registry
-          * would be a picture of nothing, shaped like a picture of something.
-          */}
-        <Card title="Katalog ve kaynak" headingLevel={2}>
-          <DefinitionList
-            columns={2}
-            items={[
-              { term: "Program", description: countLabel(programs) },
-              { term: "Kaynak", description: countLabel(snapshots) },
-              {
-                term: "Platform",
-                description: health.isSuccess
-                  ? health.data.status
-                  : health.isPending
-                    ? "okunuyor"
-                    : "okunamadı",
-              },
+      onRetry={() => {
+        void decisions.refetch();
+        void programs.refetch();
+        void snapshots.refetch();
+      }}
+      searchItems={searchItems}
+      notificationCount={loadedDecisions.filter((d) => d.missing_facts.length > 0).length}
+      onLogout={() =>
+        logout.mutate(undefined, { onSuccess: () => void navigate("/giris") })
+      }
+      loggingOut={logout.isPending}
+      updatedAt={decisions.dataUpdatedAt}
+      readAt={
+        decisions.dataUpdatedAt > 0
+          ? new Date(decisions.dataUpdatedAt).toLocaleTimeString("tr-TR", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : null
+      }
+      mainCanvas={
+        <>
+          <CognitiveKpiStrip tiles={kpiTiles} provenance={kpiProvenance} />
+          <CognitiveNextActionQueue
+            items={queueItems}
+            onRunEvaluation={() => evaluate.mutate()}
+            running={evaluate.isPending}
+            runDisabledReason={evaluate.isError ? describeError(evaluate.error) : null}
+          />
+          <CognitiveAnalyticsPanel
+            caption={analyticsCaption}
+            tabs={[
+              { key: "portfolio", label: portfolioTabLabel, distribution: portfolio },
+              { key: "outcomes", label: outcomesTabLabel, distribution: outcomes },
+              { key: "evidence", label: evidenceTabLabel, distribution: evidence },
             ]}
           />
-          {snapshots.isSuccess ? (
-            <SourceFreshnessMeter snapshots={snapshots.data} />
-          ) : (
-            <PartialDataNotice
-              what="Kaynak tazeliği gösterilemiyor."
-              because="Kaynak kütüğü okunamadı. Okunamayan bir kütük boş bir kütük değildir, bu yüzden burada sayı yerine okunamadı yazar."
-            />
-          )}
-        </Card>
-
-        {/*
-          * The dense analytics section.
-          *
-          * Each read is handed over as one of four states - pending, error,
-          * empty, populated - rather than as a list that might be `[]` for two
-          * different reasons. A request in flight is not a failure, and a
-          * catalogue that genuinely has no rows is not one either.
-          */}
-        <Suspense fallback={<AnalyticsSkeleton />}>
-          <PortfolioAnalytics
-            portfolio={portfolio}
-            outcomes={outcomes}
-            evidence={evidence}
+          <CognitiveEvidenceGapList gaps={evidenceGaps} />
+          <CognitiveAuditTruthBlock />
+        </>
+      }
+      contextRail={
+        <>
+          <CognitiveCatalogPanel counts={catalogCounts} sources={catalogSources} />
+          <CognitiveEvidenceRail
+            suggestions={railSuggestions}
+            status={railStatus}
+            providerReason={NO_ASSISTANT_PROVIDER.providerReason}
           />
-        </Suspense>
-      </div>
-    </Shell>
+          <CognitiveAccessScopePanel
+            tenantLabel={organisationLabel}
+            roleLabel={roleLabel}
+            isDemo={demo !== null}
+          />
+        </>
+      }
+    />
   );
 }
 

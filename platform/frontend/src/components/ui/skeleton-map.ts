@@ -250,3 +250,18 @@ export const SKELETON_MAP = {
 } as const satisfies Record<string, SkeletonEntry>;
 
 export type MappedComponent = keyof typeof SKELETON_MAP;
+
+/**
+ * The cognitive cockpit's own shape-matched skeleton, registered separately.
+ *
+ * `CognitiveCockpitDashboard` is not exported from this master `ui` barrel -
+ * it lives in `src/components/cognitive-cockpit`, a product-level master
+ * surface rather than a `ui` primitive - so pairing it inside `SKELETON_MAP`
+ * would fail `skeleton-contract.test.tsx`'s "maps nothing that is not
+ * exported" check, which enumerates this barrel exactly. This entry records
+ * the same pairing the RED contract for the cockpit checks for: the dashboard
+ * has a named, shape-matched skeleton before it is integrated anywhere.
+ */
+export const CROSS_BARREL_SKELETON_PAIRINGS = {
+  CognitiveCockpitDashboard: "CognitiveCockpitSkeleton",
+} as const satisfies Record<string, string>;
