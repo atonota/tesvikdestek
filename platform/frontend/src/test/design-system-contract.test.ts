@@ -425,6 +425,9 @@ const TEXT_PAIRS: readonly (readonly [string, string])[] = [
   ["--dt-color-accent-fg", "--dt-color-accent"],
   ["--dt-color-primary-fg", "--dt-color-primary"],
   ["--dt-color-secondary-fg", "--dt-color-secondary"],
+  /* The destructive pair. Added when a button hard-coded `text-white` onto it:
+     correct on the light theme's deep red, 1.8:1 on the dark theme's tint. */
+  ["--dt-color-danger-fg", "--dt-color-danger"],
 ];
 
 const UI_PAIRS: readonly (readonly [string, string])[] = [

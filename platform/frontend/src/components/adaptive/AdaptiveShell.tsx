@@ -1,34 +1,36 @@
 /**
- * The adaptive enterprise frame.
+ * The adaptive enterprise frame — Cognitive Shell V2.
  *
  * One layout that is honest at 320px and dense at 1440px, rather than a
  * desktop layout with things hidden on a phone.
  *
- *   320px   one column. Navigation and the assistant are **sheets**: modal
- *           dialogs with a backdrop, opened from header controls, closed by
- *           Escape, focus-trapped while open and focus-restoring on close. A
- *           thumb-reachable bottom bar carries the top destinations, and the
- *           conversion action is pinned above it, because the whole point of a
- *           conversion action is that it is reachable without scrolling back.
- *   ≥64rem  three columns: persistent rail, content, context/assistant aside.
- *           No sheets, no drawer toggle, no thumb bar.
+ *   Every width  navigation lives behind **one modal drawer**, opened either
+ *                by the header's hamburger or by the header's account
+ *                avatar. There is no persistent rail at 1024/1440 and no
+ *                separate mobile nav sheet at 320/390 - the split this shell
+ *                shipped before V2 is gone, in both directions, at once.
+ *   ≥64rem       the assistant keeps its own persistent aside column; below
+ *                that it stays a separate sheet, exactly as before V2. V2's
+ *                scope is navigation and account, not the assistant.
  *
- * **Exactly one of the two states is rendered.** The shell asks
- * `useMediaQuery(DESKTOP_QUERY)` and branches, rather than rendering both and
- * hiding one with CSS. The difference is not cosmetic: two copies means the
- * assistant's content exists twice in the document, a screen reader has two
- * identically named panels to walk, and a focus trap can capture the copy
- * nobody can see. What was actually on screen at 320px before this - the rail
- * as an inline accordion that pushed the page down, and the assistant as an
- * ~810px appendix glued to the bottom of the document - is what that costs.
+ * **Two triggers, one dialog.** The hamburger and the avatar are visually and
+ * semantically distinct controls - different accessible names, different
+ * intents - but they open the *same* `Dialog.Root`, tracked as one flag in
+ * `useUiStore().navDrawerOpen`. What differs between them is only which part
+ * of the drawer receives focus once it opens: the hamburger focuses the
+ * command input, the avatar focuses the drawer's footer account trigger. That
+ * is `drawerIntent` below, and it is read once, in the effect that runs after
+ * the drawer's content has mounted.
  *
- * The sheets are `@radix-ui/react-dialog`, already a dependency and already the
- * vendor behind `composites.tsx`'s `Dialog`. Modality, the backdrop, Escape,
- * the focus trap and focus restoration all come from it; hand-rolling any one
- * of those is how a panel becomes a trap.
+ * **Manual trigger + manual focus restoration**, not `Dialog.Trigger`. Radix's
+ * own trigger only remembers a single opener; two real openers means the
+ * shell has to track "which button was pressed" itself, in `drawerTriggerRef`,
+ * and hand it back in `onCloseAutoFocus` - the same guarantee `Sheet` gets for
+ * free from a single `SheetTrigger`, reproduced by hand because this drawer
+ * genuinely has two doors.
  *
  * The header is genuinely layered rather than one tall row: an identity layer
- * (brand, sheet controls, utilities) and a context layer (breadcrumbs, page
+ * (brand, drawer controls, utilities) and a context layer (breadcrumbs, page
  * title). Each carries `data-header-layer`, which is what the layout test
  * counts - a visual "layer" made of margins is not a layer any assistive
  * technology can see.
@@ -37,16 +39,33 @@
  * and where things sit, exactly like the shells it sits beside.
  */
 
-import * as RadixDialog from "@radix-ui/react-dialog";
+import * as DrawerPrimitive from "@radix-ui/react-dialog";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { NavLink, Link as RouterLink } from "react-router";
 
+import { AppIcon } from "@/components/icons";
+import {
+  Sheet as MasterSheet,
+  SheetBody,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { cn } from "@/lib/cn";
 import { DESKTOP_QUERY, useMediaQuery } from "@/lib/use-media-query";
 import { applyAppearance, useUiStore } from "@/store/ui";
+import { useDemoSession } from "@/demo";
+import { requireCapabilityReason } from "@/domain/capabilities";
 import { OfflineBanner } from "../patterns";
 import { Button, IconButton } from "../primitives";
 import type { NavItem } from "../shells";
+import { ShellAccountMenu } from "./ShellAccountMenu";
+import { ShellHeaderSpotlight } from "./ShellHeaderSpotlight";
+import { ShellIdentityStrip, type ShellIdentityCell } from "./ShellIdentityStrip";
+import { ShellSidebarCommand } from "./ShellSidebarCommand";
+import { ShellSidebarNav, type ShellNavItemMeta } from "./ShellSidebarNav";
 
 export interface ConversionAction {
   readonly label: string;
@@ -74,6 +93,17 @@ export interface AdaptiveShellProps {
   readonly conversionAction?: ConversionAction | undefined;
   readonly title?: string | undefined;
   readonly className?: string | undefined;
+  /**
+   * Route-level source/evidence freshness, for the top identity strip's
+   * third cell. No route wires this yet - see `ShellIdentityStrip`'s own
+   * file header - so every current caller leaves it `undefined` and gets the
+   * strip's honest "not measured here" cell instead of a fabricated one.
+   */
+  readonly sourceHealth?: ShellIdentityCell | undefined;
+  /** A real unread count. Omitted → the notification trigger stays honestly disabled. */
+  readonly notificationsCount?: number | undefined;
+  /** Per-route count/status/quick-actions for the drawer's accordion. See `ShellSidebarNav`. */
+  readonly navMeta?: Readonly<Record<string, ShellNavItemMeta>> | undefined;
 }
 
 /** Applies persisted appearance to <html> once, and on every change. */
@@ -87,98 +117,211 @@ function useAppearance() {
   }, [density, theme, fontScale, reducedMotion]);
 }
 
-/** The navigation list, identical in the rail and in the sheet. */
-function NavList({
+/** Which part of the shared drawer a trigger asks to receive focus. */
+type DrawerIntent = "command" | "account";
+
+/**
+ * The one adaptive navigation drawer, and the two controls that open it.
+ *
+ * Its own component for the same reason `AssistantSheet` was: the intent and
+ * trigger-ref state live and die with this subtree, so they cannot leak
+ * across a route change or a layout crossing.
+ */
+function ShellDrawer({
   navItems,
-  onNavigate,
+  navMeta,
 }: {
   readonly navItems: readonly NavItem[];
-  readonly onNavigate?: () => void;
+  readonly navMeta?: Readonly<Record<string, ShellNavItemMeta>> | undefined;
 }) {
+  const drawerOpen = useUiStore((state) => state.navDrawerOpen);
+  const toggleDrawer = useUiStore((state) => state.toggleNavDrawer);
+  const [intent, setIntent] = useState<DrawerIntent>("command");
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const drawerId = useId();
+  const titleId = useId();
+
+  function open(nextIntent: DrawerIntent, trigger: HTMLButtonElement) {
+    triggerRef.current = trigger;
+    setIntent(nextIntent);
+    toggleDrawer(true);
+  }
+
+  /**
+   * Which part of *this* open gets focus, decided here rather than left to
+   * Radix's own default.
+   *
+   * Radix's `FocusScope` normally focuses the first focusable descendant on
+   * open - here that would always be the close button in `.dt-drawer__head`,
+   * regardless of which trigger was pressed. `onOpenAutoFocus` replaces that
+   * default entirely: `preventDefault()` cancels it, and the query below
+   * lands focus on the one element `intent` actually asked for.
+   */
+  function focusIntentTarget(event: Event) {
+    event.preventDefault();
+    const root = contentRef.current;
+    if (root === null) return;
+    const target =
+      intent === "command"
+        ? root.querySelector<HTMLElement>('input[type="search"]')
+        : root.querySelector<HTMLElement>("[data-shell-account-trigger]");
+    target?.focus();
+  }
+
+  /**
+   * The first layer of Escape: clear the command's results, keep the drawer
+   * open.
+   *
+   * `Dialog.Content`'s `onEscapeKeyDown` is Radix's own hook for exactly
+   * this - it runs *before* Radix decides whether to close, which
+   * `ShellSidebarCommand`'s own `onKeyDown` cannot: `DismissableLayer`
+   * listens for Escape on `document` in the capture phase, ahead of any
+   * bubbling handler a nested input could attach, so a `preventDefault()`
+   * down there always loses the race. A real `input` event is dispatched
+   * rather than reaching into the command surface's state directly, so the
+   * one place that owns the query - the input itself - is still the source
+   * of truth.
+   */
+  function unwindEscape(event: KeyboardEvent) {
+    const root = contentRef.current;
+    const input = root?.querySelector<HTMLInputElement>('input[type="search"]');
+    if (input === null || input === undefined || input.value === "") return;
+    event.preventDefault();
+    const setter = Object.getOwnPropertyDescriptor(
+      window.HTMLInputElement.prototype,
+      "value",
+    )?.set;
+    setter?.call(input, "");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  const close = () => toggleDrawer(false);
+
+  const menuOpen = drawerOpen && intent === "command";
+
   return (
-    <ul>
-      {navItems.map((item) => (
-        <li key={item.to}>
-          <NavLink
-            to={item.to}
-            className={({ isActive }) => cn("dt-shell__nav-link", isActive && "is-active")}
-            onClick={onNavigate}
+    <>
+      {/*
+       * The three-bar hamburger, morphing to an X — built from three literal
+       * bars rather than swapped icons, so the morph is a transform on the
+       * same three elements rather than one glyph replacing another.
+       */}
+      <button
+        type="button"
+        aria-label={menuOpen ? "Menüyü kapat" : "Menü"}
+        className="dt-shell__menu-toggle"
+        aria-expanded={drawerOpen}
+        data-open={menuOpen}
+        {...(drawerOpen ? { "aria-controls": drawerId } : {})}
+        onClick={(event) => open("command", event.currentTarget)}
+      >
+        <span className="dt-shell__menu-bars" aria-hidden="true">
+          <span className="dt-shell__menu-bar dt-shell__menu-bar--top" />
+          <span className="dt-shell__menu-bar dt-shell__menu-bar--mid" />
+          <span className="dt-shell__menu-bar dt-shell__menu-bar--bot" />
+        </span>
+      </button>
+
+      <button
+        type="button"
+        className="dt-shell__avatar-toggle"
+        aria-label="Hesap"
+        title="Hesap"
+        aria-expanded={drawerOpen}
+        {...(drawerOpen ? { "aria-controls": drawerId } : {})}
+        onClick={(event) => open("account", event.currentTarget)}
+      >
+        <AppIcon name="people" />
+      </button>
+
+      <DrawerPrimitive.Root open={drawerOpen} onOpenChange={(next) => toggleDrawer(next)}>
+        <DrawerPrimitive.Portal>
+          <DrawerPrimitive.Overlay className="dt-drawer__overlay" />
+          <DrawerPrimitive.Content
+            id={drawerId}
+            ref={contentRef}
+            className="dt-drawer__content"
+            aria-describedby={undefined}
+            aria-labelledby={titleId}
+            onOpenAutoFocus={focusIntentTarget}
+            onEscapeKeyDown={unwindEscape}
+            onCloseAutoFocus={(event) => {
+              event.preventDefault();
+              triggerRef.current?.focus();
+            }}
           >
-            {item.icon ? (
-              <span aria-hidden="true" className="dt-shell__nav-icon">
-                {item.icon}
-              </span>
-            ) : null}
-            <span>{item.label}</span>
-          </NavLink>
-        </li>
-      ))}
-    </ul>
+            <DrawerPrimitive.Title id={titleId} className="sr-only">
+              Gezinme ve hesap
+            </DrawerPrimitive.Title>
+            <DrawerPrimitive.Close asChild>
+              <button type="button" className="sr-only">
+                Menüyü kapat
+              </button>
+            </DrawerPrimitive.Close>
+            <ShellSidebarCommand navItems={navItems} onNavigate={close} />
+            <ShellSidebarNav navItems={navItems} onNavigate={close} metaByRoute={navMeta} />
+            <div className="dt-drawer__footer">
+              <ShellAccountMenu onNavigate={close} />
+            </div>
+          </DrawerPrimitive.Content>
+        </DrawerPrimitive.Portal>
+      </DrawerPrimitive.Root>
+    </>
   );
 }
 
 /**
- * A modal side sheet, with the control that opens it.
+ * The header's notification trigger.
  *
- * **The control must be the dialog's own `Trigger`.** Radix's modal content
- * cancels the browser's focus restoration and returns focus to
- * `triggerRef.current` instead. A hand-wired button with an `onClick` leaves
- * that ref null, so closing the sheet drops focus onto `<body>` - the keyboard
- * user is silently returned to the top of the document, which is the failure a
- * focus trap exists to prevent. The trigger owns the open/close toggle for the
- * same reason: composing a second `onClick` onto it would toggle twice and the
- * sheet would never open.
- *
- * `aria-describedby={undefined}` is deliberate: Radix warns when a dialog has
- * no description, and a sheet whose entire content is a navigation list has
- * nothing to describe that its title does not already say. Inventing a
- * paragraph to silence a warning would put text on screen for the tool's
- * benefit rather than the reader's.
- *
- * `contentId` lands on the `Content` element itself, and the trigger points
- * `aria-controls` at it only while the sheet is open. The id used to sit on the
- * `<nav>` landmark *containing* the trigger - an element that conveniently
- * always exists, and that the trigger does not control. "The thing this button
- * opens is the box you are already standing in" is worse guidance than none,
- * and the dialog is portalled somewhere else entirely.
+ * `count` is the whole contract: given a real unread number (even zero - a
+ * checked, empty inbox is still a fact), the trigger is enabled and shows it.
+ * Given nothing, it stays disabled with a stated reason instead of showing a
+ * fabricated badge, which is the failure this codebase's own
+ * `truth-guard.test.ts` exists to catch and the same pattern
+ * `ShellAccountMenu` already uses for "Dil ve bölge", "Çalışma alanlarım" and
+ * "Rol ve izinler". No route in this application feeds a real count today -
+ * there is no notification backend - so every real caller passes nothing and
+ * gets the honest disabled state; `cognitive-shell.stories.tsx` demonstrates
+ * the enabled, counted state with a fixture value.
  */
-function Sheet({
-  open,
-  onOpenChange,
-  title,
-  side,
-  trigger,
-  contentId,
-  children,
-}: {
-  readonly open: boolean;
-  readonly onOpenChange: (open: boolean) => void;
-  readonly title: string;
-  readonly side: "start" | "end";
-  readonly trigger: ReactNode;
-  readonly contentId: string;
-  readonly children: ReactNode;
-}) {
-  return (
-    <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
-      <RadixDialog.Trigger asChild>{trigger}</RadixDialog.Trigger>
-      <RadixDialog.Portal>
-        <RadixDialog.Overlay className="dt-sheet__overlay" />
-        <RadixDialog.Content
-          id={contentId}
-          className={cn("dt-sheet", `dt-sheet--${side}`)}
-          aria-describedby={undefined}
+const NOTIFICATIONS_REASON_ID = "dt-shell-notifications-reason";
+
+export interface ShellNotificationsTriggerProps {
+  readonly count?: number;
+}
+
+export function ShellNotificationsTrigger({ count }: ShellNotificationsTriggerProps) {
+  if (count === undefined) {
+    return (
+      <span className="dt-shell__notifications">
+        <button
+          type="button"
+          disabled
+          aria-label="Bildirimler"
+          aria-describedby={NOTIFICATIONS_REASON_ID}
+          className="dt-shell__notifications-trigger"
         >
-          <div className="dt-sheet__head">
-            <RadixDialog.Title className="dt-sheet__title">{title}</RadixDialog.Title>
-            <RadixDialog.Close asChild>
-              <IconButton label={`${title} panelini kapat`} icon="✕" size="sm" />
-            </RadixDialog.Close>
-          </div>
-          <div className="dt-sheet__body">{children}</div>
-        </RadixDialog.Content>
-      </RadixDialog.Portal>
-    </RadixDialog.Root>
+          <AppIcon name="notifications" />
+        </button>
+        <span id={NOTIFICATIONS_REASON_ID} className="sr-only">
+          Bildirim sistemi bu sürümde yok.
+        </span>
+      </span>
+    );
+  }
+  return (
+    <span className="dt-shell__notifications">
+      <button
+        type="button"
+        aria-label={`Bildirimler · ${count} okunmamış`}
+        className="dt-shell__notifications-trigger"
+        data-state="enabled"
+      >
+        <AppIcon name="notifications" />
+        {count > 0 ? <span className="dt-shell__notifications-badge">{count}</span> : null}
+      </button>
+    </span>
   );
 }
 
@@ -196,31 +339,44 @@ function AssistantSheet({ children }: { readonly children: ReactNode }) {
   const contentId = useId();
 
   return (
-    <Sheet
-      open={open}
-      onOpenChange={setOpen}
-      title="Bağlam ve yardımcı"
-      side="end"
-      contentId={contentId}
-      trigger={
+    <MasterSheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
         <Button
           size="sm"
           variant="secondary"
           aria-expanded={open}
           {...(open ? { "aria-controls": contentId } : {})}
         >
+          <AppIcon name="assistant" />
           Yardımcı
         </Button>
-      }
-    >
-      {children}
-    </Sheet>
+      </SheetTrigger>
+      <SheetContent
+        id={contentId}
+        side="end"
+        className={cn("dt-sheet", "dt-sheet--end")}
+        overlayClassName="dt-sheet__overlay"
+        aria-describedby={undefined}
+      >
+        <SheetHeader className="dt-sheet__head">
+          <SheetTitle className="dt-sheet__title">Bağlam ve yardımcı</SheetTitle>
+          <SheetClose asChild>
+            <IconButton
+              label="Bağlam ve yardımcı panelini kapat"
+              icon={<AppIcon name="close" />}
+              size="sm"
+            />
+          </SheetClose>
+        </SheetHeader>
+        <SheetBody className="dt-sheet__body">{children}</SheetBody>
+      </SheetContent>
+    </MasterSheet>
   );
 }
 
 /**
- * States: mobile (nav sheet · assistant sheet · both closed) ·
- * desktop (persistent rail · persistent aside) · with-conversion · offline.
+ * States: drawer (closed · open via hamburger · open via avatar) ·
+ * with-conversion · offline.
  */
 export function AdaptiveShell({
   navItems,
@@ -231,43 +387,44 @@ export function AdaptiveShell({
   conversionAction,
   title,
   className,
+  sourceHealth,
+  notificationsCount,
+  navMeta,
 }: AdaptiveShellProps) {
   useAppearance();
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
   const drawerOpen = useUiStore((state) => state.navDrawerOpen);
-  const toggleDrawer = useUiStore((state) => state.toggleNavDrawer);
-  const navId = useId();
+  const demo = useDemoSession();
   const asideId = useId();
-  const navSheetId = useId();
 
   const hasRail = contextRail !== undefined && contextRail !== null;
   const hasConversion = conversionAction !== undefined && conversionAction !== null;
   const hasContextLayer = Boolean(breadcrumbs) || Boolean(title);
 
+  /**
+   * The top strip's three cells, resolved here rather than inside
+   * `ShellIdentityStrip` itself - see that component's own file header for
+   * why the strip stays a dumb renderer and this shell owns the honesty
+   * decision for each cell.
+   */
+  const organisationCell: ShellIdentityCell = {
+    label: "Çalışma alanı yok",
+    tone: "neutral",
+    description: requireCapabilityReason("team"),
+  };
+  const roleCell: ShellIdentityCell = demo
+    ? { label: demo.profile.roleLabel, tone: "ok" }
+    : { label: "Rol tanımsız", tone: "neutral", description: requireCapabilityReason("roles") };
+  const sourceHealthCell: ShellIdentityCell = sourceHealth ?? {
+    label: "Kaynak durumu bilinmiyor",
+    tone: "neutral",
+    description: "Kaynak tazeliği bu ekranda izlenmiyor.",
+  };
+
   const shellRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const conversionRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLElement>(null);
-
-  /**
-   * The drawer belongs to the layout that has one.
-   *
-   * `navDrawerOpen` is global store state and only the 320px branch renders a
-   * control for it, so widening the window left it stuck at `true` with nothing
-   * on screen to change it - and narrowing again reopened a modal, focus
-   * trapping sheet that nobody asked for. Closing it here, on the crossing, is
-   * the whole fix.
-   *
-   * Guarded on the current value rather than written unconditionally: a store
-   * write always notifies, so an unguarded `toggleDrawer(false)` on every
-   * desktop render would be a change event per render. Read through
-   * `getState()` so `drawerOpen` does not have to be a dependency of an effect
-   * whose job is to change it.
-   */
-  useEffect(() => {
-    if (!isDesktop) return;
-    if (useUiStore.getState().navDrawerOpen) toggleDrawer(false);
-  }, [isDesktop, toggleDrawer]);
 
   /**
    * Three heights the stylesheet cannot know and must not guess.
@@ -294,6 +451,14 @@ export function AdaptiveShell({
         // even though nobody can.
         const height = node === null ? 0 : Math.ceil(node.getBoundingClientRect().height);
         root.style.setProperty(name, `${height}px`);
+        // The shared drawer is a Radix `Portal`, appended under `document.body`
+        // rather than under this element - a custom property set only here
+        // never reaches it, and the sheet falls back to the CSS `0px` default,
+        // starting at the very top of the viewport and painting over the
+        // header it is supposed to sit beneath. Publishing the same value on
+        // the document root as well gives that portalled subtree something to
+        // inherit.
+        document.documentElement.style.setProperty(name, `${height}px`);
       };
       publish("--dt-shell-header-h", headerRef.current);
       publish("--dt-shell-conversion-h", conversionRef.current);
@@ -301,12 +466,22 @@ export function AdaptiveShell({
     };
 
     measure();
-    if (typeof ResizeObserver === "undefined") return undefined;
+
+    const restoreDocumentProperties = () => {
+      for (const name of ["--dt-shell-header-h", "--dt-shell-conversion-h", "--dt-shell-bottom-h"]) {
+        document.documentElement.style.removeProperty(name);
+      }
+    };
+
+    if (typeof ResizeObserver === "undefined") return restoreDocumentProperties;
     const observer = new ResizeObserver(measure);
     for (const node of [headerRef.current, conversionRef.current, bottomRef.current]) {
       if (node !== null) observer.observe(node);
     }
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      restoreDocumentProperties();
+    };
     // Primitives only: the slots are React nodes whose identity changes on
     // every parent render, and depending on them would rebuild the observer
     // each time for no gain. What actually changes the measured boxes is
@@ -325,43 +500,23 @@ export function AdaptiveShell({
       </a>
 
       <header ref={headerRef} className="dt-shell__header">
+        <ShellIdentityStrip
+          organisation={organisationCell}
+          role={roleCell}
+          sourceHealth={sourceHealthCell}
+        />
+
         <div className="dt-shell__header-layer" data-header-layer="identity">
-          {/*
-           * On a phone the navigation landmark *is* the disclosure control plus
-           * the sheet it opens. Keeping the landmark and its id in the document
-           * in both states is what lets `aria-controls` point at something real
-           * while the sheet is closed - an `aria-controls` aimed at an element
-           * that only exists when open is a dangling reference for exactly the
-           * moment a screen reader needs it.
-           */}
-          {isDesktop ? null : (
-            <nav id={navId} className="dt-shell__nav-trigger" aria-label="Ana gezinme">
-              <Sheet
-                open={drawerOpen}
-                onOpenChange={(open) => toggleDrawer(open)}
-                title="Ana gezinme"
-                side="start"
-                contentId={navSheetId}
-                trigger={
-                  <IconButton
-                    label={drawerOpen ? "Menüyü kapat" : "Menüyü aç"}
-                    icon={drawerOpen ? "✕" : "☰"}
-                    className="dt-shell__menu-toggle"
-                    aria-expanded={drawerOpen}
-                    {...(drawerOpen ? { "aria-controls": navSheetId } : {})}
-                  />
-                }
-              >
-                <NavList navItems={navItems} onNavigate={() => toggleDrawer(false)} />
-              </Sheet>
-            </nav>
-          )}
+          <ShellDrawer navItems={navItems} navMeta={navMeta} />
 
           <RouterLink to="/panel" className="dt-shell__brand">
             DestekTeşvik
           </RouterLink>
 
+          <ShellHeaderSpotlight navItems={navItems} />
+
           <div className="dt-shell__utilities">
+            <ShellNotificationsTrigger count={notificationsCount} />
             {headerUtilities}
             {hasRail && !isDesktop ? (
               <aside
@@ -384,12 +539,6 @@ export function AdaptiveShell({
           {title ? <p className="dt-shell__title">{title}</p> : null}
         </div>
       </header>
-
-      {isDesktop ? (
-        <nav id={navId} className="dt-shell__rail" aria-label="Ana gezinme">
-          <NavList navItems={navItems} />
-        </nav>
-      ) : null}
 
       {conversionAction ? (
         <div ref={conversionRef} className="dt-shell__conversion">
@@ -470,7 +619,9 @@ export function AdaptiveShell({
                   to={item.to}
                   className={({ isActive }) => cn("dt-shell__bottom-link", isActive && "is-active")}
                 >
-                  <span aria-hidden="true">{item.icon ?? "•"}</span>
+                  <span aria-hidden="true" className="dt-shell__bottom-icon">
+                    {item.icon ?? <AppIcon name="next" />}
+                  </span>
                   <span className="dt-shell__bottom-label">{item.shortLabel ?? item.label}</span>
                 </NavLink>
               </li>

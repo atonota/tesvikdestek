@@ -126,7 +126,7 @@ describe("the production build ships exactly what is claimed", () => {
     expect(referencing).toEqual([]);
   });
 
-  it("is one HTML document, three stylesheets, ten scripts, two fonts - and nothing else", () => {
+  it("is one HTML document, three stylesheets, seventeen scripts, two fonts - and nothing else", () => {
     if (!existsSync(DIST_DIR)) return;
     const files = dist();
     const byKind = (extension: string) => files.filter((file) => file.endsWith(extension));
@@ -151,14 +151,53 @@ describe("the production build ships exactly what is claimed", () => {
     // rather than through the shared component barrel. Folding it back into
     // the components chunk would put it into every signed-in visitor's first
     // paint, which is exactly what this count exists to notice.
-    expect(byKind(".js")).toHaveLength(10);
+    //
+    // Ten became sixteen when the master component layer arrived, and every one
+    // of the six is accounted for rather than absorbed:
+    //
+    //   `icons`      Phosphor, grouped as a vendor chunk. Used by the shell and
+    //                by every screen, so it is eager by nature - and it moves on
+    //                its own release cycle, so a product deploy should not
+    //                invalidate 93 kB of SVG paths in a visitor's cache.
+    //   `echarts`    the chart engine, and
+    //   `zrender`    the renderer it draws through. Both lazy, both reached only
+    //                through the dashboard's `React.lazy` boundary. Split from
+    //                each other because together they cross the 500 kB warning
+    //                threshold this build refuses to raise.
+    //   `PortfolioAnalytics`
+    //                the analytics section itself: 5.7 kB of option building,
+    //                now cached separately from the half-megabyte of vendor code
+    //                it used to share a chunk with.
+    //   `model`      the distribution arithmetic, which is plain TypeScript and
+    //                is deliberately *not* behind the lazy boundary.
+    //   `tabs`       a shared subgraph Rolldown extracted on its own: the four
+    //                outcome names and the Radix tab primitives are now reached
+    //                from both the eager routes and the lazy analytics section,
+    //                so the common part was hoisted rather than duplicated.
+    //
+    // Sixteen became seventeen when the first-load budget was enforced. The
+    // router's boot fallback and the analytics section now share the master
+    // skeleton layer, and Rolldown hoisted it into a chunk of its own:
+    //
+    //   `skeleton`   1 kB, eager, and eager on purpose - it is what the very
+    //                first paint renders, before any route module exists.
+    //
+    // The same change also renamed several chunks (`components` split into
+    // `ui`, `outcomes`, `utils` and the route chunks) because `routes/errors.tsx`
+    // stopped importing the whole component barrel. That is the fix, not a side
+    // effect: it took the eager graph from 236,684 gzipped bytes to 131,388,
+    // against a published budget of 180,000.
+    //
+    // The count stays pinned rather than loosened. An eighteenth script is a
+    // question to answer, not a detail to absorb.
+    expect(byKind(".js")).toHaveLength(17);
     // Two font files, and exactly two: Roboto's Latin and Latin Extended
     // weight axes. The package ships 54 files across nine unicode subsets and
     // both italic sets; `src/design/roboto.css` declares only the two faces a
     // Turkish interface renders, so only those two are emitted.
     expect(byKind(".woff2")).toHaveLength(2);
     // The sum is the whole directory: nothing unaccounted for.
-    expect(files).toHaveLength(16);
+    expect(files).toHaveLength(23);
   });
 
   /**

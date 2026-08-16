@@ -24,3 +24,18 @@ export { AdaptiveShell } from "./AdaptiveShell";
 export type { AdaptiveShellProps, ConversionAction } from "./AdaptiveShell";
 export { AdaptiveAssistant } from "./AdaptiveAssistant";
 export type { AdaptiveAssistantProps } from "./AdaptiveAssistant";
+export {
+  buildCommandVocabulary,
+  deriveCommandStatus,
+  describeCommandStatus,
+  resolveCommandQuery,
+} from "./command";
+export type { CommandEntry, CommandResult, CommandStatus } from "./command";
+export { ShellHeaderSpotlight } from "./ShellHeaderSpotlight";
+export type { ShellHeaderSpotlightProps } from "./ShellHeaderSpotlight";
+export { ShellSidebarNav } from "./ShellSidebarNav";
+export type { ShellSidebarNavProps } from "./ShellSidebarNav";
+export { ShellSidebarCommand } from "./ShellSidebarCommand";
+export type { ShellSidebarCommandProps } from "./ShellSidebarCommand";
+export { ShellAccountMenu } from "./ShellAccountMenu";
+export type { ShellAccountMenuProps } from "./ShellAccountMenu";

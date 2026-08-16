@@ -23,6 +23,7 @@
  * change events, not a re-render with a different prop.
  */
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
@@ -83,43 +84,49 @@ afterEach(() => {
 });
 
 function shell() {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
-    <MemoryRouter>
-      <AdaptiveShell navItems={NAV} title="Kokpit" contextRail={<p>Yardımcı gövdesi</p>}>
-        <h1>Kokpit</h1>
-      </AdaptiveShell>
-    </MemoryRouter>,
+    <QueryClientProvider client={client}>
+      <MemoryRouter>
+        <AdaptiveShell navItems={NAV} title="Kokpit" contextRail={<p>Yardımcı gövdesi</p>}>
+          <h1>Kokpit</h1>
+        </AdaptiveShell>
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 
 /* ------------------------------------------------- crossing the breakpoint */
 
 describe("a panel opened on a phone does not survive a trip to the desktop", () => {
-  it("closes the navigation drawer on the crossing and does not reopen it", async () => {
+  /**
+   * Cognitive Shell V2 retired the layout branch this test used to guard.
+   *
+   * There is no longer a desktop-only rail for navigation to become on the
+   * way past 64rem - the shared adaptive drawer *is* navigation at every
+   * width, per `cognitive-shell-v2.spec.ts`'s "the drawer replaces the
+   * desktop persistent rail entirely". So a drawer a phone-width visitor
+   * opened and then widened past the breakpoint is not a stale mobile panel
+   * outliving its layout; it is the same control, open, on a wider screen -
+   * which is the honest thing for it to keep being. The assistant sheet
+   * below is a different mechanism (a layout-local `useState`, unmounted with
+   * its own conditional column) and still behaves exactly as this file always
+   * pinned.
+   */
+  it("keeps the adaptive drawer open across a crossing, the same drawer either width", async () => {
     media = installMatchMedia(false);
     shell();
 
-    await userEvent.click(screen.getByRole("button", { name: /Menüyü aç/u }));
-    await screen.findByRole("dialog", { name: /Ana gezinme/u });
+    await userEvent.click(screen.getByRole("button", { name: /men(ü|u)/iu }));
+    const dialog = await screen.findByRole("dialog");
+    const dialogId = dialog.getAttribute("id");
     expect(useUiStore.getState().navDrawerOpen).toBe(true);
 
     media.set(true);
-    await waitFor(() => expect(useUiStore.getState().navDrawerOpen).toBe(false));
-    expect(screen.queryByRole("dialog")).toBeNull();
-    // The desktop rail is what navigation looks like here.
-    expect(screen.getByRole("navigation", { name: /Ana gezinme/u })).toBeInTheDocument();
-
-    media.set(false);
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: /Menüyü aç/u })).toBeInTheDocument(),
-    );
-    // Nothing was asked for on the way back, so nothing is open.
-    expect(screen.queryByRole("dialog")).toBeNull();
-    expect(screen.getByRole("button", { name: /Menüyü aç/u })).toHaveAttribute(
-      "aria-expanded",
-      "false",
-    );
-    expect(useUiStore.getState().navDrawerOpen).toBe(false);
+    // No effect fires on the crossing: the drawer is not layout-scoped, so
+    // there is nothing here for a crossing to close.
+    await waitFor(() => expect(screen.getByRole("dialog")).toHaveAttribute("id", dialogId));
+    expect(useUiStore.getState().navDrawerOpen).toBe(true);
   });
 
   it("closes the assistant sheet on the same crossing", async () => {
@@ -143,27 +150,27 @@ describe("a panel opened on a phone does not survive a trip to the desktop", () 
     );
   });
 
-  it("writes the drawer state once on the crossing, not on a loop", async () => {
+  it("writes no drawer state at all on a crossing - there is no layout-scoped effect left to loop", async () => {
     media = installMatchMedia(false);
     shell();
-    await userEvent.click(screen.getByRole("button", { name: /Menüyü aç/u }));
-    await screen.findByRole("dialog", { name: /Ana gezinme/u });
+    await userEvent.click(screen.getByRole("button", { name: /men(ü|u)/iu }));
+    await screen.findByRole("dialog");
 
-    // An effect that closes what it also depends on is how a render loop
-    // starts. One transition must produce exactly one state change.
     let writes = 0;
     const unsubscribe = useUiStore.subscribe(() => {
       writes += 1;
     });
     media.set(true);
-    await waitFor(() => expect(useUiStore.getState().navDrawerOpen).toBe(false));
+    // Give any stray effect a turn to fire before asserting silence.
+    await Promise.resolve();
     await Promise.resolve();
     unsubscribe();
 
-    expect(writes).toBe(1);
+    expect(writes).toBe(0);
+    expect(useUiStore.getState().navDrawerOpen).toBe(true);
   });
 
-  it("leaves an already-closed drawer alone when the desktop layout mounts", async () => {
+  it("leaves a closed drawer alone when the desktop layout mounts", async () => {
     media = installMatchMedia(true);
     let writes = 0;
     const unsubscribe = useUiStore.subscribe(() => {
@@ -171,7 +178,7 @@ describe("a panel opened on a phone does not survive a trip to the desktop", () 
     });
     shell();
     await waitFor(() =>
-      expect(screen.getByRole("navigation", { name: /Ana gezinme/u })).toBeInTheDocument(),
+      expect(screen.getByRole("button", { name: /men(ü|u)/iu })).toBeInTheDocument(),
     );
     unsubscribe();
 
@@ -186,10 +193,10 @@ describe("a sheet trigger controls the dialog it opens, not its own ancestor", (
   it("points the navigation trigger at the dialog once it is open", async () => {
     media = installMatchMedia(false);
     shell();
-    const toggle = screen.getByRole("button", { name: /Menüyü aç/u });
+    const toggle = screen.getByRole("button", { name: /men(ü|u)/iu });
     await userEvent.click(toggle);
 
-    const sheet = await screen.findByRole("dialog", { name: /Ana gezinme/u });
+    const sheet = await screen.findByRole("dialog");
     // The same node, held rather than re-queried: while the sheet is open the
     // page behind it is out of the accessibility tree, so a role query for the
     // trigger correctly finds nothing. That is the modality, not a defect.
@@ -217,7 +224,7 @@ describe("a sheet trigger controls the dialog it opens, not its own ancestor", (
   it("never leaves a dangling reference behind while the sheets are closed", () => {
     media = installMatchMedia(false);
     shell();
-    for (const name of [/Menüyü aç/u, /Yardımcı/u]) {
+    for (const name of [/men(ü|u)/iu, /Yardımcı/u]) {
       const control = screen.getByRole("button", { name });
       expect(control).toHaveAttribute("aria-expanded", "false");
       const controls = control.getAttribute("aria-controls");

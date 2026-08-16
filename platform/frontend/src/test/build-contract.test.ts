@@ -36,6 +36,7 @@
  */
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { gzipSync } from "node:zlib";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -430,6 +431,117 @@ describe("route-scoped rules are in a lazy chunk and out of the entry", () => {
       read(script).includes(PROVIDER_JS_MARKER),
     );
     expect(offenders).toEqual([]);
+  });
+});
+
+/**
+ * The first-load budget, measured rather than believed.
+ *
+ * `FRONTEND-TECHSTACK.md` section 13 sets it at **180 kB of gzipped JavaScript**
+ * and adds the rule that makes it a budget rather than a target: *when it is
+ * exceeded the budget is not raised, the code is made smaller.* This group is
+ * the enforcement, and until it existed the number was a sentence in a document
+ * that no build had ever checked.
+ *
+ * What counts is what the browser fetches before any route has been chosen: the
+ * entry script and everything `index.html` preloads. Not "the entry chunk" - a
+ * modulepreload is a download, and splitting a big chunk into three preloaded
+ * ones moves bytes between file names without moving one byte off the wire.
+ *
+ * Gzip rather than raw, because gzip is what crosses the network and because
+ * the budget is written in gzipped bytes. `gzipSync` at its default level is
+ * within a few per cent of what a server emits and, more importantly, it is
+ * deterministic, so a regression is a regression rather than a server setting.
+ *
+ * The failure this was written against: 236,807 gzipped bytes against a 180,000
+ * budget and a 202,512 baseline. The chart engine was already lazy; the weight
+ * was the shared component barrel being pulled into the entry graph by the
+ * router's own fallback surfaces.
+ */
+describe("the first load stays inside the published budget", () => {
+  /** `FRONTEND-TECHSTACK.md` section 13. Read here, never rewritten here. */
+  const FIRST_LOAD_GZIP_BUDGET_BYTES = 180_000;
+
+  const gzipBytes = (asset: string): number =>
+    gzipSync(readFileSync(join(DIST_ASSETS, asset))).length;
+
+  it("measures every script the entry document pulls, not just the entry chunk", () => {
+    const eager = entryAssets().filter((asset) => asset.endsWith(".js"));
+    if (eager.length === 0) return;
+    // A guard that measured one file would pass the moment the graph was split
+    // into two preloaded files, which is the opposite of what it is for.
+    expect(eager.length).toBeGreaterThan(1);
+  });
+
+  it("keeps the eager JavaScript at or under 180 kB gzipped", () => {
+    const eager = entryAssets().filter((asset) => asset.endsWith(".js"));
+    if (eager.length === 0) return;
+
+    const perAsset = eager
+      .map((asset) => ({ asset, bytes: gzipBytes(asset) }))
+      .sort((a, b) => b.bytes - a.bytes);
+    const total = perAsset.reduce((sum, entry) => sum + entry.bytes, 0);
+
+    expect(
+      total,
+      `ilk yük bütçesi aşıldı: ${total} > ${FIRST_LOAD_GZIP_BUDGET_BYTES} gzip bayt\n${perAsset
+        .map((entry) => `  ${entry.asset}: ${entry.bytes}`)
+        .join("\n")}\nBütçe yükseltilmez; kod küçültülür.`,
+    ).toBeLessThanOrEqual(FIRST_LOAD_GZIP_BUDGET_BYTES);
+  });
+
+  it("does not pay for the chart engine on the first load", () => {
+    // Stated separately from the total so a future regression says *which*
+    // rule it broke: a lazy engine that becomes eager would blow the budget
+    // and the reason would be buried in an arithmetic failure.
+    const eager = entryAssets().filter((asset) => asset.endsWith(".js"));
+    if (eager.length === 0) return;
+    expect(eager.filter((asset) => /echarts|zrender/u.test(asset))).toEqual([]);
+  });
+});
+
+/**
+ * The chart engine is in a lazy chunk, and it is out of the eager one.
+ *
+ * `FRONTEND-TECHSTACK.md` records "ECharts never enters the main bundle" as a
+ * refusal rather than a preference, and the refusal has a history: the root
+ * prototype this repository replaced was a 1.59 MB single-file page with
+ * ECharts minified into it, downloaded in full by anyone who opened the landing
+ * screen.
+ *
+ * Both halves are asserted, for the same reason the media stylesheet group
+ * asserts both: only the first would pass on a build where the analytics
+ * section had been deleted and the dashboard rendered no chart at all.
+ *
+ * The marker is a string literal rather than a file name. Chunk names come from
+ * a manual-chunking rule that a future edit could rename; `zrender`'s error
+ * text is in the library's own source and survives minification, so finding it
+ * in a chunk is proof the engine is *in* that chunk.
+ */
+describe("the chart engine is lazy and stays out of the eager graph", () => {
+  /** zrender ships this in its painter; minification keeps the string. */
+  const ECHARTS_MARKER = "zrender";
+
+  it("ships no chart engine in the eager graph", () => {
+    const eager = entryAssets().filter((asset) => asset.endsWith(".js"));
+    if (eager.length === 0) return;
+    const offenders = eager.filter((script) => read(script).includes(ECHARTS_MARKER));
+    expect(
+      offenders,
+      "grafik motoru ana pakete girdi - kök prototipin 1.59 MB kusuru tekrar ediyor",
+    ).toEqual([]);
+  });
+
+  it("a lazy chunk does carry it, so the dashboard really draws a chart", () => {
+    const scripts = assets().filter((asset) => asset.endsWith(".js"));
+    if (scripts.length === 0) return;
+    const carriers = lazyAssets().filter(
+      (asset) => asset.endsWith(".js") && read(asset).includes(ECHARTS_MARKER),
+    );
+    expect(
+      carriers.length,
+      "hiçbir tembel parça grafik motorunu taşımıyor - panoda grafik yok demektir",
+    ).toBeGreaterThan(0);
   });
 });
 

@@ -8,7 +8,6 @@
 
 import * as RadixDialog from "@radix-ui/react-dialog";
 import * as RadixPopover from "@radix-ui/react-popover";
-import * as RadixTabs from "@radix-ui/react-tabs";
 import * as RadixTooltip from "@radix-ui/react-tooltip";
 import {
   flexRender,
@@ -29,6 +28,20 @@ import {
 
 import { cn } from "@/lib/cn";
 import { Button, FieldError, IconButton, Input, Label } from "./primitives";
+import {
+  Card as UiCard,
+  CardAction as UiCardAction,
+  CardContent as UiCardContent,
+  CardFooter as UiCardFooter,
+  CardHeader as UiCardHeader,
+  CardTitle as UiCardTitle,
+} from "./ui/card";
+import {
+  Tabs as UiTabs,
+  TabsContent as UiTabsContent,
+  TabsList as UiTabsList,
+  TabsTrigger as UiTabsTrigger,
+} from "./ui/tabs";
 import { Select } from "./select";
 import { DataGrid } from "./data-grid/DataGrid";
 import type { GridColumn, GridConfig } from "./data-grid/types";
@@ -163,7 +176,27 @@ export interface CardProps {
   className?: string;
 }
 
-/** States: default · sunken · warning · with-actions · with-footer. */
+/**
+ * The product card, composed from the master card's parts.
+ *
+ * Card UI is the layout language of this product - every screen is a stack of
+ * these - so this is the third and largest place the master layer had to arrive
+ * for the adoption to be visible rather than announced.
+ *
+ * The props-shaped API survives untouched (`title`, `actions`, `footer`,
+ * `headingLevel`, `tone`), because roughly sixty call sites use it and because
+ * it carries one thing the composition alone cannot: `headingLevel`. A card
+ * that always emitted an `h2` would break the document outline the moment a
+ * screen nested one inside a section, and the shadcn composition has no opinion
+ * about heading level at all. So the wrapper keeps the semantics and the master
+ * parts supply the shape.
+ *
+ * `asChild` on `CardTitle` is what lets the real heading element survive: the
+ * slot renders `<h2>`/`<h3>`/`<h4>` with the title styling merged onto it,
+ * rather than wrapping a heading in a styled div.
+ *
+ * States: default · sunken · warning · with-actions · with-footer.
+ */
 export function Card({
   title,
   actions,
@@ -175,16 +208,34 @@ export function Card({
 }: CardProps) {
   const Heading = `h${headingLevel}` as const;
   return (
-    <section className={cn("dt-card", tone !== "default" && `dt-card--${tone}`, className)}>
-      {title || actions ? (
-        <header className="dt-card__head">
-          {title ? <Heading className="dt-card__title">{title}</Heading> : <span />}
-          {actions ? <div className="dt-card__actions">{actions}</div> : null}
-        </header>
-      ) : null}
-      <div className="dt-card__body">{children}</div>
-      {footer ? <footer className="dt-card__foot">{footer}</footer> : null}
-    </section>
+    <UiCard
+      asChild
+      className={cn("dt-card", tone !== "default" && `dt-card--${tone}`, className)}
+      {...(tone === "default" ? {} : { "data-tone": tone })}
+    >
+      <section>
+        {title || actions ? (
+          <UiCardHeader className="dt-card__head">
+            {title ? (
+              <UiCardTitle asChild className="dt-card__title">
+                <Heading>{title}</Heading>
+              </UiCardTitle>
+            ) : (
+              <span />
+            )}
+            {actions ? (
+              <UiCardAction className="dt-card__actions">{actions}</UiCardAction>
+            ) : null}
+          </UiCardHeader>
+        ) : null}
+        <UiCardContent className="dt-card__body">{children}</UiCardContent>
+        {footer ? (
+          <UiCardFooter asChild className="dt-card__foot">
+            <footer>{footer}</footer>
+          </UiCardFooter>
+        ) : null}
+      </section>
+    </UiCard>
   );
 }
 
@@ -370,24 +421,32 @@ export interface TabsProps {
   label: string;
 }
 
-/** States: one selected at a time; keyboard arrow navigation via Radix. */
+/**
+ * The product tabs, drawn by the master tabs.
+ *
+ * Same Radix engine as before - this is not a behaviour change - but the strip
+ * now scrolls instead of wrapping at 320px and the selected tab is carried by
+ * surface, weight and border rather than by an underline alone.
+ *
+ * States: one selected at a time; keyboard arrow navigation via Radix.
+ */
 export function Tabs({ items, defaultValue, label }: TabsProps) {
   const first = items[0]?.value ?? "";
   return (
-    <RadixTabs.Root defaultValue={defaultValue ?? first} className="dt-tabs">
-      <RadixTabs.List className="dt-tabs__list" aria-label={label}>
+    <UiTabs defaultValue={defaultValue ?? first} className="dt-tabs">
+      <UiTabsList className="dt-tabs__list" aria-label={label}>
         {items.map((item) => (
-          <RadixTabs.Trigger key={item.value} value={item.value} className="dt-tabs__trigger">
+          <UiTabsTrigger key={item.value} value={item.value} className="dt-tabs__trigger">
             {item.label}
-          </RadixTabs.Trigger>
+          </UiTabsTrigger>
         ))}
-      </RadixTabs.List>
+      </UiTabsList>
       {items.map((item) => (
-        <RadixTabs.Content key={item.value} value={item.value} className="dt-tabs__content">
+        <UiTabsContent key={item.value} value={item.value} className="dt-tabs__content">
           {item.content}
-        </RadixTabs.Content>
+        </UiTabsContent>
       ))}
-    </RadixTabs.Root>
+    </UiTabs>
   );
 }
 

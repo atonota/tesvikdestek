@@ -50,7 +50,6 @@ function gridAreasOf(selector: string): string[] {
 
 describe("the guard reads the stylesheet it claims to read", () => {
   it("finds the shell rules at all", () => {
-    expect(rule(".dt-shell__rail").length).toBeGreaterThan(0);
     expect(rule(".dt-shell__conversion").length).toBeGreaterThan(0);
     expect(SHEET).toMatch(/grid-template-areas/u);
   });
@@ -66,7 +65,6 @@ describe("header, conversion and content occupy distinct tracks", () => {
       [".dt-shell__header", "header"],
       [".dt-shell__conversion", "conversion"],
       [".dt-shell__content", "content"],
-      [".dt-shell__rail", "rail"],
       [".dt-shell__aside", "aside"],
     ] as const;
 
@@ -87,7 +85,6 @@ describe("header, conversion and content occupy distinct tracks", () => {
       "content",
       "conversion",
       "header",
-      "rail",
     ]);
   });
 
@@ -100,7 +97,7 @@ describe("header, conversion and content occupy distinct tracks", () => {
     expect(templates.length).toBeGreaterThan(1);
 
     const declared = new Set(templates.flatMap((template) => template.match(/[\w-]+/gu) ?? []));
-    for (const area of ["header", "conversion", "content", "rail", "aside", "bottom"]) {
+    for (const area of ["header", "conversion", "content", "aside", "bottom"]) {
       expect(declared, `no template declares "${area}"`).toContain(area);
     }
 
@@ -110,22 +107,6 @@ describe("header, conversion and content occupy distinct tracks", () => {
       expect(template).toMatch(/content/u);
       expect(template).toMatch(/conversion/u);
     }
-  });
-});
-
-describe("the desktop rail runs the height of the shell", () => {
-  it("no longer collapses to its own content height", () => {
-    const bodies = rule(".dt-shell__rail").join(" ");
-    expect(bodies).not.toMatch(/align-self:\s*start/u);
-  });
-
-  it("keeps the scroll-safe sticky behaviour on the list, not the column", () => {
-    // Sticky on a stretched grid item has nowhere to travel; the list inside it
-    // does, which is what makes a long navigation usable without pinning the
-    // page or hiding content behind the header.
-    const list = rule(".dt-shell__rail > ul").join(" ");
-    expect(list).toMatch(/position:\s*sticky/u);
-    expect(list).toMatch(/overflow-y:\s*auto/u);
   });
 });
 
@@ -153,15 +134,6 @@ describe("everything sticky sits below the header, not behind it", () => {
     // layout that merely lacks the offset rather than one built on `calc(… - )`
     // with nothing in it.
     expect(rule(".dt-shell").join(" ")).toMatch(/--dt-shell-header-h:\s*0px/u);
-  });
-
-  it("offsets the rail list by the header instead of pinning it to zero", () => {
-    const list = rule(".dt-shell__rail > ul").join(" ");
-    expect(list).toMatch(new RegExp(`inset-block-start:\\s*${HEADER_OFFSET.source}`, "u"));
-    expect(list).not.toMatch(/inset-block-start:\s*0\s*;/u);
-    // Bounded, or a navigation longer than the viewport pushes its own tail off
-    // the bottom of the screen with no way to reach it.
-    expect(list).toMatch(new RegExp(`max-block-size:\\s*calc\\([^;]*${HEADER_OFFSET.source}`, "u"));
   });
 
   it("keeps the right-hand assistant on screen with its own bounded scroll", () => {

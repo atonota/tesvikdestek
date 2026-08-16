@@ -1,0 +1,232 @@
+/*
+ * Tailwind CSS v4 — the styling engine for this package.
+ *
+ * This is the owner's binding decision (`~/Desktop/frontend-tecstack.md`,
+ * "Yol A"), and it comes with the rule that made it a decision rather than a
+ * preference: **Tailwind and SCSS never share a package.** Both extend CSS,
+ * Sass runs first and Tailwind second, and `theme()` output never reaches a
+ * Sass function - so this package has one styling system and no preprocessor.
+ *
+ * Loaded through `@tailwindcss/vite`, which is Tailwind's own Vite plugin and
+ * replaces the PostCSS chain entirely. There is no `postcss.config.*` here on
+ * purpose; keeping both pipelines emits the stylesheet twice.
+ *
+ * ## Why the theme is mapped rather than declared
+ *
+ * The design tokens in `tokens.css` are the product's contract, not a starting
+ * palette: parliament blue and lemon are checked for WCAG contrast in both
+ * themes by `design-system-contract.test.ts`, the radius scale is capped at
+ * 12px, and no type step is allowed below 1rem. Declaring a second palette here
+ * would give the product two sources of truth for colour and let one drift past
+ * a contrast gate the other still passes.
+ *
+ * So `@theme inline` *points at* the existing custom properties. `inline` is
+ * the operative word: it makes the generated utilities resolve to
+ * `var(--dt-color-…)` at use time rather than copying the value, which is what
+ * lets `bg-primary` follow the dark theme, the density setting and the font
+ * scale without Tailwind knowing any of them exist.
+ *
+ * ## Why the source scope is explicit
+ *
+ * Automatic source detection walks up to the nearest repository root. That is
+ * two directories above this package, where the FastAPI service, the generated
+ * static HTML pages and the root prototype live - none of which Tailwind should
+ * scan, and one of which is a 1.59 MB single-file document. `source(none)` plus
+ * two `@source` rules keeps the scan to the code that really uses utilities.
+ */
+
+/*
+ * The complete layer order, declared once and before anything registers a name.
+ *
+ * This line is load-bearing and its absence is not a style problem, it is a
+ * broken product. Layer order is fixed by the order names are *first*
+ * registered, and a later `@layer` statement can only append names that are new
+ * to it - it cannot move one that already exists. So with this line absent:
+ *
+ *   `@import "tailwindcss"`  registers  theme, base, components, utilities
+ *   `base.css`               registers  reset, base, layout, components, utilities
+ *                            → `reset` and `layout` are new, so they are
+ *                              appended, and the final order becomes
+ *                              theme, base, components, utilities, reset, layout
+ *
+ * `reset` after `utilities` means the reset wins over every Tailwind utility.
+ * Measured consequence, in Chromium on `/kayit`: `button { color: inherit }`
+ * from the reset beat `text-primary-foreground`, so the primary button rendered
+ * near-black text on parliament blue at a contrast ratio of 1.56:1 - an axe
+ * `color-contrast` failure at serious severity, on the product's most important
+ * control, on every screen.
+ *
+ * Declaring the full order up front fixes the sequence for both stylesheets:
+ * Tailwind's preflight first, the product's own reset over it, then the
+ * product's layout and component rules, and utilities last so a utility always
+ * wins - which is the whole premise of the master component layer.
+ */
+@layer theme, base, reset, layout, components, utilities;
+
+/*
+ * Tailwind without Preflight, on purpose.
+ *
+ * `@import "tailwindcss"` is three imports in a trench coat: the theme, the
+ * Preflight reset, and the utilities. This package takes the first and the
+ * third and refuses the second, because **the product already has a reset** -
+ * `base.css`'s `@layer reset` - and two resets in one document is not
+ * belt-and-braces, it is two sets of opinions about the same elements resolved
+ * by layer order.
+ *
+ * Measured cost of keeping both, before this change:
+ *
+ *  - Preflight sets `a { text-decoration: inherit }`, removing the user agent's
+ *    underline. `base.css` restates the link *colour* but never the decoration,
+ *    because it never had to - so links in running text lost their underline
+ *    and colour became the only thing distinguishing them. axe reported
+ *    `link-in-text-block` at serious severity on `/panel`: 2.12:1 against body
+ *    text where 3:1 is the floor for a colour-only distinction. That needed a
+ *    hand-written compensation rule listing every class that is a link but
+ *    should not look like one - a rule that would have to grow with the
+ *    product, forever.
+ *  - Preflight also restates `list-style`, `margin`, `border-color`, heading
+ *    sizes and form-control appearance. `base.css`'s reset makes *different*
+ *    choices about several of those on purpose: `ul[class]` loses its markers
+ *    and a bare `<ul>` keeps them, which is a deliberate rule about who owns a
+ *    list. Preflight flattens that distinction for the whole document.
+ *
+ * What is *not* given up: the utilities are the same utilities. `border`
+ * carries its own `border-style` through the `--tw-border-style` property,
+ * `ring`, `outline` and `shadow` carry theirs, and every `@utility` and
+ * `@theme` feature works exactly as documented - none of that lives in
+ * Preflight. `master-stack-contract.test.ts` asserts Preflight's absence and
+ * `e2e/master-layer.spec.ts` measures, in a real browser, that a utility still
+ * beats a `.dt-*` component rule.
+ */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+
+@source "../../src/**/*.{ts,tsx}";
+@source "../../.storybook/**/*.{ts,tsx}";
+
+@theme inline {
+  /* --- surfaces and text ------------------------------------------------ */
+  --color-background: var(--dt-color-bg);
+  --color-foreground: var(--dt-color-fg);
+  --color-muted: var(--dt-color-surface-sunken);
+  --color-muted-foreground: var(--dt-color-fg-muted);
+  --color-card: var(--dt-color-surface);
+  --color-card-foreground: var(--dt-color-fg);
+  --color-popover: var(--dt-color-surface-raised);
+  --color-popover-foreground: var(--dt-color-fg);
+  --color-border: var(--dt-color-line);
+  --color-border-strong: var(--dt-color-line-strong);
+  --color-input: var(--dt-color-line-strong);
+  --color-ring: var(--dt-color-focus);
+
+  /* --- brand ------------------------------------------------------------
+   * Parliament blue leads, lemon supports. Both are mapped, never restated:
+   * the hex values live in `tokens.css` and are contrast-checked there. */
+  --color-primary: var(--dt-color-primary);
+  --color-primary-foreground: var(--dt-color-primary-fg);
+  --color-primary-hover: var(--dt-color-primary-hover);
+  --color-primary-soft: var(--dt-color-primary-soft);
+  --color-secondary: var(--dt-color-secondary);
+  --color-secondary-foreground: var(--dt-color-secondary-fg);
+  --color-secondary-hover: var(--dt-color-secondary-hover);
+  --color-secondary-soft: var(--dt-color-secondary-soft);
+  --color-accent: var(--dt-color-accent);
+  --color-accent-foreground: var(--dt-color-accent-fg);
+  --color-accent-soft: var(--dt-color-accent-soft);
+  --color-destructive: var(--dt-color-danger);
+  --color-destructive-foreground: var(--dt-color-danger-fg);
+  --color-destructive-soft: var(--dt-color-danger-soft);
+
+  /* --- the four outcome semantics --------------------------------------
+   * The domain has exactly four outcomes and no "success": a green tick is a
+   * claim this product is not entitled to make. */
+  --color-outcome-candidate: var(--dt-outcome-candidate-fg);
+  --color-outcome-candidate-bg: var(--dt-outcome-candidate-bg);
+  --color-outcome-candidate-line: var(--dt-outcome-candidate-line);
+  --color-outcome-ineligible: var(--dt-outcome-ineligible-fg);
+  --color-outcome-ineligible-bg: var(--dt-outcome-ineligible-bg);
+  --color-outcome-ineligible-line: var(--dt-outcome-ineligible-line);
+  --color-outcome-conditional: var(--dt-outcome-conditional-fg);
+  --color-outcome-conditional-bg: var(--dt-outcome-conditional-bg);
+  --color-outcome-conditional-line: var(--dt-outcome-conditional-line);
+  --color-outcome-insufficient: var(--dt-outcome-insufficient-fg);
+  --color-outcome-insufficient-bg: var(--dt-outcome-insufficient-bg);
+  --color-outcome-insufficient-line: var(--dt-outcome-insufficient-line);
+
+  /* --- shape -----------------------------------------------------------
+   * Flat 2.0: real edges, restrained elevation, and a corner scale that stops
+   * at 12px (0.75rem). Tailwind's own scale runs to `rounded-4xl` and includes
+   * `rounded-full`; every step here is clamped to the product's ceiling so a
+   * `rounded-xl` copied out of a shadcn snippet cannot exceed it. The search
+   * input is the one deliberate exception and carries its own token. */
+  --radius-xs: var(--dt-radius-sm);
+  --radius-sm: var(--dt-radius-sm);
+  --radius-md: var(--dt-radius);
+  --radius-lg: var(--dt-radius-lg);
+  --radius-xl: var(--dt-radius-lg);
+  --radius-2xl: var(--dt-radius-lg);
+  --radius-3xl: var(--dt-radius-lg);
+  --radius-4xl: var(--dt-radius-lg);
+
+  --shadow-flat-1: var(--dt-shadow-1);
+  --shadow-flat-2: var(--dt-shadow-2);
+
+  /* --- type ------------------------------------------------------------
+   * Roboto is bundled locally. The scale bottoms out at 1rem in every variant:
+   * `text-sm` and `text-xs` remain *relative* steps that differ by weight and
+   * colour rather than by being too small to read on a phone. */
+  --font-sans: var(--dt-font-sans);
+  --font-mono: var(--dt-font-mono);
+  --text-xs: var(--dt-font-size-xs);
+  --text-sm: var(--dt-font-size-sm);
+  --text-base: var(--dt-font-size-base);
+  --text-lg: var(--dt-font-size-lg);
+  --text-xl: var(--dt-font-size-xl);
+  --text-2xl: var(--dt-font-size-2xl);
+
+  /* --- motion -----------------------------------------------------------
+   * Motion-first, and `prefers-reduced-motion` is absolute: the duration token
+   * collapses to 0ms at the token layer, so every utility built on it stops
+   * moving without a single component having to ask. */
+  --default-transition-duration: var(--dt-motion-duration);
+  --default-transition-timing-function: var(--dt-motion-ease);
+
+  /* --- touch ------------------------------------------------------------ */
+  --spacing-touch: var(--dt-target-touch);
+}
+
+/*
+ * The one utility Tailwind cannot express as a token.
+ *
+ * The search field is the single, deliberate exception to the 12px ceiling in
+ * the product's shape contract. It is written here rather than left to a
+ * component so the exception is declared once, in the styling layer, where the
+ * ceiling itself is declared.
+ */
+@utility rounded-search {
+  border-radius: 12px;
+}
+
+/*
+ * The shimmer sweep.
+ *
+ * Declared here rather than inside a component, because it is one motion the
+ * whole product shares and because the reduced-motion contract has to be
+ * answerable in one place. The animation itself is stopped by the variants on
+ * `Shimmer` - the OS preference and the product's own setting - rather than by
+ * a `prefers-reduced-motion` block here, so that a component can never opt back
+ * into it by overriding a class.
+ *
+ * A sweep rather than a pulse: a pulsing box reads as "disabled" and a
+ * travelling highlight reads as "arriving", which is the thing the reader is
+ * actually being told.
+ */
+@keyframes dt-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
+}

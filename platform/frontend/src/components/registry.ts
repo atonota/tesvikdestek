@@ -260,6 +260,10 @@ export const SUBSYSTEM_COMPONENT_SURFACES: Readonly<Record<string, ComponentSurf
   // adaptive
   AdaptiveShell: "route",
   AdaptiveAssistant: "route",
+  ShellHeaderSpotlight: "route",
+  ShellSidebarNav: "route",
+  ShellSidebarCommand: "route",
+  ShellAccountMenu: "route",
   // forms
   Select: "route",
   AppForm: "route",

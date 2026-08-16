@@ -96,6 +96,33 @@
       "conversion"
       "bottom";
     block-size: 100dvh;
+    /**
+     * Taken out of flow, so the bounded frame really is bounded.
+     *
+     * `block-size: 100dvh` alone bounds the frame's *painting* but not the
+     * document: the shell is still an in-flow box, `.dt-shell__content` is an
+     * `overflow: auto` scroller inside it, and Chrome reports the scroller's
+     * unclipped content on `document.documentElement.scrollHeight`. The
+     * viewport then scrolls even though nothing visible overflows it, which
+     * carries the whole 100dvh frame - header, pinned conversion action and
+     * thumb bar with it - off the top of the screen.
+     *
+     * Measured in Chromium at 320x568 on `/kaynaklar`: `documentElement`
+     * reported a scroll height of 2499 against a client height of 568, and
+     * `window.scrollTo(0, 5000)` moved the page 1931px, putting the shell at
+     * `y = -1931`. `overflow: hidden` on `<html>` does not stop it - `body`
+     * already carries `overflow-x: hidden`, which propagates to the viewport
+     * and wins - so the fix has to be structural rather than another clip.
+     *
+     * `position: fixed` removes the shell from flow: the document has nothing
+     * to scroll, `scrollHeight` returns to 568, and the only scroller left is
+     * the content region, which is the arrangement this whole block describes.
+     * The desktop branch overrides it back to `static`, because there the page
+     * is supposed to travel - the rail and the assistant are `position: sticky`
+     * and need it to.
+     */
+    position: fixed;
+    inset: 0;
     background: var(--dt-color-bg);
     color: var(--dt-color-fg);
   }
@@ -135,6 +162,150 @@
     background: var(--dt-color-surface-sunken);
   }
 
+  /**
+   * The top context strip: organisation/workspace, role and source health.
+   *
+   * `data-header-strip`, never `data-header-layer` - `adaptive.test.tsx`'s
+   * layout test and `cognitive-shell-v2.test.tsx`'s "still carries two
+   * distinct header layers" both count `[data-header-layer]` elements
+   * exactly, and this third row is real chrome without being a third layer
+   * in that accounting.
+   *
+   * Tone reuses the app's existing outcome colour pairs rather than
+   * inventing a parallel palette: `ok`→candidate (green), `warning`→
+   * conditional (amber), `bad`→ineligible (red), `neutral`→insufficient
+   * (grey-blue, the same colour this app already uses for "not enough data
+   * to say").
+   */
+  .dt-shell__identity-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    row-gap: 0.2rem;
+    padding-block: 0.3rem;
+    padding-inline: calc(var(--dt-density-pad-x) + env(safe-area-inset-left, 0px))
+      calc(var(--dt-density-pad-x) + env(safe-area-inset-right, 0px));
+    border-block-end: 1px solid var(--dt-color-line);
+    background: var(--dt-color-surface-sunken);
+    color: var(--dt-color-fg-muted);
+    font-size: var(--dt-font-size-sm);
+    min-inline-size: 0;
+  }
+
+  /**
+   * Organisation + role, grouped so the strip has exactly two wrap points -
+   * before this group and before source health - instead of one per cell.
+   * A group that cannot itself fit next to source health drops to its own
+   * row as a whole; the label inside it never breaks mid-word, because
+   * `.dt-shell__identity-cell` stays `white-space: nowrap` and truncates
+   * with an ellipsis instead.
+   */
+  .dt-shell__identity-primary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-inline-size: 0;
+    flex: 1 1 auto;
+    max-inline-size: 100%;
+  }
+
+  .dt-shell__identity-cell,
+  .dt-shell__identity-health-label {
+    overflow: clip;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-inline-size: 0;
+  }
+
+  /**
+   * At 320/390 the full-sentence fallback labels this strip renders (see
+   * `AdaptiveShell`'s own identity cells) no longer overflow raw - they are
+   * already short - but the strip still commits to an intentional two-row
+   * shape here rather than trusting flex-wrap's per-item fallback, which is
+   * what produced the three-line clipped header this rule replaces: source
+   * health always starts its own row, and organisation/role share the first
+   * one, both bounded to the strip's own width so neither can push past it.
+   */
+  @media (max-width: 26.5rem) {
+    .dt-shell__identity-primary {
+      flex-basis: 100%;
+    }
+
+    .dt-shell__identity-spacer {
+      display: none;
+    }
+
+    .dt-shell__identity-health {
+      flex-basis: 100%;
+      max-inline-size: 100%;
+    }
+  }
+
+  .dt-shell__identity-cell[data-tone="ok"] {
+    color: var(--dt-outcome-candidate-fg);
+  }
+
+  .dt-shell__identity-cell[data-tone="warning"] {
+    color: var(--dt-outcome-conditional-fg);
+  }
+
+  .dt-shell__identity-cell[data-tone="bad"] {
+    color: var(--dt-outcome-ineligible-fg);
+  }
+
+  .dt-shell__identity-sep {
+    inline-size: 1px;
+    block-size: 0.8rem;
+    background: var(--dt-color-line-strong);
+    flex: none;
+  }
+
+  .dt-shell__identity-spacer {
+    flex: 1;
+    min-inline-size: 0.5rem;
+  }
+
+  .dt-shell__identity-health {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex: none;
+    max-inline-size: 60%;
+  }
+
+  .dt-shell__identity-health-dot {
+    inline-size: 6px;
+    block-size: 6px;
+    border-radius: var(--dt-radius-lg);
+    background: var(--dt-outcome-insufficient-line);
+    flex: none;
+  }
+
+  .dt-shell__identity-health[data-tone="ok"] {
+    color: var(--dt-outcome-candidate-fg);
+  }
+
+  .dt-shell__identity-health[data-tone="ok"] .dt-shell__identity-health-dot {
+    background: var(--dt-outcome-candidate-line);
+  }
+
+  .dt-shell__identity-health[data-tone="warning"] {
+    color: var(--dt-outcome-conditional-fg);
+  }
+
+  .dt-shell__identity-health[data-tone="warning"] .dt-shell__identity-health-dot {
+    background: var(--dt-outcome-conditional-line);
+  }
+
+  .dt-shell__identity-health[data-tone="bad"] {
+    color: var(--dt-outcome-ineligible-fg);
+  }
+
+  .dt-shell__identity-health[data-tone="bad"] .dt-shell__identity-health-dot {
+    background: var(--dt-outcome-ineligible-line);
+  }
+
   .dt-shell__brand {
     font-weight: var(--dt-font-weight-bold);
     color: var(--dt-color-primary);
@@ -151,12 +322,120 @@
     min-inline-size: 0;
   }
 
-  /* The two header controls that open the 320px sheets. */
-  .dt-shell__nav-trigger,
+  /* The header control that opens the 320px assistant sheet. */
   .dt-shell__aside-trigger {
     display: flex;
     align-items: center;
     min-inline-size: 0;
+  }
+
+  .dt-shell__notifications {
+    display: flex;
+    align-items: center;
+    flex: none;
+  }
+
+  .dt-shell__notifications-trigger {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: var(--dt-target-touch);
+    min-block-size: var(--dt-target-touch);
+    border: 1px solid var(--dt-color-line);
+    border-radius: var(--dt-radius);
+    background: transparent;
+    color: var(--dt-color-fg-muted);
+    cursor: not-allowed;
+  }
+
+  .dt-shell__notifications-trigger[data-state="enabled"] {
+    color: inherit;
+    cursor: pointer;
+  }
+
+  /* A small card, not a pill - same Flat 2.0 recipe `.dt-badge` uses. */
+  .dt-shell__notifications-badge {
+    position: absolute;
+    inset-block-start: -0.3rem;
+    inset-inline-end: -0.3rem;
+    min-inline-size: 1.4rem;
+    padding: 0 0.25rem;
+    border-radius: var(--dt-radius-sm);
+    background: var(--dt-color-danger);
+    color: var(--dt-color-danger-fg);
+    font-size: var(--dt-font-size-sm);
+    font-weight: var(--dt-font-weight-bold);
+    line-height: 1.4rem;
+    text-align: center;
+  }
+
+  .dt-shell__menu-toggle,
+  .dt-shell__avatar-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: var(--dt-target-touch);
+    min-block-size: var(--dt-target-touch);
+    border: 0;
+    border-radius: var(--dt-radius);
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    flex: none;
+    transition: background var(--dt-motion-duration) var(--dt-motion-ease);
+  }
+
+  .dt-shell__menu-toggle:hover,
+  .dt-shell__avatar-toggle:hover {
+    background: var(--dt-color-surface-sunken);
+  }
+
+  .dt-shell__avatar-toggle {
+    border: 1px solid var(--dt-color-line);
+  }
+
+  /* The three-bar hamburger, morphing to an X. */
+  .dt-shell__menu-bars {
+    position: relative;
+    display: block;
+    inline-size: 1.25rem;
+    block-size: 0.9rem;
+  }
+
+  .dt-shell__menu-bar {
+    position: absolute;
+    inset-inline-start: 0;
+    inline-size: 100%;
+    block-size: 2px;
+    border-radius: var(--dt-radius-sm);
+    background: currentColor;
+    transition: transform var(--dt-motion-duration) var(--dt-motion-ease),
+      opacity var(--dt-motion-duration) var(--dt-motion-ease);
+  }
+
+  .dt-shell__menu-bar--top {
+    inset-block-start: 0;
+  }
+
+  .dt-shell__menu-bar--mid {
+    inset-block-start: 0.45rem;
+  }
+
+  .dt-shell__menu-bar--bot {
+    inset-block-start: 0.9rem;
+  }
+
+  .dt-shell__menu-toggle[data-open="true"] .dt-shell__menu-bar--top {
+    transform: translateY(0.45rem) rotate(45deg);
+  }
+
+  .dt-shell__menu-toggle[data-open="true"] .dt-shell__menu-bar--mid {
+    opacity: 0;
+  }
+
+  .dt-shell__menu-toggle[data-open="true"] .dt-shell__menu-bar--bot {
+    transform: translateY(-0.45rem) rotate(-45deg);
   }
 
   .dt-shell__title {
@@ -170,60 +449,646 @@
     min-inline-size: 0;
   }
 
-  /* ------------------------------------------------------ the navigation */
-  .dt-shell__rail {
-    grid-area: rail;
-    background: var(--dt-color-surface);
-    border-inline-end: 1px solid var(--dt-color-line);
+  /* --------------------------------------------------- the header Spotlight */
+  /**
+   * An input that expands its own border in place, never a portal.
+   *
+   * `Cmd/Ctrl+K` and a typed query both flip `data-expanded`; the width
+   * transition happens on this element only, which is what
+   * `cognitive-shell-v2.spec.ts` checks by comparing this box's own bounding
+   * rect before and after the shortcut - the same element grows, nothing new
+   * appears elsewhere.
+   */
+  .dt-spotlight {
+    position: relative;
+    min-inline-size: 0;
+    flex: 1 1 12rem;
   }
 
-  /**
-   * The scrolling part is the list, not the column.
-   *
-   * A sticky element that has been stretched to fill its grid area has nowhere
-   * to travel, so pinning the column would do nothing while also capping its
-   * height. The list travels instead: it stays in view past a long page and
-   * scrolls on its own when the navigation is taller than the viewport.
-   */
-  .dt-shell__rail > ul {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    position: sticky;
-    /**
-     * Below the header, not behind it.
-     *
-     * The header is sticky at `0` and sits in a higher stacking context, so a
-     * list pinned to `0` shares that band and loses. What that looked like in a
-     * browser: after scrolling, Kokpit and Kararlar were under the header -
-     * visible, focusable and unclickable.
-     */
-    inset-block-start: var(--dt-shell-header-h, 0px);
-    max-block-size: calc(100dvh - var(--dt-shell-header-h, 0px));
+  .dt-spotlight__field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-block-size: var(--dt-target-touch);
+    padding-inline: var(--dt-density-pad-x);
+    border: 1px solid var(--dt-color-line);
+    border-radius: var(--dt-radius-lg);
+    background: var(--dt-color-bg);
+    color: var(--dt-color-fg-muted);
+    inline-size: min(14rem, 100%);
+    transition: inline-size var(--dt-motion-duration) var(--dt-motion-ease),
+      border-color var(--dt-motion-duration) var(--dt-motion-ease),
+      box-shadow var(--dt-motion-duration) var(--dt-motion-ease),
+      color var(--dt-motion-duration) var(--dt-motion-ease);
+  }
+
+  .dt-spotlight[data-expanded="true"] .dt-spotlight__field {
+    inline-size: min(32rem, 100%);
+    border-color: var(--dt-color-primary);
+    background: var(--dt-color-surface);
+    color: var(--dt-color-fg);
+    box-shadow: var(--dt-shadow-2);
+  }
+
+  .dt-spotlight__input {
+    flex: 1;
+    min-inline-size: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+  }
+
+  .dt-spotlight__input:focus-visible {
+    outline: none;
+  }
+
+  .dt-spotlight__kbd {
+    flex: none;
+    border: 1px solid var(--dt-color-line);
+    border-radius: var(--dt-radius-sm);
+    padding: 0.1rem 0.4rem;
+    color: var(--dt-color-fg-muted);
+    font-size: var(--dt-font-size-sm);
+    line-height: 1.4;
+  }
+
+  @media (max-width: 47.99rem) {
+    .dt-spotlight__kbd {
+      display: none;
+    }
+  }
+
+  .dt-spotlight__execute {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    flex: none;
+    border: 1px solid var(--dt-color-primary);
+    border-radius: var(--dt-radius);
+    background: var(--dt-color-primary);
+    color: var(--dt-color-primary-fg);
+    cursor: pointer;
+    transition: background var(--dt-motion-duration) var(--dt-motion-ease);
+  }
+
+  .dt-spotlight__execute:hover {
+    background: var(--dt-color-primary-hover);
+  }
+
+  /* The expanded surface: idle tiles above, filtered results below - one box. */
+  .dt-spotlight__surface {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: calc(100% + 0.3rem);
+    z-index: var(--dt-z-dialog);
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.4rem;
+    border: 1px solid var(--dt-color-line);
+    border-radius: var(--dt-radius);
+    background: var(--dt-color-surface);
+    box-shadow: var(--dt-shadow-2);
+    max-block-size: min(28rem, 70vh);
     overflow-y: auto;
   }
 
-  .dt-shell__nav-link {
+  /* Flex-wrap, not grid: a grid track needs a `minmax(0, …)` minimum to stay
+     bounded at 320px (`adaptive.test.tsx`), and a flex item wraps to its own
+     line at the same width without that ceremony. */
+  .dt-spotlight__tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    padding-block-end: 0.4rem;
+    border-block-end: 1px solid var(--dt-color-line);
+    margin-block-end: 0.4rem;
+  }
+
+  .dt-spotlight__tile {
+    display: flex;
+    align-items: center;
+    flex: 1 1 9rem;
+    min-inline-size: 0;
+    min-block-size: var(--dt-target-touch);
+    padding: 0.4rem var(--dt-density-pad-x);
+    border: 1px solid var(--dt-color-line);
+    border-radius: var(--dt-radius);
+    background: var(--dt-color-bg);
+    color: inherit;
+    text-align: start;
+    cursor: pointer;
+    transition: background var(--dt-motion-duration) var(--dt-motion-ease);
+  }
+
+  .dt-spotlight__tile:hover {
+    background: var(--dt-color-surface-sunken);
+  }
+
+  .dt-spotlight__results {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.1rem;
+  }
+
+  /* ------------------------------------------------- the surface's own head */
+  .dt-spotlight__surface-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.4rem;
+    padding: 0.2rem 0.4rem 0.5rem;
+    border-block-end: 1px solid var(--dt-color-line);
+    margin-block-end: 0.4rem;
+  }
+
+  .dt-spotlight__surface-title {
+    font-weight: var(--dt-font-weight-medium);
+    min-inline-size: 0;
+  }
+
+  .dt-spotlight__provider-status {
+    color: var(--dt-color-fg-muted);
+    font-size: var(--dt-font-size-sm);
+    text-align: end;
+  }
+
+  /* ------------------------------------------ AI answer, demonstration-only */
+  .dt-spotlight__answer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.4rem;
+    border-block-end: 1px solid var(--dt-color-line);
+    margin-block-end: 0.4rem;
+  }
+
+  .dt-spotlight__answer-text {
+    margin: 0;
+  }
+
+  .dt-spotlight__answer-confidence {
+    color: var(--dt-color-fg-muted);
+    font-size: var(--dt-font-size-sm);
+  }
+
+  .dt-spotlight__citations {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .dt-spotlight__citation {
+    display: flex;
+    flex-direction: column;
+    padding-inline-start: 0.6rem;
+    border-inline-start: 2px solid var(--dt-color-line-strong);
+  }
+
+  .dt-spotlight__citation-title {
+    font-weight: var(--dt-font-weight-medium);
+  }
+
+  .dt-spotlight__citation-meta {
+    color: var(--dt-color-fg-muted);
+    font-size: var(--dt-font-size-sm);
+  }
+
+  /* ------------------------------------ confirmation preview, demonstration-only */
+  .dt-spotlight__confirmation {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.6rem;
+    border: 1px solid var(--dt-color-line);
+    border-radius: var(--dt-radius);
+    background: var(--dt-color-surface-sunken);
+    margin-block-end: 0.4rem;
+  }
+
+  .dt-spotlight__confirmation-text {
+    margin: 0;
+    color: var(--dt-color-fg-muted);
+  }
+
+  .dt-spotlight__confirmation-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .dt-spotlight__confirm,
+  .dt-spotlight__reject {
+    min-block-size: var(--dt-target-touch);
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--dt-radius);
+    cursor: pointer;
+    font-weight: var(--dt-font-weight-medium);
+  }
+
+  .dt-spotlight__confirm {
+    border: 1px solid var(--dt-color-primary);
+    background: var(--dt-color-primary);
+    color: var(--dt-color-primary-fg);
+  }
+
+  .dt-spotlight__reject {
+    border: 1px solid var(--dt-color-line-strong);
+    background: var(--dt-color-surface);
+    color: inherit;
+  }
+
+  .dt-spotlight__option {
+    display: block;
+    inline-size: 100%;
+    min-block-size: var(--dt-target-touch);
+    padding: 0.4rem var(--dt-density-pad-x);
+    border: 0;
+    border-radius: var(--dt-radius);
+    background: none;
+    color: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+
+  .dt-spotlight__option:hover {
+    background: var(--dt-color-surface-sunken);
+  }
+
+  .dt-spotlight__status {
+    margin: 0;
+    padding: 0.4rem var(--dt-density-pad-x);
+    color: var(--dt-color-fg-muted);
+    font-size: var(--dt-font-size-sm);
+  }
+
+  /* -------------------------------------------------------- the nav drawer */
+  /**
+   * The one adaptive navigation drawer, at every width.
+   *
+   * A modal overlay identical in shape to the sheets below - portalled,
+   * backdropped, focus-trapped - but built directly on
+   * `@radix-ui/react-dialog` rather than the `Sheet` wrapper: two real
+   * triggers (hamburger, avatar) share this one dialog, and `AdaptiveShell`
+   * manages the trigger ref and focus restoration itself for that reason.
+   */
+  /**
+   * A full-width sheet beneath the header, not a left rail.
+   *
+   * Both the backdrop and the panel start at the header's own measured
+   * height rather than at the viewport's top edge, so the header - and the
+   * hamburger's own X - stay visible and clickable above the sheet, purely
+   * because the two boxes never share a pixel; no z-index game is needed.
+   */
+  .dt-drawer__overlay {
+    position: fixed;
+    inset-inline: 0;
+    inset-block-start: var(--dt-shell-header-h, 0px);
+    inset-block-end: 0;
+    background: rgb(13 17 23 / 45%);
+    z-index: var(--dt-z-drawer);
+  }
+
+  .dt-drawer__content {
+    position: fixed;
+    inset-inline: 0;
+    inset-block-start: var(--dt-shell-header-h, 0px);
+    inset-block-end: 0;
+    z-index: var(--dt-z-dialog);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    inline-size: auto;
+    background: var(--dt-color-surface);
+    box-shadow: var(--dt-shadow-2);
+    padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
+  }
+
+  .dt-drawer__command {
+    padding: 0.6rem var(--dt-density-pad-x);
+    border-block-end: 1px solid var(--dt-color-line);
+  }
+
+  .dt-drawer__command-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-block-size: var(--dt-target-touch);
+    padding-inline: var(--dt-density-pad-x);
+    border: 1px solid var(--dt-color-line-strong);
+    border-radius: var(--dt-radius-lg);
+    background: var(--dt-color-surface-sunken);
+    color: var(--dt-color-fg-muted);
+  }
+
+  .dt-drawer__command-label {
+    color: var(--dt-color-fg-muted);
+    font-size: var(--dt-font-size-sm);
+  }
+
+  .dt-drawer__command-input {
+    flex: 1;
+    min-inline-size: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+  }
+
+  .dt-drawer__command-execute {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    flex: none;
+    border: 0;
+    border-radius: var(--dt-radius);
+    background: var(--dt-color-primary);
+    color: var(--dt-color-primary-fg);
+    cursor: pointer;
+    transition: background var(--dt-motion-duration) var(--dt-motion-ease);
+  }
+
+  .dt-drawer__command-execute:hover {
+    background: var(--dt-color-primary-hover);
+  }
+
+  .dt-drawer__command-results {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.1rem;
+    margin-block-start: 0.4rem;
+  }
+
+  .dt-drawer__command-option {
+    display: block;
+    inline-size: 100%;
+    min-block-size: var(--dt-target-touch);
+    padding: 0.4rem var(--dt-density-pad-x);
+    border: 0;
+    border-radius: var(--dt-radius);
+    background: none;
+    color: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+
+  .dt-drawer__command-option:hover {
+    background: var(--dt-color-surface-sunken);
+  }
+
+  .dt-drawer__command-status {
+    margin: 0.4rem 0 0;
+    color: var(--dt-color-fg-muted);
+    font-size: var(--dt-font-size-sm);
+  }
+
+  .dt-drawer__nav {
+    padding: 0.4rem 0;
+    min-inline-size: 0;
+    min-block-size: 0;
+    overflow-y: auto;
+  }
+
+  .dt-drawer__nav > ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .dt-drawer__nav-disclosure {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    inline-size: 100%;
+    min-block-size: 52px;
+    padding: 0.4rem var(--dt-density-pad-x);
+    border: 0;
+    background: none;
+    color: inherit;
+    font-weight: var(--dt-font-weight-medium);
+    text-align: start;
+    cursor: pointer;
+    transition: background var(--dt-motion-duration) var(--dt-motion-ease);
+  }
+
+  .dt-drawer__nav-disclosure:hover {
+    background: var(--dt-color-surface-sunken);
+  }
+
+  /* The 28px icon tile every row carries, real icon or a one-letter fallback. */
+  .dt-drawer__nav-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 28px;
+    block-size: 28px;
+    flex: none;
+    border-radius: var(--dt-radius);
+    background: var(--dt-color-surface-sunken);
+    color: var(--dt-color-fg-muted);
+    font-weight: var(--dt-font-weight-bold);
+    font-size: var(--dt-font-size-sm);
+  }
+
+  .dt-drawer__nav-disclosure[aria-expanded="true"] .dt-drawer__nav-icon {
+    background: var(--dt-color-primary);
+    color: var(--dt-color-primary-fg);
+  }
+
+  .dt-drawer__nav-status-dot {
+    inline-size: 8px;
+    block-size: 8px;
+    border-radius: var(--dt-radius-lg);
+    background: var(--dt-outcome-insufficient-line);
+    flex: none;
+  }
+
+  .dt-drawer__nav-status-dot[data-tone="ok"] {
+    background: var(--dt-outcome-candidate-line);
+  }
+
+  .dt-drawer__nav-status-dot[data-tone="warning"] {
+    background: var(--dt-outcome-conditional-line);
+  }
+
+  .dt-drawer__nav-status-dot[data-tone="bad"] {
+    background: var(--dt-outcome-ineligible-line);
+  }
+
+  .dt-drawer__nav-count {
+    flex: none;
+    color: var(--dt-color-fg-muted);
+    font-size: var(--dt-font-size-sm);
+    font-weight: var(--dt-font-weight-medium);
+  }
+
+  .dt-drawer__nav-caret {
+    margin-inline-start: auto;
+    color: var(--dt-color-fg-muted);
+    transition: transform var(--dt-motion-duration) var(--dt-motion-ease);
+  }
+
+  /* Real quick actions for a section, when a caller has any to give it. */
+  .dt-drawer__nav-actions {
+    list-style: none;
+    margin: 0.3rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .dt-drawer__nav-action {
+    display: flex;
+    flex-direction: column;
+    inline-size: 100%;
+    min-block-size: var(--dt-target-touch);
+    padding: 0.35rem 0.5rem;
+    border: 0;
+    border-radius: var(--dt-radius-sm);
+    background: none;
+    color: inherit;
+    text-align: start;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background var(--dt-motion-duration) var(--dt-motion-ease);
+  }
+
+  .dt-drawer__nav-action:hover {
+    background: var(--dt-color-surface-sunken);
+  }
+
+  .dt-drawer__nav-action-title {
+    font-weight: var(--dt-font-weight-medium);
+  }
+
+  .dt-drawer__nav-action-desc {
+    color: var(--dt-color-fg-muted);
+    font-size: var(--dt-font-size-sm);
+  }
+
+  .dt-drawer__nav-caret.is-open {
+    transform: rotate(180deg);
+  }
+
+  /**
+   * Collapsed to zero block size, never unmounted.
+   *
+   * The link inside stays in the DOM - and reachable by script - whether or
+   * not a person has opened this section, which is what lets a keyboard
+   * shortcut or an href inspection reach a destination without a click. Only
+   * the paint collapses here.
+   */
+  .dt-drawer__nav-panel {
+    /* `clip`, not `hidden`: this shell's own rule bans a literal
+       `overflow: hidden` anywhere in this file - see `adaptive.test.tsx`. */
+    overflow: clip;
+    max-block-size: 0;
+    padding-inline-start: calc(var(--dt-density-pad-x) + 1.6rem);
+  }
+
+  .dt-drawer__nav-panel[data-open="true"] {
+    max-block-size: 12rem;
+  }
+
+  .dt-drawer__nav-link {
     display: flex;
     align-items: center;
     gap: 0.6rem;
     min-block-size: var(--dt-target-touch);
-    padding: 0.5rem var(--dt-density-pad-x);
+    padding-block: 0.4rem;
     color: inherit;
     text-decoration: none;
-    border-inline-start: 3px solid transparent;
   }
 
-  .dt-shell__nav-link.is-active {
-    border-inline-start-color: var(--dt-color-primary);
-    background: var(--dt-color-primary-soft);
+  .dt-drawer__nav-link.is-active {
+    color: var(--dt-color-primary);
     font-weight: var(--dt-font-weight-medium);
   }
 
-  .dt-shell__nav-link:hover {
+  .dt-drawer__footer {
+    border-block-start: 1px solid var(--dt-color-line);
+    padding: 0.6rem var(--dt-density-pad-x)
+      calc(var(--dt-density-pad-x) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .dt-drawer__account-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    inline-size: 100%;
+    min-block-size: var(--dt-target-touch);
+    padding: 0.4rem var(--dt-density-pad-x);
+    border: 1px solid var(--dt-color-line);
+    border-radius: var(--dt-radius);
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    transition: background var(--dt-motion-duration) var(--dt-motion-ease);
+  }
+
+  .dt-drawer__account-trigger:hover,
+  .dt-drawer__account-trigger[data-state="open"] {
     background: var(--dt-color-surface-sunken);
+  }
+
+  .dt-drawer__account-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 32px;
+    block-size: 32px;
+    flex: none;
+    border-radius: var(--dt-radius);
+    background: var(--dt-color-primary);
+    color: var(--dt-color-primary-fg);
+    font-weight: var(--dt-font-weight-bold);
+    font-size: var(--dt-font-size-sm);
+  }
+
+  .dt-drawer__account-identity {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-inline-size: 0;
+    text-align: start;
+  }
+
+  .dt-drawer__account-name {
+    font-weight: var(--dt-font-weight-medium);
+    overflow: clip;
+    text-overflow: ellipsis;
+  }
+
+  .dt-drawer__account-role {
+    color: var(--dt-color-fg-muted);
+    font-size: var(--dt-font-size-sm);
+  }
+
+  .dt-drawer__account-chevron {
+    flex: none;
+    color: var(--dt-color-fg-muted);
+    transition: transform var(--dt-motion-duration) var(--dt-motion-ease);
+  }
+
+  .dt-drawer__account-trigger[data-state="open"] .dt-drawer__account-chevron {
+    transform: rotate(180deg);
+  }
+
+  .dt-drawer__account-reason {
+    display: block;
+    color: var(--dt-color-fg-muted);
+    font-size: var(--dt-font-size-sm);
+    font-weight: var(--dt-font-weight-regular);
   }
 
   /* ------------------------------------------------------------ the sheets */
@@ -332,6 +1197,13 @@
     overflow-y: auto;
     overscroll-behavior-block: contain;
     min-inline-size: 0;
+  }
+
+  /* The page dims and softens behind the open sheet; the header, outside this
+     box, does not. */
+  .dt-shell[data-drawer="open"] .dt-shell__content {
+    filter: blur(2px);
+    transition: filter var(--dt-motion-duration) var(--dt-motion-ease);
   }
 
   /* It takes focus on a phone so a keyboard can scroll it, so it shows focus.
@@ -567,22 +1439,27 @@
      * frame here would leave the rail and the assistant nothing to stick to.
      */
     .dt-shell {
+      /* Back into flow: the page is what travels on this layout, and the
+         sticky assistant has nothing to stick to without it. Navigation is
+         the drawer at this width too, so there is no rail column to give it
+         room - the content runs the full width the assistant leaves it. */
+      position: static;
       block-size: auto;
       min-block-size: 100dvh;
-      grid-template-columns: minmax(0, 16rem) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr);
       grid-template-rows: auto auto minmax(0, 1fr);
       grid-template-areas:
-        "header header"
-        "rail conversion"
-        "rail content";
+        "header"
+        "conversion"
+        "content";
     }
 
     .dt-shell--with-rail {
-      grid-template-columns: minmax(0, 16rem) minmax(0, 1fr) minmax(0, 22rem);
+      grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
       grid-template-areas:
-        "header header header"
-        "rail conversion aside"
-        "rail content aside";
+        "header header"
+        "conversion aside"
+        "content aside";
     }
 
     .dt-shell__aside {

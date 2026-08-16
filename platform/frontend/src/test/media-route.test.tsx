@@ -57,7 +57,16 @@ describe("the route is reachable rather than merely addressable", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: "Dosya kütüphanesi" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: "Ana gezinme" })).toBeInTheDocument();
+    /*
+     * Cognitive Shell V2: navigation lives behind one modal drawer at every
+     * width, opened from the header. There is no persistent "Ana gezinme"
+     * landmark on screen until that drawer is open - see
+     * `cognitive-shell-v2.spec.ts`, "the drawer replaces the desktop
+     * persistent rail entirely" - so what proves this route is inside the
+     * signed-in shell is the hamburger that opens it, not a standing
+     * landmark.
+     */
+    expect(screen.getByRole("button", { name: /men(ü|u)/iu })).toBeInTheDocument();
   });
 });
 

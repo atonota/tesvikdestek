@@ -50,6 +50,11 @@
   --dt-color-secondary-soft: #fbf7d6;
 
   --dt-color-danger: #8f1d1d;
+  /* Read on the danger surface, and checked as a pair by the contract test.
+     White is right on the light theme's deep red and wrong on the dark theme's
+     tint, so this flips with the theme rather than being hard-coded in a
+     component. `text-white` on a destructive button was exactly that mistake. */
+  --dt-color-danger-fg: #ffffff;
   --dt-color-danger-soft: #fbeaea;
   --dt-color-focus: #0b63d6;
 
@@ -193,6 +198,7 @@
     --dt-color-secondary-soft: #26230f;
 
     --dt-color-danger: #f2a0a0;
+    --dt-color-danger-fg: #2a1717;
     --dt-color-danger-soft: #2a1717;
     --dt-color-focus: #8ab8ff;
 
@@ -247,6 +253,7 @@
   --dt-color-secondary-soft: #26230f;
 
   --dt-color-danger: #f2a0a0;
+  --dt-color-danger-fg: #2a1717;
   --dt-color-danger-soft: #2a1717;
   --dt-color-focus: #8ab8ff;
 

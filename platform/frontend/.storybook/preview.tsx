@@ -5,6 +5,11 @@ import { createMemoryRouter, RouterProvider } from "react-router";
 // in a different typeface is not a story of the real component.
 import "../src/design/roboto.css";
 
+// Tailwind first, for the reason `main.tsx` records: it establishes the layer
+// order that lets a utility beat a `.dt-*` component rule. A Storybook that
+// loads these sheets in a different order is not showing the real component.
+import "../src/design/tailwind.css";
+
 import "../src/design/tokens.css";
 import "../src/design/base.css";
 import "../src/design/components.css";

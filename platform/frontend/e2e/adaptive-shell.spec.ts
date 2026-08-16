@@ -72,21 +72,6 @@ async function scrollToEnd(page: Page): Promise<number> {
 }
 
 /**
- * What a real click at the centre of this element would actually hit.
- *
- * A link can be visible, focusable, correctly positioned in the accessibility
- * tree - and still be underneath the header, where the click lands on the
- * header instead. Only the hit test can tell those two apart.
- */
-async function receivesItsOwnClick(locator: Locator): Promise<boolean> {
-  return locator.evaluate((node) => {
-    const box = node.getBoundingClientRect();
-    const found = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
-    return found !== null && (node === found || node.contains(found));
-  });
-}
-
-/**
  * How far anything can be scrolled sideways. One pixel is rounding.
  *
  * The document *and* the content scrollport, because they are two places the
@@ -134,7 +119,7 @@ test.describe("adaptive shell at 320x568 [mocked backend]", () => {
       await expect(page.locator("[data-header-layer]")).toHaveCount(2);
 
       // The rail is a sheet here, reached through a toggle, not a visible column.
-      const toggle = page.getByRole("button", { name: /Menüyü aç/ });
+      const toggle = page.getByRole("button", { name: /Men(ü|u)/ });
       await expect(toggle).toBeVisible();
       await expect(toggle).toHaveAttribute("aria-expanded", "false");
       await expect(page.getByRole("dialog")).toHaveCount(0);
@@ -160,8 +145,8 @@ test.describe("adaptive shell at 320x568 [mocked backend]", () => {
     const main = page.locator("#ana-icerik");
     const before = await main.boundingBox();
 
-    await page.getByRole("button", { name: /Menüyü aç/ }).click();
-    const sheet = page.getByRole("dialog", { name: /Ana gezinme/ });
+    await page.getByRole("button", { name: /Men(ü|u)/ }).click();
+    const sheet = page.getByRole("dialog", { name: /Gezinme ve hesap/ });
     await expect(sheet).toBeVisible();
 
     // An overlay covers the content; an accordion moves it. The page a person
@@ -170,7 +155,7 @@ test.describe("adaptive shell at 320x568 [mocked backend]", () => {
     expect(after?.y).toBe(before?.y);
 
     // There is a real backdrop, and it covers the viewport.
-    const overlay = page.locator(".dt-sheet__overlay");
+    const overlay = page.locator(".dt-drawer__overlay");
     await expect(overlay).toBeVisible();
     const box = await overlay.boundingBox();
     expect(box?.width).toBeGreaterThanOrEqual(320);
@@ -184,13 +169,13 @@ test.describe("adaptive shell at 320x568 [mocked backend]", () => {
     await page.goto("./panel");
     await page.waitForLoadState("networkidle");
 
-    await page.getByRole("button", { name: /Menüyü aç/ }).click();
-    await expect(page.getByRole("dialog", { name: /Ana gezinme/ })).toBeVisible();
+    await page.getByRole("button", { name: /Men(ü|u)/ }).click();
+    await expect(page.getByRole("dialog", { name: /Gezinme ve hesap/ })).toBeVisible();
 
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toHaveCount(0);
 
-    const toggle = page.getByRole("button", { name: /Menüyü aç/ });
+    const toggle = page.getByRole("button", { name: /Men(ü|u)/ });
     await expect(toggle).toBeFocused();
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
   });
@@ -199,8 +184,8 @@ test.describe("adaptive shell at 320x568 [mocked backend]", () => {
     await page.goto("./panel");
     await page.waitForLoadState("networkidle");
 
-    await page.getByRole("button", { name: /Menüyü aç/ }).click();
-    const sheet = page.getByRole("dialog", { name: /Ana gezinme/ });
+    await page.getByRole("button", { name: /Men(ü|u)/ }).click();
+    const sheet = page.getByRole("dialog", { name: /Gezinme ve hesap/ });
     await expect(sheet).toBeVisible();
 
     for (let step = 0; step < 10; step += 1) {
@@ -530,8 +515,8 @@ test.describe("adaptive shell at 320x568 [mocked backend]", () => {
     await page.goto("./panel");
     await page.waitForLoadState("networkidle");
 
-    await page.getByRole("button", { name: /Menüyü aç/ }).click();
-    const sheet = page.getByRole("dialog", { name: /Ana gezinme/ });
+    await page.getByRole("button", { name: /Men(ü|u)/ }).click();
+    const sheet = page.getByRole("dialog", { name: /Gezinme ve hesap/ });
     await expect(sheet).toBeVisible();
 
     // Located by class, not by role: while the sheet is open the page behind it
@@ -581,39 +566,27 @@ test.describe("adaptive shell at 320x568 [mocked backend]", () => {
 test.describe("adaptive shell at 1440x900 [mocked backend]", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test("the panel shows the persistent rail and the assistant column", async ({ page }) => {
+  test("the drawer replaces the persistent rail at 1440px; the assistant column remains", async ({
+    page,
+  }) => {
     await page.goto("./panel");
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByRole("navigation", { name: "Ana gezinme" })).toBeVisible();
+    // Cognitive Shell V2 retired the always-visible desktop rail: navigation
+    // lives behind the shared drawer at every width, so no navigation
+    // landmark renders until the drawer is opened.
+    await expect(page.getByRole("navigation", { name: "Ana gezinme" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /Men(ü|u)/ })).toBeVisible();
+
     await expect(page.getByRole("complementary", { name: /Bağlam ve yardımcı/ })).toBeVisible();
     await expect(page.getByRole("region", { name: /Sıradaki adımlar/ })).toBeVisible();
-    // The sheet controls and the thumb bar belong to small screens only; all
-    // three being present here would be duplicate controls for the same thing.
-    await expect(page.getByRole("button", { name: /Menüyü aç/ })).toBeHidden();
+    // The mobile-only assistant sheet trigger and the phone thumb bar belong
+    // to small screens only.
     await expect(page.getByRole("button", { name: "Yardımcı" })).toBeHidden();
     await expect(page.getByRole("navigation", { name: "Hızlı gezinme" })).toBeHidden();
     await expect(page.getByRole("dialog")).toHaveCount(0);
 
     expect(await horizontalOverflow(page), "the desktop panel scrolls sideways").toBeLessThanOrEqual(1);
-  });
-
-  test("the left rail runs the height of the shell", async ({ page }) => {
-    await page.goto("./panel");
-    await page.waitForLoadState("networkidle");
-
-    const rail = page.getByRole("navigation", { name: "Ana gezinme" });
-    const railBox = await rail.boundingBox();
-    const shellHeight = await page.evaluate(
-      () => document.querySelector(".dt-shell")?.getBoundingClientRect().height ?? 0,
-    );
-    const headerHeight = await page.evaluate(
-      () => document.querySelector(".dt-shell__header")?.getBoundingClientRect().height ?? 0,
-    );
-
-    // It reaches the bottom of the shell rather than stopping at the height of
-    // its own list, which is what `align-self: start` used to do.
-    expect(railBox?.height ?? 0).toBeGreaterThanOrEqual(shellHeight - headerHeight - 2);
   });
 
   test("the conversion action does not overlap the content it sits above", async ({ page }) => {
@@ -650,57 +623,30 @@ test.describe("adaptive shell at 1440x900 [mocked backend]", () => {
     await expect(page.locator(".dt-btn--primary")).toHaveCount(1);
   });
 
-  test("the left rail stays clickable after the page has been scrolled", async ({ page }) => {
-    // A window short enough that the page genuinely scrolls: the failure only
-    // exists once the sticky header and the sticky rail share the same band.
-    await page.setViewportSize({ width: 1440, height: 500 });
-    await page.goto("./yetenekler");
-    await page.waitForLoadState("networkidle");
-    const scrolled = await scrollToEnd(page);
-    expect(scrolled, "this route does not scroll, so this proves nothing").toBeGreaterThan(0);
-
-    const header = await page.getByRole("banner").boundingBox();
-    expect(header).not.toBeNull();
-    const headerBottom = (header?.y ?? 0) + (header?.height ?? 0);
-
-    const links = page.getByRole("navigation", { name: "Ana gezinme" }).getByRole("link");
-    const total = await links.count();
-    expect(total).toBeGreaterThan(2);
-
-    for (let index = 0; index < total; index += 1) {
-      const link = links.nth(index);
-      const name = (await link.textContent())?.trim() ?? `#${index}`;
-      const box = await link.boundingBox();
-      if (box === null) continue; // Scrolled out of the rail's own overflow.
-      // Kokpit and Kararlar used to end up here: on screen, in the tree, and
-      // underneath the sticky header.
-      expect(box.y, `"${name}" is behind the header`).toBeGreaterThanOrEqual(headerBottom - 1);
-      expect(
-        await receivesItsOwnClick(link),
-        `"${name}" does not receive its own click`,
-      ).toBe(true);
-    }
-  });
-
-  test("the navigation drawer does not reopen itself on the way back to a phone", async ({
+  test("the navigation drawer persists across a viewport crossing without a duplicate rail", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 320, height: 568 });
     await page.goto("./panel");
     await page.waitForLoadState("networkidle");
 
-    await page.getByRole("button", { name: /Menüyü aç/ }).click();
-    await expect(page.getByRole("dialog", { name: /Ana gezinme/ })).toBeVisible();
+    await page.getByRole("button", { name: /Men(ü|u)/ }).click();
+    const dialog = page.getByRole("dialog", { name: /Gezinme ve hesap/ });
+    await expect(dialog).toBeVisible();
+    const drawerId = await dialog.getAttribute("id");
 
     await page.setViewportSize({ width: 1440, height: 900 });
+    // The shared drawer is not layout-scoped: it is the same open dialog on a
+    // wider screen, not a persistent rail appearing alongside it.
+    await expect(page.getByRole("dialog")).toHaveAttribute("id", drawerId ?? "");
+    await expect(page.getByRole("navigation", { name: "Ana gezinme" })).toHaveCount(0);
+
+    await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toHaveCount(0);
-    await expect(page.getByRole("navigation", { name: "Ana gezinme" })).toBeVisible();
 
     await page.setViewportSize({ width: 320, height: 568 });
-    const toggle = page.getByRole("button", { name: /Menüyü aç/ });
+    const toggle = page.getByRole("button", { name: /Men(ü|u)/ });
     await expect(toggle).toBeVisible();
-    // The store said "open" the whole time, so the sheet came back modal and
-    // focus-trapping with nobody having asked for it.
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
   });

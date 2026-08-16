@@ -16,6 +16,18 @@ import { createAppRouter } from "@/app/router";
  */
 import "@/design/roboto.css";
 
+/**
+ * Tailwind first, then the token layer, then the bespoke component sheets.
+ *
+ * The order is the cascade contract. Tailwind's `@layer utilities` has to come
+ * last in layer order so a utility beats a `.dt-*` component rule regardless of
+ * specificity - that is what lets the master component layer paint while the
+ * `dt-*` class hooks stay in the markup for the tests and the browser suite
+ * that locate elements by them. Importing this sheet first is what establishes
+ * that order.
+ */
+import "@/design/tailwind.css";
+
 import "@/design/tokens.css";
 import "@/design/base.css";
 import "@/design/components.css";

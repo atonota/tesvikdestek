@@ -24,6 +24,8 @@ import { Link as RouterLink } from "react-router";
 import { cn } from "@/lib/cn";
 import { TRISTATE_CHOICES, type Tristate } from "@/domain/tristate";
 import { Select } from "./select";
+import { badgeVariants } from "./ui/badge";
+import { buttonVariants } from "./ui/button";
 
 /* ------------------------------------------------------------------ Button */
 
@@ -40,7 +42,34 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
 }
 
-/** States: idle · hover · focus-visible · active · loading · disabled. */
+/**
+ * The product button, drawn by the master button's recipe.
+ *
+ * This is the derivation that makes the design-system adoption real rather than
+ * announced. Roughly forty call sites across every authenticated route import
+ * *this* component; a master layer sitting beside it, rendered by one new
+ * screen, would leave the product looking exactly as it did. So the appearance
+ * comes from `buttonVariants` - Tailwind utilities, `cva`, the shadcn/ui
+ * contract - while the API, the loading behaviour and the `dt-btn` class hooks
+ * stay exactly as they were.
+ *
+ * **Both class sets are emitted, and that is deliberate.** The `dt-*` classes
+ * are load-bearing beyond styling: `demo-login.test.tsx` asserts
+ * `dt-btn--block`, the browser suite counts `.dt-btn--primary` to prove there is
+ * one primary action per screen, and `AdaptiveShell` styles a router link as a
+ * button by writing the classes directly. Deleting them would break behaviour
+ * this package never agreed to change. They cost nothing visually, because the
+ * bespoke rules live in `@layer components` and Tailwind's utilities live in
+ * `@layer utilities` - later layer wins regardless of specificity, so the
+ * master recipe is what paints.
+ *
+ * One visible consequence, and it is a correction rather than a side effect:
+ * the primary button was painted with `--dt-color-accent`, not with
+ * `--dt-color-primary`. The brand contract says the primary is parliament blue.
+ * It now is, on every screen at once.
+ *
+ * States: idle · hover · focus-visible · active · loading · disabled.
+ */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
     variant = "primary",
@@ -61,7 +90,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       {...rest}
       ref={ref}
       type={type}
-      className={cn("dt-btn", `dt-btn--${variant}`, `dt-btn--${size}`, fullWidth && "dt-btn--block", className)}
+      data-slot="button"
+      className={cn(
+        buttonVariants({ variant, size, block: fullWidth }),
+        "dt-btn",
+        `dt-btn--${variant}`,
+        `dt-btn--${size}`,
+        fullWidth && "dt-btn--block",
+        className,
+      )}
       disabled={disabled === true || loading}
       aria-busy={loading || undefined}
     >
@@ -97,7 +134,18 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       type="button"
       aria-label={label}
       title={label}
-      className={cn("dt-btn", "dt-icon-btn", `dt-btn--${variant}`, `dt-btn--${size}`, className)}
+      data-slot="icon-button"
+      className={cn(
+        // The master recipe's `icon` size is the 44px touch target the product
+        // owes a thumb; the caller's `size` still drives the bespoke class so
+        // nothing that styles on it changes meaning.
+        buttonVariants({ variant, size: "icon" }),
+        "dt-btn",
+        "dt-icon-btn",
+        `dt-btn--${variant}`,
+        `dt-btn--${size}`,
+        className,
+      )}
     >
       <span aria-hidden="true">{icon}</span>
     </button>
@@ -480,10 +528,23 @@ export interface BadgeProps {
   className?: string;
 }
 
-/** States: one per tone. Colour is never the only carrier - text always shows. */
+/**
+ * The product badge, drawn by the master badge's recipe.
+ *
+ * Same derivation as `Button`, and the same reason: this is the badge every
+ * outcome, every review status and every call window on every screen renders,
+ * so it is where the design system either arrives or does not. The `dt-badge`
+ * classes stay because the browser suite locates badges by them.
+ *
+ * States: one per tone. Colour is never the only carrier - text always shows,
+ * and `srDescription` carries what the colour means to a screen reader.
+ */
 export function Badge({ tone = "neutral", children, srDescription, className }: BadgeProps) {
   return (
-    <span className={cn("dt-badge", `dt-badge--${tone}`, className)}>
+    <span
+      data-slot="badge"
+      className={cn(badgeVariants({ tone }), "dt-badge", `dt-badge--${tone}`, className)}
+    >
       {children}
       {srDescription ? <span className="dt-visually-hidden"> — {srDescription}</span> : null}
     </span>

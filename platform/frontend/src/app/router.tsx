@@ -24,8 +24,16 @@ import {
   type RouteObject,
 } from "react-router";
 
-import { SkeletonBlock } from "@/components/patterns";
-import { NotFoundRoute, RouteErrorBoundary } from "@/routes/errors";
+/**
+ * The boot fallback and the error boundary, from the one module that may be
+ * eager.
+ *
+ * Nothing here may reach `@/components`. This file is imported by the entry, so
+ * its import graph is what every visitor downloads before choosing a route -
+ * and the barrel re-exports the entire design system. `boot-surface.tsx`
+ * records the measurement that settled it.
+ */
+import { BootFallback, NotFoundRoute, RouteErrorBoundary } from "@/routes/boot-surface";
 
 /**
  * Every route is code-split.
@@ -86,22 +94,6 @@ const fromMedia = (name: MediaExport) => async () => ({
 const fromProviders = (name: ProvidersExport) => async () => ({
   Component: (await providersModule())[name] as React.ComponentType,
 });
-
-/**
- * Shown while the first route chunk is still downloading.
- *
- * Without it the browser paints an empty document for as long as the network
- * takes, which reads as a broken page rather than a loading one.
- */
-function BootFallback() {
-  return (
-    <div className="dt-public">
-      <main id="ana-icerik" className="dt-public__main" tabIndex={-1}>
-        <SkeletonBlock lines={5} label="Uygulama yükleniyor" />
-      </main>
-    </div>
-  );
-}
 
 /* --------------------------------------------------------- route registry */
 

@@ -26,9 +26,20 @@ export async function renderAppAt(initialPath: string): Promise<RenderResult> {
       expect(result.container.querySelector("main")).not.toBeNull();
       expect(result.container.querySelector(".dt-skeleton")).toBeNull();
     },
-    // A lazy chunk plus a query round-trip can exceed the 1s default when the
-    // whole suite runs in parallel. Same assertion, realistic patience.
-    { timeout: 5000 },
+    /*
+     * Patience, sized to what is actually being waited for.
+     *
+     * This is a dynamic import of a route module - which now pulls the design
+     * system, the master component layer and the icon set - plus a query round
+     * trip, on one of forty-seven files running in parallel. The number was
+     * 5000, which was also Vitest's own per-test default, so the helper could
+     * spend the entire test budget here and fail on arithmetic; and as the
+     * module graph grew it began to.
+     *
+     * The assertion is unchanged and is the strict one: a `<main>` on screen
+     * **and** no skeleton left anywhere. A route that never paints still fails.
+     */
+    { timeout: 15_000 },
   );
   return result;
 }

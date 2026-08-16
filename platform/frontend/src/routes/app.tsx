@@ -1,6 +1,6 @@
 /** Authenticated surfaces: dashboard, discovery, decision workspace, settings, ops. */
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Suspense, lazy, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   NavLink,
   Navigate,
@@ -65,6 +65,21 @@ import {
   type AssistantSuggestion,
   type ConversionAction,
 } from "@/components";
+/**
+ * The distribution maths, imported normally on purpose.
+ *
+ * It is plain TypeScript with no chart engine behind it, so putting it inside
+ * the lazy boundary would delay three numbers behind a megabyte of canvas code
+ * for no gain. Only the drawing is lazy.
+ */
+import { AnalyticsSkeleton } from "@/components/analytics/AnalyticsSkeleton";
+import {
+  evidenceByReviewStatus,
+  outcomeDistribution,
+  portfolioBySupportType,
+  type ReadState,
+} from "@/components/analytics/model";
+import { AppIcon } from "@/components/icons";
 import {
   DEMO_ROLE_PARAM,
   demoBadgeLabel,
@@ -76,23 +91,56 @@ import {
   withDemoRole,
   withoutDemoRole,
 } from "@/demo";
+import { supportTypeLabel, reviewStatusLabel } from "@/api/types";
 import { calculateMaturity } from "@/domain/maturity";
 import { emptyProfileValues } from "@/domain/facts";
 import { useUiStore, type Density, type FontScale, type ThemeChoice } from "@/store/ui";
 import { loginHref } from "./auth";
 import { QueryBoundary, SessionRequired, isSessionError } from "./QueryBoundary";
 
+/**
+ * The workspace's destinations, with real icons.
+ *
+ * The glyphs these replace - `◧`, `▤`, `◎`, `❖`, `☑`, `◔`, `♥`, `🗀`, `≡`, `⚙` -
+ * were typographic stand-ins, and they failed in three ways that are only
+ * visible on somebody else's machine: several are missing from the default
+ * Android and Windows system fonts and rendered as a tofu box, `🗀` is an emoji
+ * on one platform and a line drawing on another, and `♥` is announced by a
+ * screen reader as "black heart suit" beside the word "Sağlık". Phosphor draws
+ * them as SVG that is the same everywhere and hidden from assistive technology,
+ * with the label beside it doing the naming.
+ */
 export const APP_NAV = [
-  { to: "/panel", label: "Kokpit", shortLabel: "Kokpit", icon: "◧" },
-  { to: "/degerlendirmeler", label: "Kararlar", shortLabel: "Kararlar", icon: "▤" },
-  { to: "/firsatlar", label: "Fırsatlar", shortLabel: "Fırsat", icon: "◎" },
-  { to: "/kaynaklar", label: "Kaynaklar", shortLabel: "Kaynak", icon: "❖" },
-  { to: "/organizasyon/hazirlik", label: "Hazırlık", shortLabel: "Hazırlık", icon: "☑" },
-  { to: "/olgunluk", label: "Olgunluk", icon: "◔" },
-  { to: "/operasyon/saglik", label: "Sağlık", icon: "♥" },
-  { to: "/dosyalar", label: "Dosyalar", shortLabel: "Dosya", icon: "🗀" },
-  { to: "/yetenekler", label: "Yetenekler", icon: "≡" },
-  { to: "/ayarlar/gorunum", label: "Ayarlar", icon: "⚙" },
+  { to: "/panel", label: "Kokpit", shortLabel: "Kokpit", icon: <AppIcon name="dashboard" /> },
+  {
+    to: "/degerlendirmeler",
+    label: "Kararlar",
+    shortLabel: "Kararlar",
+    icon: <AppIcon name="decisions" />,
+  },
+  {
+    to: "/firsatlar",
+    label: "Fırsatlar",
+    shortLabel: "Fırsat",
+    icon: <AppIcon name="opportunities" />,
+  },
+  {
+    to: "/kaynaklar",
+    label: "Kaynaklar",
+    shortLabel: "Kaynak",
+    icon: <AppIcon name="sources" />,
+  },
+  {
+    to: "/organizasyon/hazirlik",
+    label: "Hazırlık",
+    shortLabel: "Hazırlık",
+    icon: <AppIcon name="readiness" />,
+  },
+  { to: "/olgunluk", label: "Olgunluk", icon: <AppIcon name="maturity" /> },
+  { to: "/operasyon/saglik", label: "Sağlık", icon: <AppIcon name="health" /> },
+  { to: "/dosyalar", label: "Dosyalar", shortLabel: "Dosya", icon: <AppIcon name="files" /> },
+  { to: "/yetenekler", label: "Yetenekler", icon: <AppIcon name="capabilities" /> },
+  { to: "/ayarlar/gorunum", label: "Ayarlar", icon: <AppIcon name="settings" /> },
 ] as const;
 
 /* ------------------------------------------------------- session boundary */
@@ -542,6 +590,54 @@ export function Shell({
   );
 }
 
+/* -------------------------------------------------------------- analytics */
+
+/**
+ * The dense analytics section, fetched only by the person who sees it.
+ *
+ * `React.lazy` rather than a static import, and that is the whole reason this
+ * one component is reached through a dynamic boundary while everything else on
+ * the screen is not. ECharts is the largest single dependency in the package;
+ * `FRONTEND-TECHSTACK.md` records "ECharts never enters the main bundle" as a
+ * refusal, `build-contract.test.ts` proves it against the emitted chunks, and a
+ * static import here would quietly break both.
+ *
+ * The distribution maths is *not* behind this boundary - it lives in
+ * `components/analytics/model.ts`, is plain TypeScript, and is imported
+ * normally. Only the drawing costs a megabyte.
+ */
+const PortfolioAnalytics = lazy(() => import("@/components/analytics/PortfolioAnalytics"));
+
+/**
+ * Adapts a query to the four-state vocabulary the analytics model speaks.
+ *
+ * The three booleans are copied rather than the query handed over whole, so
+ * `components/analytics/model.ts` stays plain TypeScript with no dependency on
+ * a query client - which is what lets its four-way branching be unit tested
+ * without a renderer or a network.
+ *
+ * `reason` is only meaningful in the error branch and is computed unconditionally
+ * because `describeError` is pure and cheap; the model reads it only after
+ * `isError` has been checked.
+ *
+ * The four fields are taken as separate arguments rather than as the query
+ * object, and that is a memoisation decision rather than a style one. A query
+ * object gets a new identity on every notification, so a `useMemo` that
+ * referenced one would list it as a dependency and re-run on every render -
+ * rebuilding the distribution, changing its identity, and forcing the chart
+ * downstream into a full `setOption` replace with no data change behind it.
+ * Passing the fields lets the memo depend on the four values that actually
+ * decide the answer.
+ */
+function readStateOf<T>(
+  data: readonly T[] | undefined,
+  isPending: boolean,
+  isError: boolean,
+  error: unknown,
+): ReadState<T> {
+  return { isPending, isError, data, reason: isError ? describeError(error) : "" };
+}
+
 /* ------------------------------------------------------------------ panel */
 
 export function DashboardRoute() {
@@ -600,6 +696,44 @@ export function DashboardRoute() {
       },
     ],
   });
+
+  /**
+   * The three distributions, computed once per real change.
+   *
+   * `DistributionPanel` memoises its chart option on the identity of the
+   * distribution it is given, and a fresh object on every render would defeat
+   * that memo completely - the chart would be fully rebuilt whenever anything
+   * on this screen re-rendered, which on a dashboard with five live queries is
+   * constantly. Memoising at the source is what makes the memo downstream real
+   * rather than decorative.
+   *
+   * The dependencies are the query facts the model actually reads - the data
+   * reference and the two flags - not the query objects, whose identity changes
+   * on every notification.
+   */
+  const portfolio = useMemo(
+    () =>
+      portfolioBySupportType(
+        readStateOf(programs.data, programs.isPending, programs.isError, programs.error),
+        supportTypeLabel,
+      ),
+    [programs.data, programs.isPending, programs.isError, programs.error],
+  );
+  const outcomes = useMemo(
+    () =>
+      outcomeDistribution(
+        readStateOf(decisions.data, decisions.isPending, decisions.isError, decisions.error),
+      ),
+    [decisions.data, decisions.isPending, decisions.isError, decisions.error],
+  );
+  const evidence = useMemo(
+    () =>
+      evidenceByReviewStatus(
+        readStateOf(snapshots.data, snapshots.isPending, snapshots.isError, snapshots.error),
+        reviewStatusLabel,
+      ),
+    [snapshots.data, snapshots.isPending, snapshots.isError, snapshots.error],
+  );
 
   return (
     <Shell
@@ -704,6 +838,22 @@ export function DashboardRoute() {
             />
           )}
         </Card>
+
+        {/*
+          * The dense analytics section.
+          *
+          * Each read is handed over as one of four states - pending, error,
+          * empty, populated - rather than as a list that might be `[]` for two
+          * different reasons. A request in flight is not a failure, and a
+          * catalogue that genuinely has no rows is not one either.
+          */}
+        <Suspense fallback={<AnalyticsSkeleton />}>
+          <PortfolioAnalytics
+            portfolio={portfolio}
+            outcomes={outcomes}
+            evidence={evidence}
+          />
+        </Suspense>
       </div>
     </Shell>
   );

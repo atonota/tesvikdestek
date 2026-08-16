@@ -3,19 +3,26 @@
 **Tarih:** 2026-08-15
 **Kapsam:** `platform/frontend/` — DestekTeşvik'in React tabanlı frontend uygulaması.
 **Belge sınıfı:** Karar belgesi. Yürürlüktedir; değişikliği yalnız yeni bir karar kaydı (ADR) yapar.
-**Revizyon:** **v2** — bileşen soyağacı (Bölüm 3), Storybook zorunlu katalog sözleşmesi
-(Bölüm 4) ve port/adaptör stratejisi (Bölüm 5) eklendi; faz dili `V2-` yol haritasıyla
-hizalandı.
-**Girdi:** `~/Desktop/frontend-tecstack.md` (dış teknik girdi, talimat değil) + repo gerçeği.
-**capability_delta:** `0` — bu belge kod değiştirmez; hangi teknolojinin neden seçildiğini kaydeder.
+**Revizyon:** **v3** — kaynak otoritesi düzeltildi. v2, `~/Desktop/frontend-tecstack.md`
+belgesini "dış tavsiye, talimat değil" sayıyor ve Tailwind v4 ile shadcn/ui'yi Bölüm 8'de
+*ölçüm bekleyen aday* olarak listeliyordu. **Bu bir karar değil, bir hataydı ve
+düzeltilmiştir.** Bileşen soyağacı (Bölüm 3), Storybook katalog sözleşmesi (Bölüm 4) ve
+port/adaptör stratejisi (Bölüm 5) v2'den değişmeden gelir.
+**Girdi:** `~/Desktop/frontend-tecstack.md` — **sahibin bağlayıcı teknik girdisi.**
+**capability_delta:** `+1` — v3'ün kaydettiği yığın kurulmuştur ve
+`src/test/master-stack-contract.test.ts` ile testlidir.
 
-> **Kaynak belgeye dair uyarı.** `frontend-tecstack.md` genel bir portföy tavsiyesidir
-> (Segika, e-menum, istoc, arsam gibi başka ürünler için yazılmış) ve **bu projenin
-> gerçeğiyle üç noktada çelişir**: React Router v8'i mevcut karar sayar, Tailwind v4 +
-> shadcn/ui'yi varsayılan yol olarak önerir ve Vite 7'yi baseline kabul eder. Repoda
-> React Router **7.18.2**, Vite **8.2.1** kuruludur ve tasarım katmanı **bespoke CSS
-> token + cascade layer** sistemidir. Bu belge kaynak belgeyi **girdi** olarak kullanır,
-> **talimat** olarak kabul etmez.
+> **Kaynak otoritesi.** `~/Desktop/frontend-tecstack.md` bu ürün için **bağlayıcıdır**.
+> Bir repo belgesi onu "harici tavsiye", "koşullu" veya "opsiyonel" diye ezemez; v2'nin
+> yaptığı buydu ve geri alınmıştır.
+>
+> Kaynak belge birden çok ürün için yazılmıştır, dolayısıyla her satırı bu repoya
+> uymaz — ama **uymayan tek şey sürüm numaralarıdır, kararlar değil.** Repoda React
+> Router **7.18.2** ve Vite **8.2.1** kuruludur; kaynak belge Router v8 ve Vite 7 der.
+> Bunlar bu repoda daha yeni sürümlerdir ve `React Router v8` ayrı, kanıtlı bir
+> migration milestone'u olarak kalır (Bölüm 8). Teknoloji **seçimleri** — Tailwind v4 +
+> shadcn/ui, Phosphor ikonlar, yoğun analitikte ECharts, aynı pakette SCSS yasağı —
+> tartışmaya açık değildir ve Bölüm 6'da yürürlükteki yığın olarak kayıtlıdır.
 
 ---
 
@@ -30,9 +37,14 @@ Sade Türkçe, dört cümle:
 2. **Eksik olan yığın değil, ürün katmanıdır.** Bu yüzden bu belgedeki "eklenecek"
    listesinin tamamı bir ürün ihtiyacına bağlıdır: dosya yükleme, grafik, zengin metin,
    bildirim, çok dillilik, gerçek zamanlı akış. Hiçbiri "modern olsun diye" eklenmez.
-3. **Tasarım katmanı topluca yeniden yazılmaz.** Mevcut bespoke, pixel-perfect CSS token
-   sistemi korunur. Tailwind zorunlu değildir, shadcn/ui zorunlu değildir ve SCSS ancak
-   ölçülmüş bir fayda varsa gelir.
+3. **Tasarım katmanı Tailwind v4 + shadcn/ui'dir; tasarım *tokenları* korunur.** İkisi
+   çelişmez ve bu ayrımı yapmak kararın tamamıdır. Renk, köşe, tipografi ve yoğunluk
+   sözleşmesi `tokens.css`'te kalır — parlamento mavisi ile limon sarısının kontrastı,
+   12px köşe tavanı ve 1rem taban orada ölçülür. Tailwind bu tokenları `@theme inline`
+   ile *işaret eder*, kopyalamaz; shadcn/ui bileşenleri o tokenlarla boyanır. Böylece
+   ekranlar yeni sistemle çizilirken hiçbir tasarım sınırı ikinci bir palete kaymaz.
+   **SCSS bu pakete girmez** — Tailwind zaten ön işlemcidir ve ikisi aynı pakette
+   karıştırılmaz.
 4. **Backend P1 frontend fazında geliştirilmez ama sözleşme bağlayıcıdır.** Frontend, tipli
    portlar üzerinden çalışır ve FastAPI'nin üreteceği OpenAPI sözleşmesine uyar; uydurma uç
    kullanmaz, SSR HTML ayrıştırmaz. Backend **P3'te başlar** ve programın kapsamındadır.
@@ -201,7 +213,12 @@ Bunlar repoda kuruludur, çalışır ve **değiştirilmez.**
 | Doğrulama | Zod | 4.4.3 | Her API yanıtı `.strict()` doğrulanır; backend `extra="forbid"` ile simetrik |
 | İstemci durumu | Zustand | 5.0.15 | Yalnız UI tercihi (yoğunluk, tema, yazı ölçeği, hareket azaltma) tutar |
 | Bileşen davranışı | Radix primitives | dialog/popover/select/tabs/tooltip | Erişilebilir davranış; görünüm bize ait |
-| Stil | Bespoke CSS token + cascade layer | — | Pixel-perfect; tasarım sınırları (12px radius, 1rem, Roboto 400+) burada zorlanır |
+| Stil motoru | **Tailwind CSS v4** + `@tailwindcss/vite` | 4.3.3 | Bağlayıcı. PostCSS zinciri yok, SCSS yok. `src/design/tailwind.css` |
+| Tasarım tokenları | Bespoke CSS token + cascade layer | — | Korunur ve **kaynak otoritesidir**. Tailwind teması `@theme inline` ile bunlara bağlanır; sınırlar (12px radius, 1rem, Roboto 400+) burada zorlanır |
+| Master bileşen sistemi | **shadcn/ui kod sözleşmesi** | `components.json` (Tailwind v4 şekli) | Bağlayıcı. `data-slot`, `cva`, `cn` = clsx + tailwind-merge. `src/components/ui/` |
+| Türetilmiş bileşenler | Ürünün 75 bileşeni | — | `Button`, `Badge`, `Card`, `Tabs` master katmandan türetilir; genel API değişmez, böylece adaptasyon tüm rotalarda aynı anda görünür |
+| İkon | **Phosphor** (`@phosphor-icons/react`) | 2.1.10 | Bağlayıcı. Lucide yasak (shadcn varsayılanı). Tek adaptör: `src/components/icons.tsx` |
+| Yoğun analitik grafiği | **ECharts** | 6.1.0 | Bağlayıcı. `echarts/core` + yalnız kullanılan chart/component/renderer; `React.lazy` ile ayrı chunk; **asla ana pakette değil** |
 | Yazı tipi | `@fontsource-variable/roboto` | 5.3.0 | Yerel; harici CDN isteği yok |
 | Birim test | Vitest + Testing Library | 4.1.10 / 16.3.2 | Son kaydedilen tam suite: **941**; bu belge paketinde yeniden koşulmadı |
 | Tarayıcı test | Playwright | 1.62.1 | Son kaydedilen koşu: **57**; bu belge paketinde yeniden koşulmadı. Request routing kullanır, sayfaya worker kurmaz |
@@ -250,13 +267,15 @@ diye eklenmez; her satırın karşısında onu zorunlu kılan ürün ihtiyacı v
 Bunlar **yasak değildir**, ama bugün karar verilmez. Her biri kendi ölçüm kapısını geçmek
 zorundadır.
 
+> **v3 notu.** Bu bölümün 1., 2., 3. ve 13. satırları **Tailwind v4**, **shadcn/ui** ve
+> **SCSS**'i "koşullu aday" sayıyordu. İlk ikisi bağlayıcı karardır ve kuruludur — yerleri
+> Bölüm 6'dır. SCSS ise koşullu değil **reddedilmiştir** (Bölüm 9): Tailwind zaten ön
+> işlemcidir ve ikisi aynı pakette karıştırılmaz. Dört satır da bu yüzden kaldırıldı.
+
 | # | Aday | Koşul | Ölçüm |
 |---|---|---|---|
-| 1 | **SCSS Modules** | Yalnız gerçek ve ölçülmüş bir ihtiyaç varsa. **Tailwind ve SCSS aynı pakette karıştırılmaz.** | Mevcut CSS token sisteminin yetersiz kaldığı somut bir vaka + bakım maliyeti karşılaştırması |
-| 2 | **Tailwind v4** | Zorunlu değildir. Benimsenirse SCSS'ten tamamen vazgeçilir ve geçiş kademeli olur | Mevcut bespoke tasarımın topluca yeniden yazılmayacağının kanıtı |
-| 3 | **shadcn/ui** | Zorunlu değildir. Radix zaten davranışı veriyor | Hazır bileşenin tasarım sınırlarımızı (12px radius, Roboto 400+, 1rem) bozmadığının kanıtı |
 | 4 | **React Router v8** | **Otomatik upgrade yoktur.** Ayrı, kanıtlı bir migration milestone'u olabilir | Tüm rota testleri GREEN + rollback yolu denenmiş |
-| 13 | **Tailwind v4 / shadcn/ui / SCSS** | Bkz. satır 1-3; hiçbiri P1'in ön şartı değildir ve hiçbiri mevcut bespoke token sistemini topluca değiştirmek için kullanılamaz | Bölüm 9 satır 3'teki red gerekçesi ölçümle çürütülene kadar karar yok |
+| 5 | **Base UI** | Kaynak belgenin "bileşen davranışı" satırı Base UI der; bu proje Radix kullanır. Sapma **açık ve gerekçelidir**, sessiz değil — Bölüm 9.1 | Radix'in bugün karşıladığı davranışları Base UI'ın da karşıladığının kanıtı + tüm sheet/select/tabs/tooltip testlerinin GREEN kalması |
 | 5 | **WebSocket** | SSE yetmediği ölçülürse | Çift yönlü iletişim gerektiren somut bir yüzey |
 | 6 | **Telemetri (OpenTelemetry)** | Gerçek trafik başlayınca | Frontend trace'inin FastAPI trace'iyle ilişkilendirilebilmesi |
 | 7 | **Analitik (PostHog / Plausible, self-host)** | KVKK değerlendirmesinden sonra | Veri işleyen sıfatı ve saklama süresi kararı — **owner** |
@@ -274,7 +293,7 @@ zorundadır.
 |---|---|---|
 | 1 | **Next.js** | Kanonik yasak. Aday, geçiş hedefi veya opsiyon olarak dahi anılmaz |
 | 2 | **MetaFramer** | Kanonik yasak, aynı kapsam |
-| 3 | **Mevcut bespoke tasarımın topluca yeniden yazılması** | Aylarca kayıp ve geniş regresyon yüzeyi karşılığında sıfır müşteri değeri |
+| 3 | **Tasarım *tokenlarının* topluca atılması** | Kontrast, köşe ve tipografi sınırları orada ölçülür; ikinci bir palet bu kapıların birinden sessizce kaçar. Tailwind bu tokenları işaret eder, kopyalamaz |
 | 4 | **Tailwind + SCSS'in aynı pakette karıştırılması** | İkisi de CSS'i genişleten ön işlemcilerdir; birlikte kullanıldığında `@apply` ve tema değişkenleri öngörülemez biçimde bozulur |
 | 5 | **SSR / server-rendering katmanı** | Ölçülmüş bir SEO veya ilk boya ihtiyacı yok; dağıtıma Node katmanı eklemek operasyon yükü üretir |
 | 6 | **Mikro-frontend** | Tek ürün, tek ekip. Modular monolith yeterli |
@@ -283,7 +302,33 @@ zorundadır.
 | 9 | **Public source map** | Gerekçesiz kaynak ifşası ve dört katı dağıtım boyutu. Hata izleme hattı gelirse doğru ayar `"hidden"`'dır |
 | 10 | **Tarayıcıda çalışan kural motoru** | Uygunluk kararı sunucunundur; `architecture.test.ts` bunu zorlar |
 | 11 | **Uydurma backend ucu** | Var olmayan uca istek atan ekran yazılmaz |
-| 12 | **ECharts'ın ana pakete girmesi** | Kök prototipteki 1.59 MB gömülü ECharts kusuru tekrar edilmez |
+| 12 | **ECharts'ın ana pakete girmesi** | Kök prototipteki 1.59 MB gömülü ECharts kusuru tekrar edilmez. `build-contract.test.ts` bunu emit edilen parçalara karşı ölçer |
+| 13 | **Bu pakette SCSS** | Tailwind v4 zaten ön işlemcidir. Sass önce, Tailwind sonra çalışır; `theme()` çıktısı Sass fonksiyonlarına ulaşmaz ve iç içe seçiciler `@apply`'ı bozar. Legacy yüzeyler (Django/Frappe şablonu, e-posta, print) ayrı pakettir |
+| 14 | **Lucide ikonları** | shadcn/ui varsayılanıdır; bu ürünün ikon seti Phosphor'dur. Kurulumdan sonra ikon katmanı değiştirilmiştir ve tek adaptörden geçer |
+
+### 9.1 Base UI yerine Radix — açık sapma
+
+Kaynak belge (`~/Desktop/frontend-tecstack.md`) "Bileşen davranışı → Base UI" der. Bu proje
+**Radix** kullanır. Bu bir ihmal değil, kayıtlı bir sapmadır; gerekçesi üç maddedir ve
+üçü de repo kanıtına dayanır:
+
+1. **shadcn/ui'ın bu projedeki hâli Radix üzerine kuruludur.** Bağlayıcı karar
+   "Tailwind v4 + shadcn/ui"dir; `components.json` ile gelen bileşenlerin davranış
+   katmanı Radix'tir. Base UI'a geçmek, kaynak belgenin *daha güçlü* olan diğer
+   kararını (shadcn/ui kod sözleşmesi) elle yeniden yazmak demektir.
+2. **Radix zaten kurulu, testli ve davranışı kanıtlanmış.** `dialog`, `popover`,
+   `select`, `tabs`, `tooltip` bu repoda kuruludur; sheet'in odak tuzağı, Escape ile
+   kapanması ve **kapanınca odağı tetikleyiciye döndürmesi** `adaptive-sheets.test.tsx`
+   ve tarayıcı süitiyle korunur. Bu davranışların en sık atlananı sonuncusudur ve
+   testle kilitlidir.
+3. **Cross-platform select ve klavye/ekran okuyucu davranışı bugünkü sözleşmedir.**
+   `select.tsx` iOS/macOS/Windows/Linux/Android'de tutarlı, kontrollü bir görünüm ve
+   `Bilinmiyor` üçlü durumunu gerçek bir seçenek olarak taşır — native `<select>`'in
+   yapamadığı şey budur. Bunu Base UI'a taşımak, kanıtlanmış bir yüzeyi kanıtlanmamış
+   bir yüzeyle değiştirmek olur.
+
+**Yasak değildir.** Base UI, Bölüm 8 satır 5'te koşullu adaydır ve kendi ölçüm kapısı
+yazılıdır. Bugün karar Radix'tir ve gerekçesi burada durur.
 
 ---
 
@@ -380,9 +425,11 @@ boştur. Eksik olan **sunucu tarafı broker**'dır.
 
 | Ölçüt | Bütçe | Bugünkü durum |
 |---|---|---|
-| İlk yüklenen JS (gzip) | ≤ 180 kB | ~155 kB ölçüldü (eski ölçüm; her makro fazda yeniden ölçülür) |
+| İlk yüklenen JS (gzip) | ≤ 180 kB | **131.500 bayt ölçüldü** (2026-08-16, final artefakt; `dist/index.html`'in doğrudan referans verdiği tüm JS, `gzipSync`; ham 424.968). Artık tahmin değil kapı: `build-contract.test.ts` her derlemede ölçer |
 | Route başına lazy chunk | Zorunlu | ✅ Her rota `lazy` |
-| Ana pakette grafik kütüphanesi | **Yasak** | ✅ Yok |
+| Ana pakette grafik kütüphanesi | **Yasak** | ✅ Yok — ECharts + zrender **526.495 ham / 175.842 gzip**, tamamı tembel; `build-contract.test.ts` eager grafikte olmadığını **ve** bir tembel parçada olduğunu ölçer |
+| Tembel JS toplamı | Sınırsız (isteğe bağlı indirilir) | 973.150 ham / 312.401 gzip |
+| İlk yüklenen CSS (gzip) | Bütçe yok, kayıt var | 61.454 ham / 11.191 gzip |
 | Source map (production) | **Yok** | ✅ `sourcemap: false`, testle kilitli |
 | Mock artefaktı (production) | **Yok** | ✅ `no-mock-artifacts.test.ts` kilitliyor |
 | Harici origin isteği | **0** | ✅ Testle korunuyor |
@@ -548,3 +595,59 @@ değerlendirmesine bağlıdır ve **owner** kararıdır.
 
 **capability_delta:** `0`. Bu belge tek bir satır ürün kodu değiştirmedi. Yaptığı şey, bir
 sonraki paketin yanlış teknolojiyle ve yanlış bileşen disipliniyle başlamasını engellemek.
+
+---
+
+## 19. Skeleton shimmer first — bağlayıcı geliştirme kuralı
+
+Sahibin kalıcı kuralıdır ve yalnız bu paket için değildir. Bir bileşen geliştirilirken
+**önce o bileşenin kendi yükleme durumu** kurulur, testiyle birlikte; sonra
+loaded / empty / error / permission / offline durumları ve asıl bileşen gelir.
+
+### 19.0 Nerede GREEN, nerede değil — kapsam ayrımı
+
+Bu ayrım belgenin en önemli satırıdır; karıştırılırsa kural yapılmış sayılır ve iş durur.
+
+| Katman | Durum | Kanıt |
+|---|---|---|
+| **Master bileşen katmanı** (`src/components/ui/*`) | ✅ **GREEN** | Her export ya `skeleton-map.ts`'te şekil + adlandırılmış story ile eşlenmiş ya da `kind` + gerekçeli muafiyet taşıyor; `skeleton-contract.test.tsx` barrel'dan enumerate eder, şekli **render edip** shimmer sayar, story modülünü **import edip** export'un varlığını doğrular |
+| **Analitik bölümü** (`src/components/analytics/*`) | ✅ **GREEN** | Bölüm-seviyesi `AnalyticsSkeleton` (kart + sekme şeridi) ve panel-seviyesi `AnalyticsPanelSkeleton` (sarmalayıcısız) ayrı; iç içe kart/tablist DOM kontratıyla yasaklı |
+| **Uygulama kabuğu ilk boyası** (`routes/boot-surface.tsx`) | ✅ **GREEN** | Master `Skeleton` + `SkeletonText` kullanır, barrel'a dokunmaz |
+| **Ürünün geri kalanı** | ❌ **KALAN KAPSAM** | Aşağıdaki modüller hâlâ jenerik `SkeletonBlock` çiziyor |
+
+**Jenerik `SkeletonBlock` hâlâ şu modüllerde kullanılıyor** — hiçbiri bu kuralı karşılamaz,
+çünkü `SkeletonBlock` sabit sayıda satır çizer ve arkasındaki bileşenin yerleşimiyle
+hiçbir ilişkisi yoktur:
+
+- `src/components/data-grid/DataGrid.tsx`
+- `src/components/provider-connections/ProviderAuditTimeline.tsx`
+- `src/components/templates.tsx`
+- `src/routes/QueryBoundary.tsx`
+- `src/routes/app.tsx`
+
+Bu liste `skeleton-contract.test.tsx` tarafından ağaçla karşılaştırılır: bir modül
+geçirildiğinde test kırmızıya döner ve bu listenin güncellenmesini ister. Kural
+**ürün genelinde yapılmadı**; yalnız master katman ve analitik bölümü GREEN'dir.
+
+| # | Kural | Nasıl zorlanır |
+|---|---|---|
+| 1 | Skeleton **RED testi** bileşenden önce yazılır | `src/test/skeleton-contract.test.tsx` |
+| 2 | Skeleton, o bileşenin **gerçek yerleşimini** taklit eder — şekil, satır sayısı, medya kutusu, tablo/chart/form yoğunluğu. **Tek bir jenerik dikdörtgen yeterli değildir** | Aynı dosya: tablo iskeletinde satır ve sütun, grafik iskeletinde eksen ve farklı uzunlukta çubuk, form iskeletinde etiket-alan çifti sayılır |
+| 3 | Skeleton **içerik gibi okunmaz**; container yükleme durumunu açıklar | Her şekil `aria-hidden`; container `role="status"` + `aria-busy` + ne yüklendiğini söyleyen tek cümle |
+| 4 | `prefers-reduced-motion` altında **shimmer durur** | İki taşıyıcı birden: `motion-reduce:` ve ürünün kendi `data-reduced-motion` ayarı |
+| 5 | **320px ve desktop** davranışı test edilir | Storybook'ta her şekil için 320px hikâyesi; tarayıcı ölçümü e2e'de |
+| 6 | Her master bileşenin skeleton'ı **Storybook'ta kataloglanır** | `src/components/ui/ui.stories.tsx` — katalogun ilk grubu |
+
+Gerekçe: yerleşimi tutmayan bir iskelet, veri geldiği anda sayfayı zıplatır ve okuyucunun
+baktığı satırı kaydırır; ekran okuyucuya da hiçbir şey söylemez. Şekli tutan bir iskelet
+aynı sayfanın boş hâlidir — veri indiğinde hiçbir şey yer değiştirmez.
+
+Şekiller: `SkeletonText`, `SkeletonCard`, `SkeletonTable`, `SkeletonChart` (çubuk ve halka),
+`SkeletonForm`, `SkeletonMedia`, `SkeletonList`, `SkeletonControl` (44px dokunma hedefi + 8px
+köşe), `SkeletonTabStrip` (kenarlıklı, sönük şerit) — hepsi `src/components/ui/skeleton.tsx`.
+
+Haritadaki `imitates` cümlesi ile **fiilen çizilen şekil** aynı şeyi söylemek zorundadır.
+`Button` ve `Tabs` bir süre `Shimmer` ve `SkeletonText`'e eşlenmişken metinleri dokunma
+yüksekliğinde bir kontrolü ve kenarlıklı bir sekme şeridini tarif ediyordu; metin story'yi
+anlatıyordu, eşlenen şekil ise düz bir çubuk çiziyordu. `SkeletonControl` ve
+`SkeletonTabStrip` bu yüzden vardır.

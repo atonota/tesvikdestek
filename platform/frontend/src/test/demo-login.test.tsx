@@ -149,7 +149,14 @@ async function renderApp(path: string): Promise<{
       expect(view.container.querySelector("main")).not.toBeNull();
       expect(view.container.querySelector(".dt-skeleton")).toBeNull();
     },
-    { timeout: 5000 },
+    /*
+     * Same patience, and the same reason, as `render-app.tsx`: this waits on a
+     * dynamic route import that now pulls the design system and the icon set,
+     * on one of forty-seven files running in parallel. 5000 was also Vitest's
+     * per-test default, so this wait could consume the whole test budget.
+     * The assertion is unchanged - a `<main>` and no skeleton left.
+     */
+    { timeout: 15_000 },
   );
   return { view, client };
 }

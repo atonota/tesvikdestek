@@ -20,6 +20,7 @@
  * asserted in the Playwright suite, which has a layout engine.
  */
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
@@ -45,13 +46,19 @@ const NAV = [
 function shell({
   contextRail,
 }: { contextRail?: React.ReactNode } = { contextRail: <p>Yardımcı gövdesi</p> }) {
+  // The shared drawer now always composes `ShellAccountMenu`, which calls
+  // `useLogout()` - a real `useMutation` that needs a `QueryClient` in
+  // context regardless of whether a given test ever opens the account menu.
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
-    <MemoryRouter>
-      <AdaptiveShell navItems={NAV} title="Kokpit" contextRail={contextRail}>
-        <h1>Kokpit</h1>
-        <a href="#sonra">Sayfadaki bağlantı</a>
-      </AdaptiveShell>
-    </MemoryRouter>,
+    <QueryClientProvider client={client}>
+      <MemoryRouter>
+        <AdaptiveShell navItems={NAV} title="Kokpit" contextRail={contextRail}>
+          <h1>Kokpit</h1>
+          <a href="#sonra">Sayfadaki bağlantı</a>
+        </AdaptiveShell>
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 
@@ -64,29 +71,42 @@ function hiddenBehindSheet(): boolean {
 
 /* ------------------------------------------------------------- navigation */
 
-describe("the mobile navigation is a sheet, not an inline accordion", () => {
-  it("shows no navigation links until the sheet is opened", () => {
+/**
+ * Cognitive Shell V2 superseded this describe block's premise.
+ *
+ * The old mobile-only nav sheet - opened by a toggle that renamed itself
+ * "Menüyü aç"/"Menüyü kapat", carrying only the navigation list - is gone.
+ * One modal drawer now answers both the hamburger and the header's account
+ * avatar, at every width, and the frozen behaviour contract for it lives in
+ * `src/test/cognitive-shell-v2.test.tsx` and `e2e/cognitive-shell-v2.spec.ts`.
+ * What is left here is the modality guarantee this file's header still
+ * claims - backdrop, focus trap, Escape, focus restoration - re-pointed at
+ * the drawer that now provides it, using this file's own two-item `NAV`
+ * fixture rather than duplicating the frozen suite's assertions.
+ */
+describe("the mobile navigation lives behind the shared adaptive drawer", () => {
+  it("shows no navigation links until the drawer is opened", () => {
     shell();
     expect(screen.queryByRole("link", { name: "Kararlar" })).toBeNull();
   });
 
-  it("opens a modal dialog with a backdrop from the header control", async () => {
+  it("opens a modal dialog with a backdrop from the header hamburger", async () => {
     shell();
-    await userEvent.click(screen.getByRole("button", { name: /Menüyü aç/u }));
+    await userEvent.click(screen.getByRole("button", { name: /men(ü|u)/iu }));
 
-    const sheet = await screen.findByRole("dialog", { name: /Ana gezinme/u });
+    const sheet = await screen.findByRole("dialog");
     expect(within(sheet).getByRole("link", { name: "Kararlar" })).toBeInTheDocument();
-    expect(document.querySelector(".dt-sheet__overlay")).not.toBeNull();
+    expect(document.querySelector(".dt-drawer__overlay")).not.toBeNull();
     // Modality asserted as the effect that matters rather than as one
-    // attribute: while the sheet is open, the page behind it is out of the
+    // attribute: while the drawer is open, the page behind it is out of the
     // accessibility tree entirely, so nothing there can be read or reached.
     expect(hiddenBehindSheet()).toBe(true);
   });
 
-  it("puts the page back in the accessibility tree once the sheet closes", async () => {
+  it("puts the page back in the accessibility tree once the drawer closes", async () => {
     shell();
-    await userEvent.click(screen.getByRole("button", { name: /Menüyü aç/u }));
-    await screen.findByRole("dialog", { name: /Ana gezinme/u });
+    await userEvent.click(screen.getByRole("button", { name: /men(ü|u)/iu }));
+    await screen.findByRole("dialog");
     expect(hiddenBehindSheet()).toBe(true);
 
     await userEvent.keyboard("{Escape}");
@@ -96,21 +116,21 @@ describe("the mobile navigation is a sheet, not an inline accordion", () => {
 
   it("closes on Escape and hands focus back to the control that opened it", async () => {
     shell();
-    const toggle = screen.getByRole("button", { name: /Menüyü aç/u });
+    const toggle = screen.getByRole("button", { name: /men(ü|u)/iu });
     await userEvent.click(toggle);
-    await screen.findByRole("dialog", { name: /Ana gezinme/u });
+    await screen.findByRole("dialog");
 
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: /Menüyü aç/u })).toHaveFocus(),
+      expect(screen.getByRole("button", { name: /men(ü|u)/iu })).toHaveFocus(),
     );
   });
 
   it("contains focus while open: the page behind it is not reachable by Tab", async () => {
     shell();
-    await userEvent.click(screen.getByRole("button", { name: /Menüyü aç/u }));
-    const sheet = await screen.findByRole("dialog", { name: /Ana gezinme/u });
+    await userEvent.click(screen.getByRole("button", { name: /men(ü|u)/iu }));
+    const sheet = await screen.findByRole("dialog");
 
     for (let step = 0; step < 8; step += 1) {
       await userEvent.tab();
@@ -118,24 +138,10 @@ describe("the mobile navigation is a sheet, not an inline accordion", () => {
     }
   });
 
-  it("keeps the navigation landmark in the document in both states", () => {
-    // The landmark is what a screen reader walks to; the sheet is what the
-    // button opens. They are different elements and only one of them is the
-    // control's `aria-controls` target - see `adaptive-responsive.test.tsx`.
-    shell();
-    const toggle = screen.getByRole("button", { name: /Menüyü aç/u });
-    expect(toggle).toHaveAttribute("aria-expanded", "false");
-    expect(screen.getByRole("navigation", { name: /Ana gezinme/u })).toContainElement(toggle);
-    const controls = toggle.getAttribute("aria-controls");
-    if (controls !== null) {
-      expect(document.getElementById(controls), `${controls} is dangling`).not.toBeNull();
-    }
-  });
-
   it("closes when a destination is chosen", async () => {
     shell();
-    await userEvent.click(screen.getByRole("button", { name: /Menüyü aç/u }));
-    const sheet = await screen.findByRole("dialog", { name: /Ana gezinme/u });
+    await userEvent.click(screen.getByRole("button", { name: /men(ü|u)/iu }));
+    const sheet = await screen.findByRole("dialog");
     await userEvent.click(within(sheet).getByRole("link", { name: "Kararlar" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   });

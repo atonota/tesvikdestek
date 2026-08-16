@@ -488,6 +488,25 @@ export function capabilityById(id: string): Capability | undefined {
   return CAPABILITIES.find((capability) => capability.id === id);
 }
 
+/**
+ * `capabilityById(id).reason`, refusing to silently render an empty string.
+ *
+ * Callers that show a capability's reason to a reader - a disabled menu item,
+ * a shell chrome fallback - need the actual sentence, not a blank space where
+ * one belongs. A missing id or a green capability with no `reason` is a bug
+ * in the ledger entry itself, not something the caller should paper over.
+ */
+export function requireCapabilityReason(id: string): string {
+  const capability = capabilityById(id);
+  if (capability === undefined) {
+    throw new Error(`capabilities ledger has no entry for "${id}"`);
+  }
+  if (!capability.reason) {
+    throw new Error(`capabilities ledger entry "${id}" has no reason`);
+  }
+  return capability.reason;
+}
+
 export const CAPABILITY_COUNTS = {
   green: capabilitiesByStatus("green").length,
   partial: capabilitiesByStatus("partial").length,
