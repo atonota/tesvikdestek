@@ -243,7 +243,7 @@ function composedContextRail(identity: CockpitIdentity) {
 }
 
 const meta = {
-  title: resolveContent("cockpit.story.meta.title"),
+  title: "Kognitif kokpit/Panel",
   component: CognitiveCockpitDashboard,
   parameters: {
     docs: {
