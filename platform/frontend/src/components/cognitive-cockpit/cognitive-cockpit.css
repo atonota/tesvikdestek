@@ -167,39 +167,45 @@
   min-inline-size: 0;
 }
 
-.cognitive-spotlight__trigger {
-  display: inline-flex;
+.cognitive-spotlight__panel {
+  display: flex;
   align-items: center;
   gap: var(--fd-space-2, 8px);
-  min-block-size: 44px;
   inline-size: 100%;
   max-inline-size: clamp(12rem, 40vw, 28rem);
-  padding-inline: var(--fd-space-4, 16px);
+  min-block-size: 44px;
+  padding-inline: var(--fd-space-3, 12px);
   border: 1px solid var(--cc-line);
   border-radius: var(--fd-radius-search, 22px);
   background: var(--cc-bg);
   color: var(--cc-fg-muted);
-  cursor: pointer;
+  cursor: text;
+  transition:
+    min-block-size var(--fd-duration-slow, 220ms) var(--fd-ease-standard, ease),
+    max-inline-size var(--fd-duration-slow, 220ms) var(--fd-ease-standard, ease),
+    border-radius var(--fd-duration-slow, 220ms) var(--fd-ease-standard, ease),
+    border-color var(--fd-duration-slow, 220ms) var(--fd-ease-standard, ease),
+    background var(--fd-duration-slow, 220ms) var(--fd-ease-standard, ease);
 }
 
-.cognitive-spotlight__trigger kbd {
+.cognitive-spotlight__panel[data-open="true"] {
+  flex-wrap: wrap;
+  max-inline-size: none;
+  min-block-size: 52px;
+  padding: var(--fd-space-2, 8px) var(--fd-space-3, 12px);
+  border-color: var(--cc-primary);
+  border-radius: var(--fd-radius-spotlight-open, 16px);
+  background: var(--cc-surface);
+  color: var(--cc-fg);
+}
+
+.cognitive-spotlight__panel kbd {
+  flex: 0 0 auto;
   margin-inline-start: auto;
   padding-inline: var(--fd-space-2, 8px);
   border: 1px solid var(--cc-line);
   border-radius: var(--fd-radius-sm, 4px);
   font-size: var(--cc-text-sm);
-}
-
-.cognitive-spotlight__panel {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--fd-space-2, 8px);
-  inline-size: 100%;
-  padding: var(--fd-space-2, 8px) var(--fd-space-3, 12px);
-  border: 1px solid var(--cc-primary);
-  border-radius: var(--fd-radius-spotlight-open, 16px);
-  background: var(--cc-surface);
 }
 
 .cognitive-spotlight__panel input {
@@ -208,7 +214,7 @@
   min-block-size: 44px;
   border: none;
   background: transparent;
-  color: var(--cc-fg);
+  color: inherit;
   font: inherit;
   outline: none;
 }
@@ -773,11 +779,26 @@
 /* ------------------------------------------------------------ 320px floor */
 
 @container cognitive-cockpit (max-width: 20rem) {
-  .cognitive-spotlight__trigger {
+  .cognitive-spotlight__panel {
     max-inline-size: 100%;
   }
 
   .cognitive-account-menu__label {
+    display: none;
+  }
+
+  /* Open Spotlight claims the entire header row: the brand mark, the
+     hamburger, notifications and the account trigger yield their width
+     rather than squeeze the panel into a narrow vertical box. */
+  .cognitive-spotlight[data-open="true"] {
+    gap: 0;
+    padding-inline: 0;
+  }
+
+  .cognitive-spotlight[data-open="true"] .cognitive-spotlight__hamburger,
+  .cognitive-spotlight[data-open="true"] .cognitive-spotlight__brand,
+  .cognitive-spotlight[data-open="true"] .cognitive-spotlight__notifications,
+  .cognitive-spotlight[data-open="true"] .cognitive-account-menu__trigger {
     display: none;
   }
 }

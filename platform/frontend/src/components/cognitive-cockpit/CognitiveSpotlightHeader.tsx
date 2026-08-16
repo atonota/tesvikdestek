@@ -89,18 +89,24 @@ export function CognitiveSpotlightHeader({
       </span>
 
       <div className="cognitive-spotlight__search" data-open={open}>
-        {open ? (
-          <div className="cognitive-spotlight__panel" role="search">
-            <FoundationIcon name="search" />
-            <input
-              ref={inputRef}
-              type="text"
-              value={query}
-              onChange={(event) => onQueryChange(event.target.value)}
-              placeholder={searchPlaceholder}
-              aria-label={searchLabel}
-              aria-controls={listboxId}
-            />
+        <div className="cognitive-spotlight__panel" data-open={open} role="search">
+          <FoundationIcon name="search" />
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(event) => onQueryChange(event.target.value)}
+            onFocus={() => {
+              if (!open) onOpenChange(true);
+            }}
+            onClick={() => {
+              if (!open) onOpenChange(true);
+            }}
+            placeholder={open ? searchPlaceholder : searchTrigger}
+            aria-label={searchLabel}
+            aria-controls={listboxId}
+          />
+          {open ? (
             <button
               type="button"
               className="cognitive-spotlight__close"
@@ -112,40 +118,31 @@ export function CognitiveSpotlightHeader({
             >
               <FoundationIcon name="close" />
             </button>
-            {query.trim() !== "" ? (
-              <ul id={listboxId} className="cognitive-spotlight__results">
-                {results.length === 0 ? (
-                  <li className="cognitive-spotlight__no-result">{searchNoResult}</li>
-                ) : (
-                  results.map((item) => (
-                    <li key={item.id}>
-                      <Link to={item.to} onClick={() => onOpenChange(false)}>
-                        {item.label}
-                        {item.hint ? (
-                          <span className="fd-muted">
-                            {hintSeparator}
-                            {item.hint}
-                          </span>
-                        ) : null}
-                      </Link>
-                    </li>
-                  ))
-                )}
-              </ul>
-            ) : null}
-          </div>
-        ) : (
-          <button
-            type="button"
-            className="cognitive-spotlight__trigger"
-            onClick={() => onOpenChange(true)}
-            aria-expanded={false}
-          >
-            <FoundationIcon name="search" />
-            <span>{searchTrigger}</span>
+          ) : (
             <kbd>{shortcut}</kbd>
-          </button>
-        )}
+          )}
+          {open && query.trim() !== "" ? (
+            <ul id={listboxId} className="cognitive-spotlight__results">
+              {results.length === 0 ? (
+                <li className="cognitive-spotlight__no-result">{searchNoResult}</li>
+              ) : (
+                results.map((item) => (
+                  <li key={item.id}>
+                    <Link to={item.to} onClick={() => onOpenChange(false)}>
+                      {item.label}
+                      {item.hint ? (
+                        <span className="fd-muted">
+                          {hintSeparator}
+                          {item.hint}
+                        </span>
+                      ) : null}
+                    </Link>
+                  </li>
+                ))
+              )}
+            </ul>
+          ) : null}
+        </div>
       </div>
 
       <button

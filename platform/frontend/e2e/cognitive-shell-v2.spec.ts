@@ -223,13 +223,14 @@ test.describe("reference: the drawer sheet is anchored left and capped at 640px 
 test.describe("reference: at 320px the brand and utilities yield width to the expanded Spotlight without overflow", () => {
   test.use({ viewport: { width: 320, height: 720 } });
 
-  test("brand collapses to near-zero width once the Spotlight expands, and no horizontal overflow appears", async ({
+  test("the cognitive header gives the expanded Spotlight a full horizontal row", async ({
     page,
   }) => {
     await page.goto("./panel");
     await page.waitForLoadState("networkidle");
 
-    const brand = page.locator(".dt-shell__brand");
+    const header = page.locator(".cognitive-spotlight");
+    const brand = page.locator(".cognitive-spotlight__brand");
     await expect(brand).toBeVisible();
     const brandBefore = await brand.boundingBox();
     expect(brandBefore, "brand did not render before expansion").not.toBeNull();
@@ -246,5 +247,21 @@ test.describe("reference: at 320px the brand and utilities yield width to the ex
       !brandAfter || brandAfter.width <= 4,
       "brand did not yield its width once the Spotlight expanded",
     ).toBe(true);
+
+    const headerBox = await header.boundingBox();
+    const panelBox = await page.locator(".cognitive-spotlight__panel").boundingBox();
+    const inputBox = await spotlight.boundingBox();
+    expect(headerBox, "cognitive header did not render").not.toBeNull();
+    expect(panelBox, "expanded Spotlight panel did not render").not.toBeNull();
+    expect(inputBox, "persistent Spotlight input did not render").not.toBeNull();
+
+    expect(panelBox!.width).toBeGreaterThanOrEqual(280);
+    expect(panelBox!.height).toBeLessThanOrEqual(72);
+    expect(inputBox!.width).toBeGreaterThanOrEqual(140);
+    expect(inputBox!.height).toBeGreaterThanOrEqual(44);
+    expect(panelBox!.x).toBeGreaterThanOrEqual(headerBox!.x);
+    expect(panelBox!.x + panelBox!.width).toBeLessThanOrEqual(
+      headerBox!.x + headerBox!.width + 1,
+    );
   });
 });

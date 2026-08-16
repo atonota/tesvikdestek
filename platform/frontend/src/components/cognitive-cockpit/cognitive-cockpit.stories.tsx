@@ -276,13 +276,10 @@ export const NoResult: Story = {
     contextRail: composedContextRail(IDENTITY),
   },
   play: async ({ canvasElement }) => {
-    const trigger = canvasElement.querySelector<HTMLButtonElement>(
-      ".cognitive-spotlight__trigger",
-    );
-    trigger?.click();
     const input = canvasElement
       .querySelector(".cognitive-spotlight__panel")
       ?.querySelector<HTMLInputElement>("input");
+    input?.click();
     if (input) {
       input.value = resolveContent("cockpit.story.search.no_match_query");
       input.dispatchEvent(new Event("input", { bubbles: true }));
