@@ -20,11 +20,18 @@
   --dt-color-surface-raised: #ffffff;
   --dt-color-surface-sunken: #eef1f5;
   --dt-color-fg: #14181f;
-  --dt-color-fg-muted: #515b6b;
-  --dt-color-line: #d3d9e2;
-  /* Raised from #aab3c0, which reached only 2.2:1 on white. A border that
-     carries meaning is a non-text UI component and owes WCAG 1.4.11 its 3:1. */
-  --dt-color-line-strong: #767f8d;
+  /* qq33 P1 (MASTER karari 2026-08-16): qq33MASTER-PROMPT.md BÖLÜM 1 is now
+     the owner-canonical token contract, superseding the WCAG-driven values
+     this file previously carried in their place. `--dt-color-line-strong`
+     in particular no longer reaches the 3:1 UI-boundary ratio the earlier
+     value was raised to hit (qq33-p1-tokens.test.ts records the literal
+     values; design-system-contract.test.ts's own contrast suite reports the
+     resulting shortfall rather than hiding it). */
+  --dt-color-fg-muted: #4c5666;
+  --dt-color-line: #dde3eb;
+  --dt-color-line-strong: #c1cbd8;
+  --dt-color-hover: #f1f4f8;
+  --dt-color-selected: #eaf0f9;
 
   --dt-color-accent: #1b4d8f;
   --dt-color-accent-hover: #16406f;
@@ -49,7 +56,7 @@
   --dt-color-secondary-fg: #241f00;
   --dt-color-secondary-soft: #fbf7d6;
 
-  --dt-color-danger: #8f1d1d;
+  --dt-color-danger: #9b211b;
   /* Read on the danger surface, and checked as a pair by the contract test.
      White is right on the light theme's deep red and wrong on the dark theme's
      tint, so this flips with the theme rather than being hard-coded in a
@@ -57,6 +64,15 @@
   --dt-color-danger-fg: #ffffff;
   --dt-color-danger-soft: #fbeaea;
   --dt-color-focus: #0b63d6;
+
+  /* --- qq33 P1 status tones ----------------------------------------------
+   * Generic status colours (a stale-source badge, a status dot, a busy
+   * indicator) distinct from the four domain OUTCOME colours below: these
+   * describe the state of a UI element, not an evaluation result. */
+  --dt-color-ok: #0f6b3f;
+  --dt-color-warn: #7a5000;
+  --dt-color-neutral: #41505f;
+  --dt-color-neutral-bg: #edf1f5;
 
   /* --- the four outcome semantics -------------------------------------- */
   --dt-outcome-candidate-fg: #14532d;
@@ -118,10 +134,32 @@
   --dt-radius-sm: 4px;
   --dt-radius: 8px;
   --dt-radius-lg: 12px;
+
+  /* Three named, closed exceptions to the 12px ceiling — qq33 P1 BÖLÜM 1
+     "Şekil ve ölçek" ("ONAYLI DEĞERLER"). Each is scoped to one consumer:
+     `--dt-radius-pill` to the Badge/Avatar/StatusDot pill atoms, `-search`
+     to SpotlightInput/SearchInput idle state, `-spotlight-open` to
+     SpotlightInput's expanded state. Nothing else may exceed 12px — see the
+     "nothing is a pill" guard in design-system-contract.test.ts, which
+     admits exactly these three token names and no other declaration. */
+  --dt-radius-pill: 999px;
+  --dt-radius-search: 22px;
+  --dt-radius-spotlight-open: 16px;
+
   --dt-shadow-1: 0 1px 2px rgb(16 24 40 / 8%);
   --dt-shadow-2: 0 6px 20px rgb(16 24 40 / 12%);
+
+  /* qq33 P1 "Hareket". `--dt-motion-duration` keeps its existing 160ms
+     value (it already equalled `--dur-fast`); the three slower tiers and
+     the standard easing curve are new. `--dt-motion-ease` is *replaced*
+     rather than kept alongside the old curve — qq33 is now the one motion
+     contract, not a second one layered on top. */
   --dt-motion-duration: 160ms;
-  --dt-motion-ease: cubic-bezier(0.2, 0, 0.2, 1);
+  --dt-motion-duration-fast: 160ms;
+  --dt-motion-duration-base: 200ms;
+  --dt-motion-duration-slow: 220ms;
+  --dt-motion-duration-morph: 300ms;
+  --dt-motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 
   --dt-z-sticky: 10;
   --dt-z-drawer: 40;
@@ -132,9 +170,34 @@
   --dt-focus-offset: 2px;
 
   /* Minimum target size. WCAG 2.2 AA 2.5.8 asks for 24px; touch-primary
-     actions go to 44px via the `--dt-target-touch` token. */
+     actions go to 44px via the `--dt-target-touch` token, and qq33 P1 adds a
+     48px comfortable tier for the atoms that ask for it explicitly. */
   --dt-target-min: 24px;
   --dt-target-touch: 44px;
+  --dt-target-touch-comfortable: 48px;
+
+  /* --- qq33 P1 spacing scale ---------------------------------------------
+   * `--dt-density-*` above already governs row/pad rhythm; this is qq33's
+   * flat 4px-step scale for the atoms and molecules built from the
+   * prototypes, exposed as literal tokens for CSS consumers outside
+   * Tailwind's own (numerically identical) default spacing scale. */
+  --dt-space-1: 4px;
+  --dt-space-2: 8px;
+  --dt-space-3: 12px;
+  --dt-space-4: 16px;
+  --dt-space-5: 20px;
+  --dt-space-6: 24px;
+
+  /* --- qq33 P1 layer (scrim + blur) ---------------------------------------
+   * "ONAYLI DEĞERLER — değiştirme." Fixed cool grey (slate-500), fixed
+   * opacities and blur radii, owned solely by ModalLayerHost (P4) and never
+   * re-derived per theme or per organism. `--dt-scrim-grey` is channel
+   * numbers, not a colour, for `rgb(var(--dt-scrim-grey) / <alpha>)`. */
+  --dt-scrim-grey: 100 116 139;
+  --dt-scrim-page: 0.12;
+  --dt-scrim-nested: 0.1;
+  --dt-blur-page: 2px;
+  --dt-blur-nested: 1px;
 }
 
 /* --- density variants -------------------------------------------------- */
@@ -172,11 +235,15 @@
     --dt-color-surface: #151b23;
     --dt-color-surface-raised: #1c242e;
     --dt-color-surface-sunken: #10161d;
-    --dt-color-fg: #e8edf4;
-    --dt-color-fg-muted: #a3aec0;
-    --dt-color-line: #2b3441;
-    /* Raised from #3d4959, which reached only 1.9:1 on the dark surface. */
-    --dt-color-line-strong: #78879c;
+    --dt-color-fg: #f2f6fb;
+    /* qq33 P1 (MASTER karari 2026-08-16): superseded by the owner-canonical
+       qq33 spec, which no longer clears 3:1 on `--dt-color-line-strong` -
+       see the same note in the light `:root` block above. */
+    --dt-color-fg-muted: #aeb9c9;
+    --dt-color-line: #2a3440;
+    --dt-color-line-strong: #3d4a59;
+    --dt-color-hover: #1b2531;
+    --dt-color-selected: #17263a;
 
     --dt-color-accent: #7aa9e9;
     --dt-color-accent-hover: #9cc0f2;
@@ -197,10 +264,15 @@
     --dt-color-secondary-fg: #1a1600;
     --dt-color-secondary-soft: #26230f;
 
-    --dt-color-danger: #f2a0a0;
+    --dt-color-danger: #f79289;
     --dt-color-danger-fg: #2a1717;
     --dt-color-danger-soft: #2a1717;
     --dt-color-focus: #8ab8ff;
+
+    --dt-color-ok: #6fdca6;
+    --dt-color-warn: #f0be63;
+    --dt-color-neutral: #aeb9c9;
+    --dt-color-neutral-bg: #1c242e;
 
     --dt-outcome-candidate-fg: #a7e0bd;
     --dt-outcome-candidate-bg: #16261d;
@@ -228,11 +300,12 @@
   --dt-color-surface: #151b23;
   --dt-color-surface-raised: #1c242e;
   --dt-color-surface-sunken: #10161d;
-  --dt-color-fg: #e8edf4;
-  --dt-color-fg-muted: #a3aec0;
-  --dt-color-line: #2b3441;
-  /* Raised from #3d4959, which reached only 1.9:1 on the dark surface. */
-  --dt-color-line-strong: #78879c;
+  --dt-color-fg: #f2f6fb;
+  --dt-color-fg-muted: #aeb9c9;
+  --dt-color-line: #2a3440;
+  --dt-color-line-strong: #3d4a59;
+  --dt-color-hover: #1b2531;
+  --dt-color-selected: #17263a;
 
   --dt-color-accent: #7aa9e9;
   --dt-color-accent-hover: #9cc0f2;
@@ -252,10 +325,15 @@
   --dt-color-secondary-fg: #1a1600;
   --dt-color-secondary-soft: #26230f;
 
-  --dt-color-danger: #f2a0a0;
+  --dt-color-danger: #f79289;
   --dt-color-danger-fg: #2a1717;
   --dt-color-danger-soft: #2a1717;
   --dt-color-focus: #8ab8ff;
+
+  --dt-color-ok: #6fdca6;
+  --dt-color-warn: #f0be63;
+  --dt-color-neutral: #aeb9c9;
+  --dt-color-neutral-bg: #1c242e;
 
   --dt-outcome-candidate-fg: #a7e0bd;
   --dt-outcome-candidate-bg: #16261d;

@@ -14,10 +14,15 @@
  *    stylesheet hard-codes one either.
  *  - **Weights start at 400.** 300 and lighter are unreadable on the LCD panels
  *    this product is actually used on.
- *  - **Nothing is a pill.** `999px`, `9999px` and `50%` are all banned outright,
- *    and every remaining radius is at most 12px. On a small box the browser
- *    clamps a 12px radius to half the box, so genuine circles (the spinner)
- *    still render as circles without the stylesheet claiming a pill.
+ *  - **Nothing is a pill, with three named exceptions.** `999px`, `9999px` and
+ *    `50%` are banned outright, and every remaining radius is at most 12px. On
+ *    a small box the browser clamps a 12px radius to half the box, so genuine
+ *    circles (the spinner) still render as circles without the stylesheet
+ *    claiming a pill. qq33 P1 (MASTER karari 2026-08-16, qq33MASTER-PROMPT.md
+ *    BÖLÜM 1 "ONAYLI DEĞERLER") opens exactly three closed exceptions -
+ *    `@utility rounded-pill` (999px), `@utility rounded-search` (22px) and
+ *    `@utility rounded-spotlight-open` (16px) - and no other selector, in no
+ *    other stylesheet, may exceed 12px.
  *  - **Parliament blue and lemon yellow are tokens**, not literals sprinkled
  *    through components.
  *  - **Roboto is bundled**, not wished for in a font stack that falls back to
@@ -89,28 +94,83 @@ describe("no text is lighter than weight 400", () => {
 
 /* ----------------------------------------------------------------- shape */
 
-describe("nothing is a pill and no corner exceeds 12px", () => {
+/**
+ * The three closed exceptions to the 12px ceiling, by CSS rule selector.
+ *
+ * Keyed on the exact `@utility` selector so an exception admits nothing
+ * beyond the one declaration it names - a stray `border-radius: 999px`
+ * anywhere else in the design layer still fails both checks below.
+ */
+const RADIUS_EXCEPTIONS: Readonly<Record<string, number>> = {
+  "@utility rounded-pill": 999,
+  "@utility rounded-search": 22,
+  "@utility rounded-spotlight-open": 16,
+};
+
+/** Rules as `[selector, declarations]`, comments already stripped. */
+const cssRules = (css: string): readonly (readonly [string, string])[] =>
+  [...css.matchAll(/([^{}]+)\{([^{}]*)\}/gu)].map(
+    ([, selector, body]) => [(selector ?? "").trim().replace(/\s+/gu, " "), body ?? ""] as const,
+  );
+
+describe("nothing is a pill and no corner exceeds 12px, outside the three named exceptions", () => {
   it.each(stylesheets().map(({ name }) => name))("%s declares no pill radius", (name) => {
     const css = withoutComments(readFileSync(join(DESIGN, name), "utf8"));
-    const pills = [...css.matchAll(/border-radius:[^;]*?(999px|9999px|50%)/gu)].map((m) => m[0]);
-    expect(pills).toEqual([]);
-  });
-
-  it.each(stylesheets().map(({ name }) => name))("%s keeps every corner at 12px or less", (name) => {
-    const css = withoutComments(readFileSync(join(DESIGN, name), "utf8"));
     const offenders: string[] = [];
-    for (const [, values] of css.matchAll(/border-radius:\s*([^;]+);/gu)) {
-      for (const [, size] of (values ?? "").matchAll(/([\d.]+)px/gu)) {
-        if (Number(size) > 12) offenders.push(`${values?.trim()}`);
+    for (const [selector, body] of cssRules(css)) {
+      for (const [, size] of body.matchAll(/border-radius:[^;]*?(999px|9999px|50%)/gu)) {
+        const match = size ?? "";
+        if (RADIUS_EXCEPTIONS[selector] === Number(match.replace("px", ""))) continue;
+        offenders.push(`${selector}: ${match}`);
       }
     }
     expect(offenders).toEqual([]);
   });
 
-  it("the radius tokens themselves top out at 12px", () => {
+  it.each(stylesheets().map(({ name }) => name))(
+    "%s keeps every corner at 12px or less outside the named exceptions",
+    (name) => {
+      const css = withoutComments(readFileSync(join(DESIGN, name), "utf8"));
+      const offenders: string[] = [];
+      for (const [selector, body] of cssRules(css)) {
+        for (const [, values] of body.matchAll(/border-radius:\s*([^;]+);/gu)) {
+          for (const [, size] of (values ?? "").matchAll(/([\d.]+)px/gu)) {
+            if (Number(size) <= 12) continue;
+            if (RADIUS_EXCEPTIONS[selector] === Number(size)) continue;
+            offenders.push(`${selector}: ${values?.trim()}`);
+          }
+        }
+      }
+      expect(offenders).toEqual([]);
+    },
+  );
+
+  it("the three named exceptions carry exactly their approved values, nowhere else", () => {
+    const css = withoutComments(readFileSync(join(DESIGN, "tailwind.css"), "utf8"));
+    for (const [selector, expected] of Object.entries(RADIUS_EXCEPTIONS)) {
+      const rule = cssRules(css).find(([sel]) => sel === selector);
+      expect(rule, `${selector} is not declared in tailwind.css`).toBeDefined();
+      expect(rule?.[1]).toMatch(new RegExp(`border-radius:\\s*${expected}px`, "u"));
+    }
+  });
+
+  it("the radius tokens themselves top out at 12px, except the three named exceptions", () => {
+    const exceptionTokens = new Set([
+      "--dt-radius-pill",
+      "--dt-radius-search",
+      "--dt-radius-spotlight-open",
+    ]);
     for (const [, name, size] of tokens().matchAll(/(--dt-radius[\w-]*):\s*([\d.]+)px/gu)) {
+      if (exceptionTokens.has(name ?? "")) continue;
       expect(Number(size), `${name} is larger than 12px`).toBeLessThanOrEqual(12);
     }
+  });
+
+  it("the three exception tokens carry qq33 P1's approved values", () => {
+    const css = tokens();
+    expect(/--dt-radius-pill:\s*999px/u.test(css)).toBe(true);
+    expect(/--dt-radius-search:\s*22px/u.test(css)).toBe(true);
+    expect(/--dt-radius-spotlight-open:\s*16px/u.test(css)).toBe(true);
   });
 });
 
@@ -430,8 +490,19 @@ const TEXT_PAIRS: readonly (readonly [string, string])[] = [
   ["--dt-color-danger-fg", "--dt-color-danger"],
 ];
 
+/**
+ * `--dt-color-line-strong` on `--dt-color-surface` is deliberately absent
+ * here. qq33 P1 (MASTER karari 2026-08-16) is the owner-canonical token
+ * contract and its `--border-strong` (#C1CBD8 light / #3D4A59 dark) is a
+ * literal value from the two approved prototypes, not derived to clear 3:1 -
+ * it measures 1.64:1 light and 1.91:1 dark, both below the non-text UI
+ * boundary floor. This is a named, recorded exception (see the block below),
+ * not a silently dropped check: `border-strong` is a divider/secondary-border
+ * tone, never the sole cue for an interactive element's boundary in the
+ * qq33 prototypes, so it is out of this blanket 3:1 sweep rather than out of
+ * the design system's accessibility obligations altogether.
+ */
 const UI_PAIRS: readonly (readonly [string, string])[] = [
-  ["--dt-color-line-strong", "--dt-color-surface"],
   ["--dt-color-focus", "--dt-color-bg"],
   ["--dt-color-primary", "--dt-color-surface"],
 ];
@@ -477,6 +548,15 @@ describe.each([
 
   it.each(UI_PAIRS)("%s on %s reaches 3:1", (foreground, background) => {
     expect(ratioFor(foreground, background)).toBeGreaterThanOrEqual(3);
+  });
+
+  it("--dt-color-line-strong on --dt-color-surface is the known qq33 P1 exception, tracked rather than dropped", () => {
+    // Pinned to the literal qq33 prototype value's real ratio, not to "under
+    // 3", so this fails loudly the moment anyone tries to quietly worsen it
+    // further, and fails loudly the other way if a future palette pass fixes
+    // it and this comment is left stale.
+    const expected = _theme === "light" ? 1.64 : 1.91;
+    expect(ratioFor("--dt-color-line-strong", "--dt-color-surface")).toBe(expected);
   });
 
   it("the contrast maths itself is right", () => {

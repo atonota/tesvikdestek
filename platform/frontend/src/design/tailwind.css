@@ -137,6 +137,14 @@
   --color-destructive-foreground: var(--dt-color-danger-fg);
   --color-destructive-soft: var(--dt-color-danger-soft);
 
+  /* --- qq33 P1 semantic surfaces and status tones ------------------------ */
+  --color-hover: var(--dt-color-hover);
+  --color-selected: var(--dt-color-selected);
+  --color-ok: var(--dt-color-ok);
+  --color-warn: var(--dt-color-warn);
+  --color-neutral: var(--dt-color-neutral);
+  --color-neutral-bg: var(--dt-color-neutral-bg);
+
   /* --- the four outcome semantics --------------------------------------
    * The domain has exactly four outcomes and no "success": a green tick is a
    * claim this product is not entitled to make. */
@@ -187,24 +195,54 @@
   /* --- motion -----------------------------------------------------------
    * Motion-first, and `prefers-reduced-motion` is absolute: the duration token
    * collapses to 0ms at the token layer, so every utility built on it stops
-   * moving without a single component having to ask. */
+   * moving without a single component having to ask.
+   *
+   * qq33 P1 adds three slower named tiers on top of the default duration -
+   * `duration-fast`/`duration-base`/`duration-slow`/`duration-morph` and
+   * `ease-standard` - via Tailwind's own `--duration-*`/`--ease-*` theme
+   * namespaces, so a component reaches for a utility class instead of a
+   * `var(--dt-motion-duration-slow)` inline style. */
   --default-transition-duration: var(--dt-motion-duration);
   --default-transition-timing-function: var(--dt-motion-ease);
+  --duration-fast: var(--dt-motion-duration-fast);
+  --duration-base: var(--dt-motion-duration-base);
+  --duration-slow: var(--dt-motion-duration-slow);
+  --duration-morph: var(--dt-motion-duration-morph);
+  --ease-standard: var(--dt-motion-ease);
 
   /* --- touch ------------------------------------------------------------ */
   --spacing-touch: var(--dt-target-touch);
+  --spacing-touch-comfortable: var(--dt-target-touch-comfortable);
+
+  /* --- layer (scrim + blur) -----------------------------------------------
+   * Owned solely by ModalLayerHost (P4); bridged here only so the token is
+   * reachable as `blur-page`/`blur-nested` through Tailwind's `--blur-*`
+   * namespace rather than re-declared per organism. */
+  --blur-page: var(--dt-blur-page);
+  --blur-nested: var(--dt-blur-nested);
 }
 
 /*
- * The one utility Tailwind cannot express as a token.
+ * The three named, closed exceptions to the 12px ceiling.
  *
- * The search field is the single, deliberate exception to the 12px ceiling in
- * the product's shape contract. It is written here rather than left to a
- * component so the exception is declared once, in the styling layer, where the
- * ceiling itself is declared.
+ * qq33 P1 BÖLÜM 1 ("ONAYLI DEĞERLER — değiştirme") fixes three radii above the
+ * product's own shape ceiling: the search field's idle 22px, the spotlight's
+ * expanded 16px, and the pill radius the Badge/Avatar/StatusDot atoms need.
+ * Each is written here rather than left to a component so the exception is
+ * declared once, in the styling layer, where the ceiling itself is declared -
+ * and `design-system-contract.test.ts` admits exactly these three utility
+ * names at exactly these three values, nothing broader.
  */
 @utility rounded-search {
-  border-radius: 12px;
+  border-radius: 22px;
+}
+
+@utility rounded-spotlight-open {
+  border-radius: 16px;
+}
+
+@utility rounded-pill {
+  border-radius: 999px;
 }
 
 /*
