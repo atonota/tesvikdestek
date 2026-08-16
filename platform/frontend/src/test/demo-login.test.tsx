@@ -146,8 +146,8 @@ async function renderApp(path: string): Promise<{
   );
   await waitFor(
     () => {
-      expect(view.container.querySelector("main")).not.toBeNull();
-      expect(view.container.querySelector(".dt-skeleton")).toBeNull();
+      expect(router.state.navigation.state).toBe("idle");
+      expect(view.container.querySelector('[aria-busy="true"]')).toBeNull();
     },
     /*
      * Same patience, and the same reason, as `render-app.tsx`: this waits on a
@@ -159,6 +159,15 @@ async function renderApp(path: string): Promise<{
     { timeout: 15_000 },
   );
   return { view, client };
+}
+
+async function expectDemoIdentity(label: string): Promise<void> {
+  expect((await screen.findAllByText(label)).length).toBeGreaterThan(0);
+}
+
+async function signOutFromAccountMenu(): Promise<void> {
+  await userEvent.click(screen.getByRole("button", { name: /^Hesap menüsü,/u }));
+  await userEvent.click(await screen.findByRole("menuitem", { name: "Çıkış yap" }));
 }
 
 function profile(id: string) {
@@ -342,14 +351,14 @@ describe("the running application never hides that it is a demo", () => {
     async (id, label) => {
       startDemoSession(id);
       await renderApp("/panel");
-      expect(await screen.findByText(label)).toBeInTheDocument();
+      await expectDemoIdentity(label);
     },
   );
 
   it("carries the badge onto another screen, not just the landing one", async () => {
     startDemoSession("superadmin");
     await renderApp("/olgunluk");
-    expect(await screen.findByText(demoBadgeLabel("superadmin"))).toBeInTheDocument();
+    await expectDemoIdentity(demoBadgeLabel("superadmin"));
   });
 
   it("shows no demo badge in a real session", async () => {
@@ -509,7 +518,7 @@ describe("a demo session is not a server session and sends no request pretending
     expect(serverSessionOpen, "demo açıldı ama sunucu oturumu hâlâ açık").toBe(false);
 
     // Leave the demo, then ask the workspace directly.
-    await userEvent.click(screen.getByRole("button", { name: "Çıkış" }));
+    await signOutFromAccountMenu();
     await screen.findByRole("heading", { level: 1, name: "Giriş" });
 
     endDemoSession();
@@ -543,7 +552,7 @@ describe("a demo session is not a server session and sends no request pretending
     const requests = recordRequests();
     await renderApp("/panel");
     await screen.findByRole("heading", { level: 1, name: "Kokpit" });
-    await userEvent.click(screen.getByRole("button", { name: "Çıkış" }));
+    await signOutFromAccountMenu();
     await screen.findByRole("heading", { level: 1, name: "Giriş" });
 
     for (const path of WRITE_PATHS) {
@@ -560,7 +569,7 @@ describe("leaving the demo really leaves it", () => {
     await renderApp("/panel");
     await screen.findByRole("heading", { level: 1, name: "Kokpit" });
 
-    await userEvent.click(screen.getByRole("button", { name: "Çıkış" }));
+    await signOutFromAccountMenu();
 
     expect(await screen.findByRole("heading", { level: 1, name: "Giriş" })).toBeInTheDocument();
     expect(getDemoSession()).toBeNull();
@@ -572,7 +581,7 @@ describe("leaving the demo really leaves it", () => {
     await screen.findByRole("heading", { level: 1, name: "Kokpit" });
     expect(client.getQueryCache().getAll().length).toBeGreaterThan(0);
 
-    await userEvent.click(screen.getByRole("button", { name: "Çıkış" }));
+    await signOutFromAccountMenu();
     await screen.findByRole("heading", { level: 1, name: "Giriş" });
 
     expect(client.getQueryCache().getAll()).toEqual([]);
@@ -761,7 +770,7 @@ describe("typing the printed credentials opens the same demo the card opens", ()
       await renderApp("/giris");
       await signInWith(email, password);
 
-      expect(await screen.findByText(demoBadgeLabel(id))).toBeInTheDocument();
+      await expectDemoIdentity(demoBadgeLabel(id));
       const other = DEMO_PROFILES.find((entry) => entry.id !== id);
       expect(screen.queryByText(demoBadgeLabel(other!.id))).not.toBeInTheDocument();
     },
@@ -1000,7 +1009,7 @@ describe("the static Pages build has no backend and says so", () => {
     );
 
     expect(await screen.findByRole("heading", { level: 1, name: "Kokpit" })).toBeInTheDocument();
-    expect(await screen.findByText(demoBadgeLabel("superadmin"))).toBeInTheDocument();
+    await expectDemoIdentity(demoBadgeLabel("superadmin"));
     expect(requests.seen).toEqual([]);
   });
 
@@ -1012,7 +1021,7 @@ describe("the static Pages build has no backend and says so", () => {
     await signInWith(customer.email, customer.password);
 
     expect(await screen.findByRole("heading", { level: 1, name: "Kokpit" })).toBeInTheDocument();
-    expect(await screen.findByText(demoBadgeLabel("customer"))).toBeInTheDocument();
+    await expectDemoIdentity(demoBadgeLabel("customer"));
     expect(requests.seen).toEqual([]);
   });
 

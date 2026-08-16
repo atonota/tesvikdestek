@@ -620,7 +620,6 @@ Bu ayrım belgenin en önemli satırıdır; karıştırılırsa kural yapılmı�
 hiçbir ilişkisi yoktur:
 
 - `src/components/data-grid/DataGrid.tsx`
-- `src/components/provider-connections/ProviderAuditTimeline.tsx`
 - `src/components/templates.tsx`
 - `src/routes/QueryBoundary.tsx`
 - `src/routes/app.tsx`

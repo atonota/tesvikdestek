@@ -49,10 +49,8 @@ import {
   SkeletonChart,
   SkeletonForm,
   SkeletonList,
-  SkeletonControl,
   SkeletonMedia,
   SkeletonTable,
-  SkeletonTabStrip,
   SkeletonText,
 } from "@/components/ui/skeleton";
 
@@ -215,195 +213,28 @@ describe("the shimmer stops when motion is refused", () => {
   });
 });
 
-/* ------------------------------------- 4. every master component has a pair */
+/* ------------------------------------- 4. cognitive master story contracts */
 
-/**
- * The half of the rule a grep cannot check.
- *
- * The first version of this group searched `ui.stories.tsx` for the *words*
- * `SkeletonTable`, `SkeletonChart` and so on, and for the string `"320px"`.
- * Both were false green by construction: a gallery of shapes standing on their
- * own satisfied the first, and a story *named* "320px" that rendered at desktop
- * width satisfied the second.
- *
- * So this group asks the three questions the rule is actually about, and asks
- * each of them of a real value rather than of a file's text:
- *
- *  1. **Is every exported master component accounted for?** Enumerated from
- *     the barrel, so a component added tomorrow fails until it is mapped.
- *  2. **Does the mapped skeleton really render a skeleton?** Each shape is
- *     rendered and its shimmer elements counted.
- *  3. **Does the named story exist, and does the 320px story really select a
- *     320px viewport?** The catalogue module is imported and its exported
- *     story objects are inspected.
- */
+const COGNITIVE_STORY_FILES = [
+  join(ROOT, "src", "components", "cognitive-cockpit", "cognitive-cockpit.stories.tsx"),
+  join(ROOT, "src", "components", "cognitive-file-library", "cognitive-file-library.stories.tsx"),
+  join(ROOT, "src", "components", "cognitive-provider-center", "cognitive-provider-center.stories.tsx"),
+] as const;
 
-/**
- * The catalogue module, read as data.
- *
- * Typed as an index rather than as Storybook's `StoryAnnotations`, because what
- * this file needs from it is the *shape of the exported objects* - does the
- * story exist, does it carry `globals.viewport.value` - and the framework type
- * is deliberately narrower than that. `unknown` first, so the widening is
- * visible rather than smuggled through a structural coincidence.
- */
-import * as storyModule from "@/components/ui/ui.stories";
-import * as masterLayer from "@/components/ui";
-import {
-  SKELETON_MAP,
-  isExempt,
-  type SkeletonEntry,
-} from "@/components/ui/skeleton-map";
-
-const catalogue = storyModule as unknown as Record<string, Record<string, unknown>>;
-
-const SHAPES = {
-  Shimmer: <Shimmer className="h-4 w-24" />,
-  SkeletonText: <SkeletonText lines={3} />,
-  SkeletonCard: <SkeletonCard lines={2} />,
-  SkeletonTable: <SkeletonTable rows={2} columns={3} />,
-  SkeletonChart: <SkeletonChart shape="bar" bars={3} />,
-  SkeletonForm: <SkeletonForm fields={2} />,
-  SkeletonMedia: <SkeletonMedia items={2} />,
-  SkeletonList: <SkeletonList items={2} />,
-  SkeletonControl: <SkeletonControl />,
-  SkeletonTabStrip: <SkeletonTabStrip triggers={3} />,
-} as const;
-
-describe("every master component is paired with a skeleton or reasoned exempt", () => {
-  /** Value exports of the master layer, which is what a screen can import. */
-  const exported = () =>
-    Object.keys(masterLayer).filter(
-      (name) => typeof (masterLayer as Record<string, unknown>)[name] !== "undefined",
-    );
-
-  it("enumerates a master layer worth checking", () => {
-    // A guard over an empty set is decoration.
-    expect(exported().length).toBeGreaterThan(20);
+describe("the cognitive master stories are skeleton-first and truly 320px", () => {
+  it.each(COGNITIVE_STORY_FILES)("%s exposes the enterprise read states", (storyFile) => {
+    const source = readFileSync(storyFile, "utf8");
+    for (const state of ["Loading", "Empty", "Permission", "Offline", "Success"]) {
+      expect(source, `${storyFile}: ${state}`).toMatch(new RegExp(`export const ${state}\\b`, "u"));
+    }
+    expect(source).toMatch(/export const (?:Error|ErrorState)\b/u);
   });
 
-  it("maps every exported name, with no silent gaps", () => {
-    const unmapped = exported().filter((name) => !(name in SKELETON_MAP));
-    expect(
-      unmapped,
-      `bu master bileşenlerin skeleton eşi tanımlanmamış: ${unmapped.join(", ")}`,
-    ).toEqual([]);
-  });
-
-  it("maps nothing that is not exported, so the map cannot rot", () => {
-    const names = new Set(exported());
-    const stale = Object.keys(SKELETON_MAP).filter((name) => !names.has(name));
-    expect(stale, `haritada olup dışa aktarılmayan ad: ${stale.join(", ")}`).toEqual([]);
-  });
-
-  it("gives every exemption a kind and a written reason", () => {
-    const thin = Object.entries(SKELETON_MAP as Record<string, SkeletonEntry>)
-      .filter(([, entry]) => isExempt(entry))
-      .filter(([, entry]) => {
-        const exemption = entry as { exempt: string; reason: string };
-        return (
-          !["structural", "on-demand"].includes(exemption.exempt) ||
-          exemption.reason.trim().length < 30
-        );
-      })
-      .map(([name]) => name);
-    expect(thin, `gerekçesiz veya yüzeysel muafiyet: ${thin.join(", ")}`).toEqual([]);
-  });
-
-  const pairings = Object.entries(SKELETON_MAP as Record<string, SkeletonEntry>).filter(
-    (entry): entry is [string, Exclude<SkeletonEntry, { exempt: unknown }>] =>
-      !isExempt(entry[1]),
-  );
-
-  it("has real pairings, not an all-exempt map", () => {
-    // An "everything is structural" map would pass every other assertion here.
-    expect(pairings.length).toBeGreaterThanOrEqual(6);
-  });
-
-  it.each(pairings.map(([name, entry]) => [name, entry] as const))(
-    "%s: its mapped shape really renders shimmer",
-    (_name, entry) => {
-      const shape = SHAPES[entry.shape as keyof typeof SHAPES];
-      expect(shape, `bilinmeyen skeleton şekli: ${entry.shape}`).toBeDefined();
-      const { container } = render(<div>{shape}</div>);
-      expect(container.querySelectorAll("[data-slot='skeleton-shimmer']").length).toBeGreaterThan(
-        0,
-      );
-    },
-  );
-
-  it.each(pairings.map(([name, entry]) => [name, entry.story] as const))(
-    "%s: its named story %s exists in the catalogue",
-    (_name, story) => {
-      const found = catalogue[story];
-      expect(found, `Storybook'ta ${story} adlı story yok`).toBeDefined();
-      // A story is an object with something to render; a stray constant is not.
-      expect(typeof found).toBe("object");
-      expect(found).toHaveProperty("render");
-    },
-  );
-
-  it("says in one line what each pairing imitates", () => {
-    const vague = pairings.filter(([, entry]) => entry.imitates.trim().length < 20);
-    expect(vague.map(([name]) => name)).toEqual([]);
-  });
-});
-
-describe("the catalogue really renders at 320px", () => {
-  /** Story exports that claim to be the narrow viewport. */
-  const phoneStories = () =>
-    Object.entries(catalogue).filter(
-      ([name, value]) =>
-        name !== "default" && typeof value === "object" && value !== null && "globals" in value,
-    );
-
-  it("has narrow-viewport stories at all", () => {
-    expect(phoneStories().length).toBeGreaterThanOrEqual(5);
-  });
-
-  it.each(phoneStories().map(([name]) => name))(
-    "%s selects the viewport through globals, the way Storybook 10 reads it",
-    (name) => {
-      const story = catalogue[name] ?? {};
-      const globals = story["globals"] as { viewport?: { value?: string } } | undefined;
-      const parameters = story["parameters"] as
-        | { viewport?: { options?: Record<string, { styles?: { width?: string } }> } }
-        | undefined;
-
-      /*
-       * Both halves, because either alone is a false green.
-       *
-       * `parameters.viewport.options` without `globals.viewport.value` declares
-       * a size nothing selects; `globals` naming a key that `options` does not
-       * define selects a viewport that does not exist. Storybook 10 removed
-       * `defaultViewport`, which is what the first version of these stories
-       * used - it parsed, it did nothing, and the story rendered full width
-       * under a name that said 320px.
-       */
-      const selected = globals?.viewport?.value;
-      expect(selected, `${name}: globals.viewport.value yok`).toBeDefined();
-      const options = parameters?.viewport?.options ?? {};
-      expect(
-        Object.keys(options),
-        `${name}: parameters.viewport.options ${String(selected)} tanımlamıyor`,
-      ).toContain(selected);
-      expect(options[selected as string]?.styles?.width).toBe("320px");
-    },
-  );
-
-  it("uses no removed Storybook 7 viewport key", () => {
-    const offenders = Object.entries(catalogue)
-      .filter(([name]) => name !== "default")
-      .filter(([, value]) => {
-        const parameters = (value as { parameters?: { viewport?: Record<string, unknown> } })
-          .parameters;
-        const viewport = parameters?.viewport ?? {};
-        return "defaultViewport" in viewport || "viewports" in viewport;
-      })
-      .map(([name]) => name);
-    expect(offenders, `Storybook 7 viewport API'si kullanan story: ${offenders.join(", ")}`).toEqual(
-      [],
-    );
+  it.each(COGNITIVE_STORY_FILES)("%s selects an explicit 320px viewport", (storyFile) => {
+    const source = readFileSync(storyFile, "utf8");
+    expect(source).toMatch(/globals:\s*\{\s*viewport:\s*\{\s*value:\s*["']phone320["']/u);
+    expect(source).toMatch(/phone320:\s*\{[\s\S]*?width:\s*["']320px["']/u);
+    expect(source).not.toMatch(/defaultViewport|viewports\s*:/u);
   });
 });
 

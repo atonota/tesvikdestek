@@ -84,6 +84,20 @@ async function enterDemo(page: Page, action: string): Promise<void> {
   await expect(page.getByRole("heading", { level: 1, name: "Kokpit" })).toBeVisible();
 }
 
+function demoIdentity(page: Page, label: string) {
+  return page.getByText(label, { exact: false }).first();
+}
+
+async function navigateToReadiness(page: Page): Promise<void> {
+  await page.getByRole("button", { name: "Menüyü aç" }).click();
+  await page.getByRole("link", { name: "Hazırlık", exact: true }).click();
+}
+
+async function signOutFromAccountMenu(page: Page): Promise<void> {
+  await page.getByRole("button", { name: /^Hesap menüsü,/u }).click();
+  await page.getByRole("menuitem", { name: "Çıkış yap" }).click();
+}
+
 /*
  * The width comes from the project, not from this file.
  *
@@ -98,7 +112,7 @@ test.describe("the static Pages demo [no backend at all]", () => {
     test(`${profile.role}: survives a reload with the same role`, async ({ page }) => {
       const seen = recordRequests(page);
       await enterDemo(page, profile.action);
-      await expect(page.getByText(profile.badge)).toBeVisible();
+      await expect(demoIdentity(page, profile.badge)).toBeVisible();
 
       /*
        * The address is the whole persistence mechanism, so it has to say so
@@ -117,9 +131,9 @@ test.describe("the static Pages demo [no backend at all]", () => {
 
       await expect(page.getByRole("heading", { level: 1, name: "Kokpit" })).toBeVisible();
       // The chosen role came back - not the other one, and not a generic demo.
-      await expect(page.getByText(profile.badge)).toBeVisible();
+      await expect(demoIdentity(page, profile.badge)).toBeVisible();
       for (const other of PROFILES.filter((entry) => entry.role !== profile.role)) {
-        await expect(page.getByText(other.badge)).toHaveCount(0);
+        await expect(page.getByText(other.badge, { exact: false })).toHaveCount(0);
       }
       await expect(page.getByText("Çalışma alanı açılamadı")).toHaveCount(0);
       expect(backendCalls(seen), "statik yayın backend'e istek gönderdi").toEqual([]);
@@ -134,7 +148,7 @@ test.describe("the static Pages demo [no backend at all]", () => {
       await expect(
         page.getByRole("heading", { level: 1, name: "Organizasyon hazırlığı" }),
       ).toBeVisible();
-      await expect(page.getByText(profile.badge)).toBeVisible();
+      await expect(demoIdentity(page, profile.badge)).toBeVisible();
       expect(backendCalls(seen)).toEqual([]);
     });
   }
@@ -144,7 +158,7 @@ test.describe("the static Pages demo [no backend at all]", () => {
   }) => {
     await enterDemo(page, PROFILES[1].action);
 
-    await page.getByRole("link", { name: "Hazırlık" }).first().click();
+    await navigateToReadiness(page);
     await expect(
       page.getByRole("heading", { level: 1, name: "Organizasyon hazırlığı" }),
     ).toBeVisible();
@@ -156,7 +170,7 @@ test.describe("the static Pages demo [no backend at all]", () => {
     await expect(
       page.getByRole("heading", { level: 1, name: "Organizasyon hazırlığı" }),
     ).toBeVisible();
-    await expect(page.getByText(PROFILES[1].badge)).toBeVisible();
+    await expect(demoIdentity(page, PROFILES[1].badge)).toBeVisible();
   });
 
   test("sends an unreadable or missing demo context to the login screen", async ({ page }) => {
@@ -190,7 +204,7 @@ test.describe("the static Pages demo [no backend at all]", () => {
     await expect.poll(() => new URL(page.url()).searchParams.get("demo")).toBe(PROFILES[0].role);
 
     await page.reload();
-    await expect(page.getByText(PROFILES[0].badge)).toBeVisible();
+    await expect(demoIdentity(page, PROFILES[0].badge)).toBeVisible();
     await expect
       .poll(overflow, { message: "yenilemeden sonra kokpit yatay taşıyor" })
       .toBeLessThanOrEqual(0);
@@ -202,7 +216,7 @@ test.describe("the static Pages demo persists nothing and closes properly", () =
     await enterDemo(page, PROFILES[0].action);
     await expect.poll(() => new URL(page.url()).searchParams.get("demo")).toBe(PROFILES[0].role);
     await page.reload();
-    await expect(page.getByText(PROFILES[0].badge)).toBeVisible();
+    await expect(demoIdentity(page, PROFILES[0].badge)).toBeVisible();
 
     const stored = await page.evaluate(async () => ({
       local: Object.entries({ ...window.localStorage }),
@@ -231,7 +245,7 @@ test.describe("the static Pages demo persists nothing and closes properly", () =
     await expect.poll(() => new URL(page.url()).searchParams.get("demo")).toBe(PROFILES[1].role);
     const demoUrl = page.url();
 
-    await page.getByRole("button", { name: "Çıkış" }).click();
+    await signOutFromAccountMenu(page);
     await expect(page.getByRole("heading", { level: 1, name: "Giriş" })).toBeVisible();
 
     /*
@@ -258,7 +272,7 @@ test.describe("the static Pages demo persists nothing and closes properly", () =
     expect(landed.search).not.toContain("demo%3Dcustomer");
     // And the demo really is not running: no badge, no workspace, and the
     // static notice - the login surface - is what is on screen.
-    await expect(page.getByText(PROFILES[1].badge)).toHaveCount(0);
+    await expect(page.getByText(PROFILES[1].badge, { exact: false })).toHaveCount(0);
     await expect(page.getByRole("heading", { level: 1, name: "Kokpit" })).toHaveCount(0);
     await expect(page.getByTestId("statik-yayin-uyarisi")).toBeVisible();
   });
@@ -279,8 +293,8 @@ test.describe("the static Pages demo persists nothing and closes properly", () =
     await expect(page.getByRole("heading", { level: 1, name: "Kokpit" })).toBeVisible();
     await expect.poll(() => new URL(page.url()).searchParams.get("demo")).toBe(PROFILES[0].role);
     await page.reload();
-    await expect(page.getByText(PROFILES[0].badge)).toBeVisible();
-    await page.getByRole("button", { name: "Çıkış" }).click();
+    await expect(demoIdentity(page, PROFILES[0].badge)).toBeVisible();
+    await signOutFromAccountMenu(page);
     await expect(page.getByRole("heading", { level: 1, name: "Giriş" })).toBeVisible();
 
     expect(backendCalls(seen), "statik yayın backend'e istek gönderdi").toEqual([]);
@@ -293,7 +307,7 @@ test.describe("the static Pages demo persists nothing and closes properly", () =
     // The published address, not the ordinary deployment's /uygulama/.
     expect(new URL(page.url()).pathname).toBe("/tesvikdestek/uygulama/panel");
 
-    await page.getByRole("link", { name: "Hazırlık" }).first().click();
+    await navigateToReadiness(page);
     await expect(
       page.getByRole("heading", { level: 1, name: "Organizasyon hazırlığı" }),
     ).toBeVisible();

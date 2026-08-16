@@ -43,7 +43,7 @@ function importsOf(file: string): readonly string[] {
       ts.isCallExpression(node) &&
       node.expression.kind === ts.SyntaxKind.ImportKeyword &&
       node.arguments.length === 1 &&
-      ts.isStringLiteral(node.arguments[0])
+      ts.isStringLiteral(node.arguments[0]!)
     ) {
       found.push(node.arguments[0].text);
     }
@@ -119,7 +119,7 @@ function routeModule(routePath: string): { readonly specifier: string; readonly 
       ts.isCallExpression(node) &&
       node.expression.kind === ts.SyntaxKind.ImportKeyword &&
       node.arguments.length === 1 &&
-      ts.isStringLiteral(node.arguments[0])
+      ts.isStringLiteral(node.arguments[0]!)
     ) {
       specifier = node.arguments[0].text;
     }

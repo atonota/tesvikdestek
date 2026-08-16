@@ -30,7 +30,7 @@ if (import.meta.hot) {
       updated.forEach((updatedModule, index) => {
         const moduleId = Object.keys(modules)[index];
         if (moduleId && updatedModule) {
-          modules[moduleId] = updatedModule as { readonly default: ContentBundle };
+          modules[moduleId] = updatedModule as unknown as { readonly default: ContentBundle };
         }
       });
       contentPort.replaceBundles(currentBundles());

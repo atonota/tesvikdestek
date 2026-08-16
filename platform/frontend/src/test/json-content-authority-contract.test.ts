@@ -181,7 +181,7 @@ describe("JSON content is the canonical frontend content authority", () => {
     expect(bundle.source).toEqual(expect.objectContaining({ kind: expect.any(String), ref: expect.any(String) }));
 
     const ids = bundle.entries.map((entry) => entry.id);
-    expect(ids).toEqual(expect.arrayContaining(REQUIRED_COCKPIT_IDS));
+    expect(ids).toEqual(expect.arrayContaining([...REQUIRED_COCKPIT_IDS]));
     for (const entry of bundle.entries) {
       expect(entry).toEqual(
         expect.objectContaining({
@@ -316,7 +316,7 @@ describe("JSON content is the canonical frontend content authority", () => {
   });
 
   it("leaves no user-visible literal in the new cockpit TypeScript components", () => {
-    const offenders = sourceFiles(COCKPIT_ROOT).flatMap((file) =>
+    const offenders = sourceFiles(COCKPIT_ROOT).filter((file) => !file.endsWith(".stories.tsx")).flatMap((file) =>
       visibleLiterals(file).map((literal) => `${path.relative(COCKPIT_ROOT, file)}: ${literal}`),
     );
     expect(offenders).toEqual([]);

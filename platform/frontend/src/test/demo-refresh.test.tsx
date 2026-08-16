@@ -125,8 +125,8 @@ async function openApp(path: string) {
   );
   await waitFor(
     () => {
-      expect(view.container.querySelector("main")).not.toBeNull();
-      expect(view.container.querySelector(".dt-skeleton")).toBeNull();
+      expect(router.state.navigation.state).toBe("idle");
+      expect(view.container.querySelector('[aria-busy="true"]')).toBeNull();
     },
     /*
      * Same patience, and the same reason, as `render-app.tsx`: this waits on a
@@ -138,6 +138,15 @@ async function openApp(path: string) {
     { timeout: 15_000 },
   );
   return { view, client, router };
+}
+
+async function expectDemoIdentity(label: string): Promise<void> {
+  expect((await screen.findAllByText(label)).length).toBeGreaterThan(0);
+}
+
+async function signOutFromAccountMenu(): Promise<void> {
+  await userEvent.click(screen.getByRole("button", { name: /^Hesap menüsü,/u }));
+  await userEvent.click(await screen.findByRole("menuitem", { name: "Çıkış yap" }));
 }
 
 function currentUrl(router: { state: { location: { pathname: string; search: string } } }): string {
@@ -164,7 +173,7 @@ describe("the static publication rebuilds the demo from the address bar", () => 
       await openApp(`/panel?demo=${role}`);
 
       expect(await screen.findByRole("heading", { level: 1, name: "Kokpit" })).toBeInTheDocument();
-      expect(await screen.findByText(badge)).toBeInTheDocument();
+      await expectDemoIdentity(badge);
       expect(getDemoSession()?.role).toBe(role);
       expect(requests.seen).toEqual([]);
     },
@@ -179,7 +188,7 @@ describe("the static publication rebuilds the demo from the address bar", () => 
     expect(
       await screen.findByRole("heading", { level: 1, name: "Organizasyon hazırlığı" }),
     ).toBeInTheDocument();
-    expect(await screen.findByText(demoBadgeLabel("customer"))).toBeInTheDocument();
+    await expectDemoIdentity(demoBadgeLabel("customer"));
     expect(requests.seen).toEqual([]);
   });
 
@@ -215,7 +224,7 @@ describe("entering the demo puts the role in the address, where a reload can fin
   it("keeps it across in-app navigation, so any screen can be reloaded", async () => {
     buildStaticDemoOnly();
     const { router } = await openApp("/panel?demo=customer");
-    await screen.findByText(demoBadgeLabel("customer"));
+    await expectDemoIdentity(demoBadgeLabel("customer"));
 
     await act(async () => {
       await router.navigate("/olgunluk");
@@ -237,7 +246,7 @@ describe("entering the demo puts the role in the address, where a reload can fin
     startDemoSession("customer");
     const { router } = await openApp("/panel#kanit-3");
 
-    await screen.findByText(demoBadgeLabel("customer"));
+    await expectDemoIdentity(demoBadgeLabel("customer"));
     await waitFor(() => expect(currentUrl(router)).toBe("/panel?demo=customer"));
     expect(router.state.location.hash).toBe("#kanit-3");
   });
@@ -259,7 +268,7 @@ describe("entering the demo puts the role in the address, where a reload can fin
     startDemoSession("customer");
     const { router } = await openApp("/panel?demo=superadmin");
 
-    expect(await screen.findByText(demoBadgeLabel("customer"))).toBeInTheDocument();
+    await expectDemoIdentity(demoBadgeLabel("customer"));
     await waitFor(() => expect(currentUrl(router)).toBe("/panel?demo=customer"));
     expect(getDemoSession()?.role).toBe("customer");
   });
@@ -320,7 +329,7 @@ describe("the static build reaches no backend or auth endpoint at all", () => {
     buildStaticDemoOnly();
     const requests = recordRequests();
     await openApp("/kaynaklar?demo=superadmin");
-    await screen.findByText(demoBadgeLabel("superadmin"));
+    await expectDemoIdentity(demoBadgeLabel("superadmin"));
     expect(requests.seen).toEqual([]);
   });
 });
@@ -331,9 +340,9 @@ describe("leaving the demo cannot be undone by going back to the address", () =>
   it("does not reopen the demo when the same URL is revisited afterwards", async () => {
     buildStaticDemoOnly();
     const { router } = await openApp("/panel?demo=customer");
-    await screen.findByText(demoBadgeLabel("customer"));
+    await expectDemoIdentity(demoBadgeLabel("customer"));
 
-    await userEvent.click(screen.getByRole("button", { name: "Çıkış" }));
+    await signOutFromAccountMenu();
     expect(await screen.findByRole("heading", { level: 1, name: "Giriş" })).toBeInTheDocument();
 
     await act(async () => {
@@ -354,7 +363,7 @@ describe("rebuilding the demo persists nothing", () => {
   it("writes no demo trace to storage and sets no cookie", async () => {
     buildStaticDemoOnly();
     await openApp("/panel?demo=superadmin");
-    await screen.findByText(demoBadgeLabel("superadmin"));
+    await expectDemoIdentity(demoBadgeLabel("superadmin"));
 
     expect(document.cookie).toBe("");
     expect(Object.entries({ ...window.sessionStorage })).toEqual([]);

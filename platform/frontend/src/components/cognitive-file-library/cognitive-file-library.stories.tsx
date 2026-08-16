@@ -90,6 +90,15 @@ export const Success: Story = {
 export const SuccessAtPhone320: Story = {
   name: "success-320",
   args: { ...Success.args },
-  parameters: { viewport: { defaultViewport: "mobile1" } },
-  globals: { viewport: { value: "mobile1", isRotated: false } },
+  parameters: {
+    viewport: {
+      options: {
+        phone320: {
+          name: "phone320",
+          styles: { width: "320px", height: "568px" },
+        },
+      },
+    },
+  },
+  globals: { viewport: { value: "phone320", isRotated: false } },
 };
