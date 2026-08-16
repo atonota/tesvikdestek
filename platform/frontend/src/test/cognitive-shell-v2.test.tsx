@@ -556,3 +556,93 @@ describe("Storybook catalogues the V2 shell's states (structural — cannot be o
     ).toBeLessThan(firstLoadedIndex);
   });
 });
+
+/* ------------------------------- 13. reference: sidebar query drives the accordion itself */
+
+/**
+ * `DestekTesvik Sidebar 3a (standalone).html` filters and auto-expands the
+ * *same* accordion the drawer already renders — there is no second, separate
+ * flat results list living beside it — and states an explicit "Eşleşme yok"
+ * when a query matches no section and no quick action, not a different
+ * no-results phrase borrowed from the header Spotlight's own vocabulary.
+ */
+describe("reference: the drawer's single query filters and auto-expands the nav accordion in place", () => {
+  it("auto-expands only the section a query matches, hides the rest, and states 'Eşleşme yok' for a query matching nothing", async () => {
+    const user = userEvent.setup();
+    await renderAppAt("/panel");
+    await user.click(await findHamburger());
+    const dialog = await screen.findByRole("dialog");
+    const command = within(dialog).getByRole("searchbox");
+
+    await user.type(command, "kararlar");
+    await waitFor(() => {
+      expect(
+        within(dialog).getByRole("button", { name: /kararlar/iu, expanded: true }),
+      ).toHaveAttribute("aria-expanded", "true");
+    });
+    expect(
+      within(dialog).queryByRole("button", { name: /programlar/iu, expanded: true }),
+    ).not.toBeInTheDocument();
+
+    await user.clear(command);
+    await user.type(command, "zzzzz-bulunamayan-sorgu");
+    await waitFor(() => expect(dialog.textContent ?? "").toMatch(/eşleşme yok/iu));
+  });
+});
+
+/* ------------------------------- 14. reference: fixed footer, independent of the filtered list */
+
+describe("reference: the account trigger is a fixed footer independent of the filtered list", () => {
+  it("stays reachable and opens a role=menu popover even while a query matches nothing", async () => {
+    const user = userEvent.setup();
+    await renderAppAt("/panel");
+    await user.click(await findHamburger());
+    const dialog = await screen.findByRole("dialog");
+    const command = within(dialog).getByRole("searchbox");
+    await user.type(command, "zzzzz-bulunamayan-sorgu");
+
+    const footerTrigger = await within(dialog).findByRole("button", {
+      name: /hesap|account|profil/iu,
+    });
+    await user.click(footerTrigger);
+    expect(await screen.findByRole("menu")).toBeInTheDocument();
+  });
+});
+
+/* ------------------------------- 15. reference: Spotlight structure — compact status, tiles, suggestions */
+
+/**
+ * `DestekTesvik Master Page (standalone).html` carries a short, compact
+ * provider-status label ("AI hazır" / "AI kapalı" / "AI çalışıyor") beside
+ * the expanded input, distinct from the full accessible reason sentence —
+ * and a "Senin için öneriler" suggestions group standing beside, not inside,
+ * the navigation-tiles group.
+ */
+describe("reference: the Spotlight surface carries a compact provider label, tiles and a distinct suggestions group", () => {
+  it("shows a compact AI-status label beside the input, not only the full reason sentence", async () => {
+    const user = userEvent.setup();
+    await renderAppAt("/panel");
+    const spotlight = await screen
+      .findByRole("searchbox", { name: /ara|spotlight|arama/iu })
+      .catch(() => screen.findByRole("textbox", { name: /ara|spotlight|arama/iu }));
+    await user.click(spotlight);
+    expect(
+      screen.queryByText(/^ai (kapalı|hazır|çalışıyor)$/iu),
+      "no compact AI-status label found beside the input",
+    ).not.toBeNull();
+  });
+
+  it("renders a distinct suggestions group beside the navigation-tiles group", async () => {
+    const user = userEvent.setup();
+    await renderAppAt("/panel");
+    const spotlight = await screen
+      .findByRole("searchbox", { name: /ara|spotlight|arama/iu })
+      .catch(() => screen.findByRole("textbox", { name: /ara|spotlight|arama/iu }));
+    await user.click(spotlight);
+    expect(await screen.findByRole("group", { name: /gezinme hedefleri/iu })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("group", { name: /öneri/iu }),
+      "no distinct suggestions group beside the nav tiles",
+    ).not.toBeNull();
+  });
+});

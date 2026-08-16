@@ -191,3 +191,60 @@ test.describe("the drawer replaces the desktop persistent rail entirely at 1440p
     await expect(page.getByRole("dialog")).toBeVisible();
   });
 });
+
+/**
+ * `DestekTesvik Sidebar 3a (standalone).html`: the sheet is anchored to the
+ * left edge and capped at 640px on wide viewports — a full-width sheet, as
+ * this shell's own `.dt-drawer__content` comment currently states it ships,
+ * is a different reference than the one this package is written against.
+ */
+test.describe("reference: the drawer sheet is anchored left and capped at 640px on wide viewports", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test("drawer content starts at the left edge and never exceeds 640px wide at 1440px", async ({ page }) => {
+    await page.goto("./panel");
+    await page.waitForLoadState("networkidle");
+    await page.getByRole("button", { name: /men(ü|u)/i }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    const box = await dialog.boundingBox();
+    expect(box, "drawer did not render").not.toBeNull();
+    expect(box!.x).toBeLessThanOrEqual(1);
+    expect(box!.width).toBeLessThanOrEqual(640);
+  });
+});
+
+/**
+ * `DestekTesvik Master Page (standalone).html`: expanding the header
+ * Spotlight at 320px makes the brand mark and the utilities yield their
+ * width to the input, in the same header component, without producing
+ * horizontal overflow.
+ */
+test.describe("reference: at 320px the brand and utilities yield width to the expanded Spotlight without overflow", () => {
+  test.use({ viewport: { width: 320, height: 720 } });
+
+  test("brand collapses to near-zero width once the Spotlight expands, and no horizontal overflow appears", async ({
+    page,
+  }) => {
+    await page.goto("./panel");
+    await page.waitForLoadState("networkidle");
+
+    const brand = page.locator(".dt-shell__brand");
+    await expect(brand).toBeVisible();
+    const brandBefore = await brand.boundingBox();
+    expect(brandBefore, "brand did not render before expansion").not.toBeNull();
+
+    const spotlight = page.getByRole("searchbox", { name: /ara|spotlight|arama/i }).or(
+      page.getByRole("textbox", { name: /ara|spotlight|arama/i }),
+    );
+    await spotlight.click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+
+    expect(await horizontalOverflow(page)).toBeLessThanOrEqual(1);
+    const brandAfter = await brand.boundingBox();
+    expect(
+      !brandAfter || brandAfter.width <= 4,
+      "brand did not yield its width once the Spotlight expanded",
+    ).toBe(true);
+  });
+});

@@ -85,20 +85,64 @@ export interface SpotlightConfirmation {
   readonly onReject: () => void;
 }
 
+/**
+ * The compact provider-status word beside the input.
+ *
+ * `DestekTesvik Master Page (standalone).html` carries a short label -
+ * "AI hazır" / "AI çalışıyor" / "AI kapalı" - distinct from the full,
+ * accessible reason sentence (`providerReason`) that already sits beside it.
+ * `unavailable` is the only state a real caller in this deployment can be
+ * honest about today, because `NO_ASSISTANT_PROVIDER` names the one real
+ * fact: there is no connected provider. `ready`/`busy` exist so a future
+ * connected provider - and `cognitive-shell.stories.tsx` today - has a
+ * tested surface to render into rather than one invented later.
+ */
+export type SpotlightProviderStatus = "unavailable" | "ready" | "busy";
+
+function compactStatusLabel(status: SpotlightProviderStatus): string {
+  switch (status) {
+    case "ready":
+      return "AI hazır";
+    case "busy":
+      return "AI çalışıyor";
+    default:
+      return "AI kapalı";
+  }
+}
+
+/** One rule-derived suggestion. Never a claim the surface asked a model for. */
+export interface SpotlightSuggestion {
+  readonly id: string;
+  readonly label: string;
+  readonly onRun: () => void;
+}
+
 export interface ShellHeaderSpotlightProps {
   readonly navItems: readonly { readonly to: string; readonly label: string }[];
   /** Defaults to `NO_ASSISTANT_PROVIDER` - this deployment has no connected provider. */
   readonly providerReason?: string;
+  /** Defaults to `"unavailable"` - see `SpotlightProviderStatus`. */
+  readonly providerStatus?: SpotlightProviderStatus;
   /** Demonstration-only in every real caller today; see the file header. */
   readonly answer?: SpotlightAnswer;
   readonly confirmation?: SpotlightConfirmation;
+  /**
+   * Rule-derived suggestions, standing beside (not inside) the navigation
+   * tiles - see `DestekTesvik Master Page (standalone).html`'s "Senin için
+   * öneriler" group. No route wires real ones in today, so every real
+   * caller omits this and the group renders its own honest empty state;
+   * `cognitive-shell.stories.tsx` demonstrates it with fixture values.
+   */
+  readonly suggestions?: readonly SpotlightSuggestion[];
 }
 
 export function ShellHeaderSpotlight({
   navItems,
   providerReason = NO_ASSISTANT_PROVIDER.providerReason,
+  providerStatus = "unavailable",
   answer,
   confirmation,
+  suggestions,
 }: ShellHeaderSpotlightProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -210,6 +254,9 @@ export function ShellHeaderSpotlight({
             <span className="dt-spotlight__surface-title">
               {query.trim() === "" ? "Nereye gitmek istersin?" : `"${query.trim()}" için sonuçlar`}
             </span>
+            <span className="dt-spotlight__provider-compact" data-tone={providerStatus}>
+              {compactStatusLabel(providerStatus)}
+            </span>
             <span className="dt-spotlight__provider-status" data-tone="unavailable">
               {providerReason}
             </span>
@@ -261,6 +308,24 @@ export function ShellHeaderSpotlight({
                   {entry.label}
                 </button>
               ))}
+            </div>
+          ) : null}
+          {query.trim() === "" ? (
+            <div className="dt-spotlight__suggestions" role="group" aria-label="Senin için öneriler">
+              {suggestions && suggestions.length > 0 ? (
+                suggestions.map((suggestion) => (
+                  <button
+                    key={suggestion.id}
+                    type="button"
+                    className="dt-spotlight__suggestion"
+                    onClick={suggestion.onRun}
+                  >
+                    {suggestion.label}
+                  </button>
+                ))
+              ) : (
+                <p className="dt-spotlight__suggestions-empty">Bu oturum için öneri yok.</p>
+              )}
             </div>
           ) : null}
           <div id={listboxId} role="listbox" aria-label="Spotlight sonuçları" className="dt-spotlight__results">

@@ -320,6 +320,29 @@
     gap: 0.4rem;
     margin-inline-start: auto;
     min-inline-size: 0;
+    transition: inline-size var(--dt-motion-duration) var(--dt-motion-ease),
+      opacity var(--dt-motion-duration) var(--dt-motion-ease);
+  }
+
+  /**
+   * `DestekTesvik Master Page (standalone).html`: once the Spotlight expands
+   * at a width too narrow to hold brand, input and utilities together, the
+   * brand mark and the utilities yield their width to it instead of forcing
+   * the header wider than the viewport. `>=48rem` (768px) restores both -
+   * there is room for all three there, exactly as the reference's own
+   * `mid` breakpoint does.
+   */
+  @media (max-width: 47.99rem) {
+    .dt-shell__header-layer:has(.dt-spotlight[data-expanded="true"]) .dt-shell__brand,
+    .dt-shell__header-layer:has(.dt-spotlight[data-expanded="true"]) .dt-shell__utilities {
+      inline-size: 0;
+      min-inline-size: 0;
+      padding-inline: 0;
+      margin-inline-start: 0;
+      opacity: 0;
+      overflow: clip;
+      flex: 0 1 0%;
+    }
   }
 
   /* The header control that opens the 320px assistant sheet. */
@@ -617,6 +640,59 @@
     text-align: end;
   }
 
+  /* The short "AI hazır/çalışıyor/kapalı" word, beside the full reason above. */
+  .dt-spotlight__provider-compact {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex: none;
+    font-size: var(--dt-font-size-sm);
+    font-weight: var(--dt-font-weight-medium);
+    color: var(--dt-color-fg-muted);
+  }
+
+  .dt-spotlight__provider-compact[data-tone="ready"] {
+    color: var(--dt-outcome-candidate-fg);
+  }
+
+  .dt-spotlight__provider-compact[data-tone="busy"] {
+    color: var(--dt-outcome-conditional-fg);
+  }
+
+  /* The "Senin için öneriler" group, standing beside the nav tiles, never inside them. */
+  .dt-spotlight__suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    padding-block-end: 0.4rem;
+    border-block-end: 1px solid var(--dt-color-line);
+    margin-block-end: 0.4rem;
+  }
+
+  .dt-spotlight__suggestion {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: var(--dt-target-touch);
+    padding: 0.3rem var(--dt-density-pad-x);
+    border: 1px solid var(--dt-color-line);
+    border-radius: var(--dt-radius);
+    background: var(--dt-color-bg);
+    color: inherit;
+    cursor: pointer;
+    transition: background var(--dt-motion-duration) var(--dt-motion-ease);
+  }
+
+  .dt-spotlight__suggestion:hover {
+    background: var(--dt-color-surface-sunken);
+  }
+
+  .dt-spotlight__suggestions-empty {
+    margin: 0;
+    padding: 0.2rem var(--dt-density-pad-x);
+    color: var(--dt-color-fg-muted);
+    font-size: var(--dt-font-size-sm);
+  }
+
   /* ------------------------------------------ AI answer, demonstration-only */
   .dt-spotlight__answer {
     display: flex;
@@ -740,12 +816,17 @@
    * manages the trigger ref and focus restoration itself for that reason.
    */
   /**
-   * A full-width sheet beneath the header, not a left rail.
+   * A sheet anchored to the left edge, beneath the header - never a left
+   * rail, and never full width once there is room to cap it.
    *
    * Both the backdrop and the panel start at the header's own measured
    * height rather than at the viewport's top edge, so the header - and the
    * hamburger's own X - stay visible and clickable above the sheet, purely
    * because the two boxes never share a pixel; no z-index game is needed.
+   *
+   * `DestekTesvik Sidebar 3a (standalone).html`: full width up to its own
+   * 640px reference frame, capped there beyond it - the drawer never grows
+   * to fill a 1440px viewport the way a full-width sheet would.
    */
   .dt-drawer__overlay {
     position: fixed;
@@ -758,14 +839,15 @@
 
   .dt-drawer__content {
     position: fixed;
-    inset-inline: 0;
+    inset-inline-start: 0;
+    inset-inline-end: auto;
     inset-block-start: var(--dt-shell-header-h, 0px);
     inset-block-end: 0;
     z-index: var(--dt-z-dialog);
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr) auto;
-    inline-size: auto;
+    inline-size: min(100vw, 40rem);
     background: var(--dt-color-surface);
     box-shadow: var(--dt-shadow-2);
     padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
@@ -862,6 +944,14 @@
     list-style: none;
     margin: 0;
     padding: 0;
+  }
+
+  /* Stated, never silent - a query that matches no section and no quick action. */
+  .dt-drawer__nav-empty {
+    margin: 0;
+    padding: 0.6rem var(--dt-density-pad-x);
+    color: var(--dt-color-fg-muted);
+    font-size: var(--dt-font-size-sm);
   }
 
   .dt-drawer__nav-disclosure {

@@ -137,6 +137,14 @@ function ShellDrawer({
   const drawerOpen = useUiStore((state) => state.navDrawerOpen);
   const toggleDrawer = useUiStore((state) => state.toggleNavDrawer);
   const [intent, setIntent] = useState<DrawerIntent>("command");
+  /**
+   * The one query the reference sidebar's search field and its accordion
+   * share (`DestekTesvik Sidebar 3a (standalone).html`) - lifted here rather
+   * than owned separately by `ShellSidebarCommand` and `ShellSidebarNav`, so
+   * a query filters and auto-expands the accordion itself instead of
+   * producing a second, disconnected results list beside it.
+   */
+  const [query, setQuery] = useState("");
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const drawerId = useId();
@@ -170,33 +178,27 @@ function ShellDrawer({
   }
 
   /**
-   * The first layer of Escape: clear the command's results, keep the drawer
-   * open.
+   * The first layer of Escape: clear the shared query, keep the drawer open.
    *
    * `Dialog.Content`'s `onEscapeKeyDown` is Radix's own hook for exactly
    * this - it runs *before* Radix decides whether to close, which
    * `ShellSidebarCommand`'s own `onKeyDown` cannot: `DismissableLayer`
    * listens for Escape on `document` in the capture phase, ahead of any
    * bubbling handler a nested input could attach, so a `preventDefault()`
-   * down there always loses the race. A real `input` event is dispatched
-   * rather than reaching into the command surface's state directly, so the
-   * one place that owns the query - the input itself - is still the source
-   * of truth.
+   * down there always loses the race. `query` living here rather than inside
+   * `ShellSidebarCommand` means clearing it is a plain state update - no
+   * reaching into another component's input through the DOM.
    */
   function unwindEscape(event: KeyboardEvent) {
-    const root = contentRef.current;
-    const input = root?.querySelector<HTMLInputElement>('input[type="search"]');
-    if (input === null || input === undefined || input.value === "") return;
+    if (query === "") return;
     event.preventDefault();
-    const setter = Object.getOwnPropertyDescriptor(
-      window.HTMLInputElement.prototype,
-      "value",
-    )?.set;
-    setter?.call(input, "");
-    input.dispatchEvent(new Event("input", { bubbles: true }));
+    setQuery("");
   }
 
-  const close = () => toggleDrawer(false);
+  const close = () => {
+    toggleDrawer(false);
+    setQuery("");
+  };
 
   const menuOpen = drawerOpen && intent === "command";
 
@@ -259,8 +261,18 @@ function ShellDrawer({
                 Menüyü kapat
               </button>
             </DrawerPrimitive.Close>
-            <ShellSidebarCommand navItems={navItems} onNavigate={close} />
-            <ShellSidebarNav navItems={navItems} onNavigate={close} metaByRoute={navMeta} />
+            <ShellSidebarCommand
+              navItems={navItems}
+              query={query}
+              onQueryChange={setQuery}
+              onNavigate={close}
+            />
+            <ShellSidebarNav
+              navItems={navItems}
+              onNavigate={close}
+              metaByRoute={navMeta}
+              query={query}
+            />
             <div className="dt-drawer__footer">
               <ShellAccountMenu onNavigate={close} />
             </div>

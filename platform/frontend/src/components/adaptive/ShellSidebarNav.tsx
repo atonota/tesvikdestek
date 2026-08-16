@@ -30,6 +30,18 @@
  * to bind into rather than one invented the day the data shows up.
  */
 
+/**
+ * The drawer's one query drives this accordion directly.
+ *
+ * `DestekTesvik Sidebar 3a (standalone).html` has no second, disconnected
+ * flat results list beside the accordion - a query filters the accordion's
+ * own sections and quick actions, auto-expanding whichever section matches
+ * and hiding the rest, and states an explicit "Eşleşme yok" when nothing
+ * matches at all. `query` is the exact same state `ShellSidebarCommand`
+ * renders in its search field - lifted one level up, in `AdaptiveShell`'s
+ * `ShellDrawer` - never a private copy this component reads on its own.
+ */
+
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router";
 
@@ -64,25 +76,52 @@ export interface ShellSidebarNavProps {
   readonly onNavigate?: () => void;
   /** Keyed by `NavItem.to`. See the file header for what an absent entry means. */
   readonly metaByRoute?: Readonly<Record<string, ShellNavItemMeta>> | undefined;
+  /** The one query the drawer's command field owns. Empty renders unfiltered. */
+  readonly query?: string | undefined;
 }
 
 function ownsRoute(item: NavItem, pathname: string): boolean {
   return pathname === item.to || pathname.startsWith(`${item.to}/`);
 }
 
-export function ShellSidebarNav({ navItems, onNavigate, metaByRoute }: ShellSidebarNavProps) {
+/** Turkish-aware case folding - matches `command.ts`'s own `fold`. */
+function fold(value: string): string {
+  return value.toLocaleLowerCase("tr-TR").trim();
+}
+
+export function ShellSidebarNav({ navItems, onNavigate, metaByRoute, query }: ShellSidebarNavProps) {
   const location = useLocation();
   const activeIndex = navItems.findIndex((item) => ownsRoute(item, location.pathname));
   const [openIndex, setOpenIndex] = useState<number | null>(activeIndex >= 0 ? activeIndex : null);
 
+  const needle = fold(query ?? "");
+  const isFiltering = needle !== "";
+
+  const entries = navItems
+    .map((item, index) => {
+      const meta = metaByRoute?.[item.to];
+      const allActions = meta?.quickActions ?? [];
+      const matchedActions = isFiltering
+        ? allActions.filter(
+            (action) => fold(action.title).includes(needle) || fold(action.description).includes(needle),
+          )
+        : allActions;
+      const sectionMatches =
+        !isFiltering || fold(item.label).includes(needle) || matchedActions.length > 0;
+      return { item, index, meta, quickActions: matchedActions, sectionMatches };
+    })
+    .filter((entry) => entry.sectionMatches);
+
+  const noMatches = isFiltering && entries.length === 0;
+
   return (
     <nav aria-label="Sürükleme gezinmesi" className="dt-drawer__nav">
+      {noMatches ? <p className="dt-drawer__nav-empty">Eşleşme yok</p> : null}
       <ul>
-        {navItems.map((item, index) => {
-          const open = openIndex === index;
+        {entries.map(({ item, index, meta, quickActions }) => {
+          const open = isFiltering ? true : openIndex === index;
           const panelId = `dt-drawer-nav-panel-${index}`;
           const triggerId = `dt-drawer-nav-trigger-${index}`;
-          const meta = metaByRoute?.[item.to];
           return (
             <li key={item.to} className="dt-drawer__nav-section">
               <button
@@ -91,7 +130,10 @@ export function ShellSidebarNav({ navItems, onNavigate, metaByRoute }: ShellSide
                 aria-expanded={open}
                 aria-controls={panelId}
                 className="dt-drawer__nav-disclosure"
-                onClick={() => setOpenIndex(open ? null : index)}
+                onClick={() => {
+                  if (isFiltering) return;
+                  setOpenIndex(open ? null : index);
+                }}
               >
                 <span aria-hidden="true" className="dt-drawer__nav-icon">
                   {item.icon ?? item.label.charAt(0)}
@@ -141,9 +183,9 @@ export function ShellSidebarNav({ navItems, onNavigate, metaByRoute }: ShellSide
                 >
                   {item.label}
                 </NavLink>
-                {meta?.quickActions?.length ? (
+                {quickActions.length ? (
                   <ul className="dt-drawer__nav-actions">
-                    {meta.quickActions.map((action) => (
+                    {quickActions.map((action) => (
                       <li key={action.id}>
                         {action.to ? (
                           <NavLink

@@ -17,9 +17,17 @@
  * `Dialog.Content`'s own `onEscapeKeyDown` prop: Radix calls that *before*
  * deciding to close, which is the one hook that runs early enough to clear
  * this input's query on the first press and let the second one through.
+ *
+ * **Controlled, not self-owned.** The query itself lives one level up, in
+ * `AdaptiveShell`'s `ShellDrawer` — the same reference the sidebar filters
+ * (`DestekTesvik Sidebar 3a (standalone).html`) drives its search field and
+ * its accordion from one query, not two. `ShellSidebarNav` reads the exact
+ * same `query` prop to auto-expand and filter its own sections, so there is
+ * one field, not a field with its own private copy sitting beside a second
+ * one the accordion never sees.
  */
 
-import { useId, useState } from "react";
+import { useId } from "react";
 import { useLocation, useNavigate } from "react-router";
 
 import { AppIcon } from "@/components/icons";
@@ -35,11 +43,17 @@ import {
 
 export interface ShellSidebarCommandProps {
   readonly navItems: readonly { readonly to: string; readonly label: string }[];
+  readonly query: string;
+  readonly onQueryChange: (query: string) => void;
   readonly onNavigate?: () => void;
 }
 
-export function ShellSidebarCommand({ navItems, onNavigate }: ShellSidebarCommandProps) {
-  const [query, setQuery] = useState("");
+export function ShellSidebarCommand({
+  navItems,
+  query,
+  onQueryChange,
+  onNavigate,
+}: ShellSidebarCommandProps) {
   const listboxId = useId();
   const navigate = useNavigate();
   const location = useLocation();
@@ -52,7 +66,7 @@ export function ShellSidebarCommand({ navItems, onNavigate }: ShellSidebarComman
   const showsResults = status === "results";
 
   function go(to: string) {
-    setQuery("");
+    onQueryChange("");
     onNavigate?.();
     navigate(`${to}${location.search}`);
   }
@@ -84,7 +98,7 @@ export function ShellSidebarCommand({ navItems, onNavigate }: ShellSidebarComman
           {...(showsResults ? { "aria-controls": listboxId } : {})}
           className="dt-drawer__command-input"
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => onQueryChange(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter" && executeTarget !== null) {
               event.preventDefault();
