@@ -69,31 +69,66 @@ export interface ChartTheme {
   };
 }
 
+/** Every `--dt-*` custom property this adapter reads a colour from. */
+export const REQUIRED_CHART_TOKENS = [
+  "--dt-color-fg",
+  "--dt-color-fg-muted",
+  "--dt-color-line",
+  "--dt-color-surface",
+  "--dt-color-primary",
+  "--dt-color-secondary",
+  "--dt-outcome-candidate-line",
+  "--dt-outcome-ineligible-line",
+  "--dt-outcome-conditional-line",
+  "--dt-outcome-insufficient-line",
+] as const;
+
 /**
  * Resolves the design tokens a canvas cannot resolve for itself.
  *
  * Read from `<html>`'s computed style, so it answers for whichever theme is
  * currently applied - including the "system" setting, where no attribute is
  * present and the media query decides.
+ *
+ * There is no built-in colour here, not even as a fallback. A hard-coded hex
+ * value that merely *mirrors* a token is still a hard-coded hex value: it
+ * silently agrees with `tokens.css` today and silently disagrees with it the
+ * day the token changes and this file is not part of that edit. So a missing
+ * token is not papered over - it is a defect this function reports by name.
+ * Every caller already sits inside a try/catch (drawing is best-effort; the
+ * table beside the chart carries the real figures either way), so throwing
+ * here reaches exactly the same "this chart quietly does not draw" outcome
+ * as before, without a colour this file was never meant to own.
  */
 export function readChartTheme(): ChartTheme {
   const styles = getComputedStyle(document.documentElement);
-  const token = (name: string, fallback: string) =>
-    styles.getPropertyValue(name).trim() || fallback;
-  return {
-    foreground: token("--dt-color-fg", "#14181f"),
-    muted: token("--dt-color-fg-muted", "#515b6b"),
-    line: token("--dt-color-line", "#d3d9e2"),
-    surface: token("--dt-color-surface", "#ffffff"),
-    primary: token("--dt-color-primary", "#123a6b"),
-    secondary: token("--dt-color-secondary", "#f2e14c"),
+  const missing: string[] = [];
+  const token = (name: string): string => {
+    const value = styles.getPropertyValue(name).trim();
+    if (!value) missing.push(name);
+    return value;
+  };
+  const theme: ChartTheme = {
+    foreground: token("--dt-color-fg"),
+    muted: token("--dt-color-fg-muted"),
+    line: token("--dt-color-line"),
+    surface: token("--dt-color-surface"),
+    primary: token("--dt-color-primary"),
+    secondary: token("--dt-color-secondary"),
     outcome: {
-      candidate: token("--dt-outcome-candidate-line", "#2f7d4f"),
-      ineligible: token("--dt-outcome-ineligible-line", "#a33a3a"),
-      conditional: token("--dt-outcome-conditional-line", "#a5731f"),
-      insufficient: token("--dt-outcome-insufficient-line", "#67748f"),
+      candidate: token("--dt-outcome-candidate-line"),
+      ineligible: token("--dt-outcome-ineligible-line"),
+      conditional: token("--dt-outcome-conditional-line"),
+      insufficient: token("--dt-outcome-insufficient-line"),
     },
   };
+  if (missing.length > 0) {
+    throw new Error(
+      `EChart: tokens.css değeri eksik — ${missing.join(", ")}. Bir grafik, ` +
+        ":root üzerinde tanımlı palet token'ları olmadan çizilemez.",
+    );
+  }
+  return theme;
 }
 
 /**

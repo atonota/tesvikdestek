@@ -4,6 +4,8 @@ import reactHooks from "eslint-plugin-react-hooks";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
+import noRawHexColor from "./eslint-rules/no-raw-hex-color.mjs";
+
 export default tseslint.config(
   {
     // `dist-pages` is the static publication's build output, produced by the
@@ -57,6 +59,16 @@ export default tseslint.config(
         "error",
         { prefer: "type-imports", fixStyle: "inline-type-imports" },
       ],
+    },
+  },
+  {
+    // P1C token contract: a component never spells a colour, it reads one.
+    // Scoped to `.tsx` only, per the contract - `.ts` files carry no markup
+    // and are not where a hard-coded colour would render.
+    files: ["**/*.tsx"],
+    plugins: { local: { rules: { "no-raw-hex-color": noRawHexColor } } },
+    rules: {
+      "local/no-raw-hex-color": "error",
     },
   },
   {
