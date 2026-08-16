@@ -9,6 +9,7 @@
  * everything else lives in `src/test/cognitive-shell-v2.test.tsx`.
  */
 
+import type { Page } from "@playwright/test";
 import { expect, test } from "./mock-api";
 
 const VIEWPORTS = [
@@ -19,7 +20,7 @@ const VIEWPORTS = [
   { name: "1440", width: 1440, height: 900 },
 ] as const;
 
-async function horizontalOverflow(page: import("@playwright/test").Page): Promise<number> {
+async function horizontalOverflow(page: Page): Promise<number> {
   return page.evaluate(() => {
     const doc = document.documentElement;
     return doc.scrollWidth - doc.clientWidth;
