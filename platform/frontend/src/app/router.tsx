@@ -58,6 +58,12 @@ const appModule = () => import("@/routes/app");
 const panelModule = () => import("@/routes/panel");
 const workspaceGateModule = () => import("@/routes/workspace-gate");
 /**
+ * The W0 clean-room boundary for `/firsatlar` and `/firsatlar/:code`: its own
+ * module loader so the route table never resolves either address through
+ * `app.tsx` and its old visual component graph.
+ */
+const opportunitiesModule = () => import("@/routes/opportunities");
+/**
  * The one authenticated workspace chrome, mounted once inside the session
  * gate rather than per page: `CognitiveAppShell`'s header, navigation sheet
  * and modal layers wrap the whole private route tree through this module's
@@ -85,6 +91,7 @@ type FilesExport = keyof Awaited<ReturnType<typeof filesModule>>;
 type AiProvidersExport = keyof Awaited<ReturnType<typeof aiProvidersModule>>;
 type PanelExport = keyof Awaited<ReturnType<typeof panelModule>>;
 type WorkspaceGateExport = keyof Awaited<ReturnType<typeof workspaceGateModule>>;
+type OpportunitiesExport = keyof Awaited<ReturnType<typeof opportunitiesModule>>;
 type WorkspaceShellExport = keyof Awaited<ReturnType<typeof workspaceShellModule>>;
 
 const fromPublic = (name: PublicExport) => async () => ({
@@ -107,6 +114,9 @@ const fromPanel = (name: PanelExport) => async () => ({
 });
 const fromWorkspaceGate = (name: WorkspaceGateExport) => async () => ({
   Component: (await workspaceGateModule())[name] as React.ComponentType,
+});
+const fromOpportunities = (name: OpportunitiesExport) => async () => ({
+  Component: (await opportunitiesModule())[name] as React.ComponentType,
 });
 const fromWorkspaceShell = (name: WorkspaceShellExport) => async () => ({
   Component: (await workspaceShellModule())[name] as React.ComponentType,
@@ -225,8 +235,8 @@ export const routes: RouteObject[] = [
             lazy: fromWorkspaceShell("WorkspaceShellRoute"),
             children: [
               { path: "panel", lazy: fromPanel("DashboardRoute") },
-              { path: "firsatlar", lazy: fromApp("OpportunitiesRoute") },
-              { path: "firsatlar/:code", lazy: fromApp("OpportunityDetailRoute") },
+              { path: "firsatlar", lazy: fromOpportunities("OpportunitiesRoute") },
+              { path: "firsatlar/:code", lazy: fromOpportunities("OpportunityDetailRoute") },
               { path: "kaynaklar", lazy: fromApp("SourceRegistryRoute") },
               { path: "kaynaklar/:id", lazy: fromApp("SourceDetailRoute") },
               { path: "uygunluk", lazy: fromApp("DecisionsRoute") },

@@ -27,7 +27,6 @@ import {
   Badge,
   Button,
   CapabilityMatrix,
-  CatalogList,
   DecisionCompare,
   DecisionDetail,
   DecisionList,
@@ -36,7 +35,6 @@ import {
   ErrorState,
   Link,
   MaturityRadar,
-  OpportunityDetail,
   OpsHealth,
   PartialDataNotice,
   ProfileWorkspace,
@@ -344,54 +342,6 @@ export function Shell({
 }
 
 /* -------------------------------------------------------------- discovery */
-
-export function OpportunitiesRoute() {
-  const programs = useProgramsQuery();
-  return (
-    <Shell>
-      <QueryBoundary query={programs}>
-        {(list) => (
-          <CatalogList
-            programs={list}
-            title="Fırsat keşfi"
-            hrefFor={(program) => `/firsatlar/${program.code}`}
-          />
-        )}
-      </QueryBoundary>
-    </Shell>
-  );
-}
-
-export function OpportunityDetailRoute() {
-  const { code = "" } = useParams();
-  const programs = useProgramsQuery();
-  const snapshots = useSnapshotsQuery();
-  // Same reading as the public twin: the registry either produced rows or it
-  // did not, and "did not" is never rendered as "there are none".
-  const sources = readSourceRegistry(
-    snapshots,
-    snapshots.isError ? describeError(snapshots.error) : undefined,
-  );
-  return (
-    <Shell>
-      <QueryBoundary query={programs}>
-        {(list) => {
-          const program = list.find((candidate) => candidate.code === code);
-          if (!program) {
-            return <EmptyState title="Program bulunamadı" reason={`"${code}" katalogda yok.`} />;
-          }
-          return (
-            <OpportunityDetail
-              program={program}
-              snapshots={sources.rows}
-              sourcesRead={sources.state}
-            />
-          );
-        }}
-      </QueryBoundary>
-    </Shell>
-  );
-}
 
 export function SourceRegistryRoute() {
   const snapshots = useSnapshotsQuery();

@@ -151,12 +151,27 @@ function graphFrom(entry: string): { readonly files: Set<string>; readonly speci
 
 describe("W0 clean-room panel boundary", () => {
   const panel = routeModule("panel");
-  const legacySibling = routeModule("firsatlar");
+  const opportunity = routeModule("firsatlar");
   const graph = graphFrom(panel.file);
+  const opportunityGraph = graphFrom(opportunity.file);
 
   it("gives /panel a separate route module from legacy workspace pages", () => {
-    expect(panel.specifier).not.toBe(legacySibling.specifier);
+    expect(panel.specifier).not.toBe(opportunity.specifier);
     expect(relative(SRC, panel.file)).not.toBe("routes/app.tsx");
+  });
+
+  it("moves /firsatlar to its own cognitive route boundary", () => {
+    expect(relative(SRC, opportunity.file)).toBe("routes/opportunities.tsx");
+    expect(
+      [...opportunityGraph.files].some((file) =>
+        file.includes("/components/cognitive-opportunity-workspace/"),
+      ),
+    ).toBe(true);
+  });
+
+  it("removes the opportunity route implementations from the rejected route module", () => {
+    const legacyRoutes = read(join(SRC, "routes", "app.tsx"));
+    expect(legacyRoutes).not.toMatch(/export function Opportunit(?:ies|yDetail)Route/u);
   });
 
   it("reaches the production cognitive cockpit master", () => {
