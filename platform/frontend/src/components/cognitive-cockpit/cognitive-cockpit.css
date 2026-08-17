@@ -39,6 +39,14 @@
   --cc-gap: clamp(0.75rem, 1.5vw, 1.5rem);
   --cc-text-sm: var(--fd-font-size-sm, 1rem);
 
+  /* Modal layer tokens — approved values, read only by ModalLayerHost.
+     A new modal level is a token, never a new rule in that component. */
+  --cc-scrim-grey: 100 116 139;
+  --cc-scrim-page: 0.12;
+  --cc-scrim-nested: 0.1;
+  --cc-blur-page: 2px;
+  --cc-blur-nested: 1px;
+
   display: flex;
   flex-direction: column;
   min-inline-size: 0;
@@ -47,6 +55,54 @@
   font-family: var(--fd-font-sans);
   font-size: max(1rem, var(--fd-font-size-base));
   font-weight: var(--fd-font-weight-regular);
+}
+
+/* ---------------------------------------------------------- the app shell */
+
+.cognitive-app-shell {
+  position: relative;
+  min-block-size: 100dvh;
+}
+
+.cognitive-app-shell__content {
+  min-inline-size: 0;
+}
+
+.cognitive-app-shell__toast-region {
+  position: fixed;
+  inset-block-end: var(--fd-space-4, 16px);
+  inset-inline-end: var(--fd-space-4, 16px);
+  z-index: 60;
+}
+
+/* -------------------------------------------------------- modal layer host */
+
+.modal-layer-host__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  background: rgb(var(--cc-scrim-grey) / var(--cc-scrim-page));
+  backdrop-filter: blur(var(--cc-blur-page));
+  transition:
+    opacity var(--fd-duration-slow, 220ms) var(--fd-ease-standard, ease),
+    backdrop-filter var(--fd-duration-slow, 220ms) var(--fd-ease-standard, ease);
+}
+
+.modal-layer-host__scrim--nested {
+  z-index: 45;
+  background: rgb(var(--cc-scrim-grey) / var(--cc-scrim-nested));
+  backdrop-filter: blur(var(--cc-blur-nested));
+}
+
+.modal-layer-host__scrim[data-active="true"] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+[data-reduced-motion="true"] .modal-layer-host__scrim {
+  transition: none;
 }
 
 .cognitive-cockpit[data-theme="dark"] {

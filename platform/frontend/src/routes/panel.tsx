@@ -10,12 +10,10 @@
  */
 
 import { useMemo } from "react";
-import { useNavigate } from "react-router";
 
 import { describeError } from "@/api/client";
 import {
   useDecisionsQuery,
-  useLogout,
   useProgramsQuery,
   useReadinessQuery,
   useRunEvaluation,
@@ -117,8 +115,6 @@ export function DashboardRoute() {
   const snapshots = useSnapshotsQuery();
   const health = useReadinessQuery();
   const evaluate = useRunEvaluation();
-  const logout = useLogout();
-  const navigate = useNavigate();
   const demo = useDemoSession();
 
   const fallbackOrg = useContent("cockpit.identity.fallback_org");
@@ -154,12 +150,6 @@ export function DashboardRoute() {
   const loadedSnapshots = snapshots.data ?? [];
 
   const readState = deriveCockpitReadState({ decisions, snapshots, programs });
-  const searchItems = loadedDecisions.map((decision) => ({
-    id: decision.id,
-    label: decision.outcome_label,
-    hint: decision.program_code,
-    to: `/degerlendirmeler/${decision.id}`,
-  }));
 
   const rawSuggestions =
     decisions.isSuccess && snapshots.isSuccess
@@ -332,10 +322,6 @@ export function DashboardRoute() {
         void programs.refetch();
         void snapshots.refetch();
       }}
-      searchItems={searchItems}
-      notificationCount={loadedDecisions.filter((d) => d.missing_facts.length > 0).length}
-      onLogout={() => logout.mutate(undefined, { onSuccess: () => void navigate("/giris") })}
-      loggingOut={logout.isPending}
       updatedAt={decisions.dataUpdatedAt}
       readAt={
         decisions.dataUpdatedAt > 0

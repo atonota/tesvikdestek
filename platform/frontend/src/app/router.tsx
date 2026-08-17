@@ -58,6 +58,13 @@ const appModule = () => import("@/routes/app");
 const panelModule = () => import("@/routes/panel");
 const workspaceGateModule = () => import("@/routes/workspace-gate");
 /**
+ * The one authenticated workspace chrome, mounted once inside the session
+ * gate rather than per page: `CognitiveAppShell`'s header, navigation sheet
+ * and modal layers wrap the whole private route tree through this module's
+ * own `<Outlet />`, so no route below adds a second shell of its own.
+ */
+const workspaceShellModule = () => import("@/routes/workspace-shell");
+/**
  * The W2 clean-room boundary: `/dosyalar` and `/ayarlar/yapay-zeka`, each its
  * own module loader so the route table never resolves them through the
  * rejected visual component graph.
@@ -78,6 +85,7 @@ type FilesExport = keyof Awaited<ReturnType<typeof filesModule>>;
 type AiProvidersExport = keyof Awaited<ReturnType<typeof aiProvidersModule>>;
 type PanelExport = keyof Awaited<ReturnType<typeof panelModule>>;
 type WorkspaceGateExport = keyof Awaited<ReturnType<typeof workspaceGateModule>>;
+type WorkspaceShellExport = keyof Awaited<ReturnType<typeof workspaceShellModule>>;
 
 const fromPublic = (name: PublicExport) => async () => ({
   Component: (await publicModule())[name] as React.ComponentType,
@@ -99,6 +107,9 @@ const fromPanel = (name: PanelExport) => async () => ({
 });
 const fromWorkspaceGate = (name: WorkspaceGateExport) => async () => ({
   Component: (await workspaceGateModule())[name] as React.ComponentType,
+});
+const fromWorkspaceShell = (name: WorkspaceShellExport) => async () => ({
+  Component: (await workspaceShellModule())[name] as React.ComponentType,
 });
 
 /* --------------------------------------------------------- route registry */
@@ -210,28 +221,33 @@ export const routes: RouteObject[] = [
       {
         lazy: fromWorkspaceGate("WorkspaceGate"),
         children: [
-          { path: "panel", lazy: fromPanel("DashboardRoute") },
-          { path: "firsatlar", lazy: fromApp("OpportunitiesRoute") },
-          { path: "firsatlar/:code", lazy: fromApp("OpportunityDetailRoute") },
-          { path: "kaynaklar", lazy: fromApp("SourceRegistryRoute") },
-          { path: "kaynaklar/:id", lazy: fromApp("SourceDetailRoute") },
-          { path: "uygunluk", lazy: fromApp("DecisionsRoute") },
-          { path: "uygunluk/sihirbaz", lazy: fromApp("WizardRoute") },
-          { path: "degerlendirmeler", lazy: fromApp("DecisionsRoute") },
-          { path: "degerlendirmeler/karsilastir", lazy: fromApp("DecisionCompareRoute") },
-          { path: "degerlendirmeler/:id", lazy: fromApp("DecisionDetailRoute") },
-          { path: "organizasyon", element: <Navigate to="/organizasyon/profil" replace /> },
-          { path: "organizasyon/profil", lazy: fromApp("ProfileRoute") },
-          { path: "organizasyon/hazirlik", lazy: fromApp("ReadinessRoute") },
-          { path: "olgunluk", lazy: fromApp("MaturityRoute") },
-          { path: "operasyon/saglik", lazy: fromApp("OpsHealthRoute") },
-          { path: "yetenekler", lazy: fromApp("CapabilityMatrixRoute") },
-          { path: "dosyalar", lazy: fromFiles("FilesRoute") },
-          { path: "ayarlar", element: <Navigate to="/ayarlar/gorunum" replace /> },
-          { path: "ayarlar/gorunum", lazy: fromApp("AppearanceSettingsRoute") },
-          { path: "ayarlar/erisilebilirlik", lazy: fromApp("AccessibilitySettingsRoute") },
-          { path: "ayarlar/guvenlik", lazy: fromApp("SecuritySettingsRoute") },
-          { path: "ayarlar/yapay-zeka", lazy: fromAiProviders("AiProvidersRoute") },
+          {
+            lazy: fromWorkspaceShell("WorkspaceShellRoute"),
+            children: [
+              { path: "panel", lazy: fromPanel("DashboardRoute") },
+              { path: "firsatlar", lazy: fromApp("OpportunitiesRoute") },
+              { path: "firsatlar/:code", lazy: fromApp("OpportunityDetailRoute") },
+              { path: "kaynaklar", lazy: fromApp("SourceRegistryRoute") },
+              { path: "kaynaklar/:id", lazy: fromApp("SourceDetailRoute") },
+              { path: "uygunluk", lazy: fromApp("DecisionsRoute") },
+              { path: "uygunluk/sihirbaz", lazy: fromApp("WizardRoute") },
+              { path: "degerlendirmeler", lazy: fromApp("DecisionsRoute") },
+              { path: "degerlendirmeler/karsilastir", lazy: fromApp("DecisionCompareRoute") },
+              { path: "degerlendirmeler/:id", lazy: fromApp("DecisionDetailRoute") },
+              { path: "organizasyon", element: <Navigate to="/organizasyon/profil" replace /> },
+              { path: "organizasyon/profil", lazy: fromApp("ProfileRoute") },
+              { path: "organizasyon/hazirlik", lazy: fromApp("ReadinessRoute") },
+              { path: "olgunluk", lazy: fromApp("MaturityRoute") },
+              { path: "operasyon/saglik", lazy: fromApp("OpsHealthRoute") },
+              { path: "yetenekler", lazy: fromApp("CapabilityMatrixRoute") },
+              { path: "dosyalar", lazy: fromFiles("FilesRoute") },
+              { path: "ayarlar", element: <Navigate to="/ayarlar/gorunum" replace /> },
+              { path: "ayarlar/gorunum", lazy: fromApp("AppearanceSettingsRoute") },
+              { path: "ayarlar/erisilebilirlik", lazy: fromApp("AccessibilitySettingsRoute") },
+              { path: "ayarlar/guvenlik", lazy: fromApp("SecuritySettingsRoute") },
+              { path: "ayarlar/yapay-zeka", lazy: fromAiProviders("AiProvidersRoute") },
+            ],
+          },
         ],
       },
 

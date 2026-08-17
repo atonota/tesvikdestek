@@ -10,13 +10,16 @@
  * `/panel` renders, not a placeholder card standing in for it.
  */
 
+import { useEffect } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import type { Distribution } from "@/domain/analytics";
 import { resolveContent } from "@/content";
+import { useUiStore, type Density, type ThemeChoice } from "@/store/ui";
 
 import { CognitiveAccessScopePanel } from "./CognitiveAccessScopePanel";
 import { CognitiveAnalyticsPanel } from "./CognitiveAnalyticsPanel";
+import { CognitiveAppShell } from "./CognitiveAppShell";
 import { CognitiveAuditTruthBlock } from "./CognitiveAuditTruthBlock";
 import { CognitiveCatalogPanel } from "./CognitiveCatalogPanel";
 import { CognitiveCockpitDashboard, type CockpitIdentity } from "./index";
@@ -268,23 +271,7 @@ export const Empty: Story = {
 
 export const NoResult: Story = {
   name: "no-result",
-  args: {
-    state: "success",
-    identity: IDENTITY,
-    searchItems: SEARCH_ITEMS,
-    mainCanvas: composedMainCanvas(),
-    contextRail: composedContextRail(IDENTITY),
-  },
-  play: async ({ canvasElement }) => {
-    const input = canvasElement
-      .querySelector(".cognitive-spotlight__panel")
-      ?.querySelector<HTMLInputElement>("input");
-    input?.click();
-    if (input) {
-      input.value = resolveContent("cockpit.story.search.no_match_query");
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-  },
+  args: { state: "no-result", identity: IDENTITY },
 };
 
 export const ErrorState: Story = {
@@ -311,8 +298,6 @@ export const Success: Story = {
   args: {
     state: "success",
     identity: IDENTITY,
-    searchItems: SEARCH_ITEMS,
-    notificationCount: 3,
     readAt: "14:02",
     mainCanvas: composedMainCanvas(),
     contextRail: composedContextRail(IDENTITY),
@@ -365,4 +350,141 @@ export const DemoAtPhone320: Story = {
     },
   },
   globals: { viewport: { value: "phone320", isRotated: false } },
+};
+
+/**
+ * `CognitiveAppShell` demonstrations.
+ *
+ * `workspace-shell.tsx` mounts this exact component once above every private
+ * route's `<Outlet />`, so these are the only stories in the catalogue that
+ * show the header, the navigation sheet and `ModalLayerHost`'s scrim
+ * together rather than as separate pieces.
+ */
+
+const APP_SHELL_IDENTITY = {
+  organisationLabel: resolveContent("cockpit.story.identity.org"),
+  roleLabel: resolveContent("cockpit.identity.role.superadmin"),
+};
+
+/** Applies a story's appearance to the shared UI store, and restores it on unmount. */
+function AppShellAppearanceFrame({
+  theme,
+  density = "comfortable",
+  reducedMotion = false,
+  children,
+}: {
+  readonly theme: ThemeChoice;
+  readonly density?: Density;
+  readonly reducedMotion?: boolean;
+  readonly children: React.ReactNode;
+}) {
+  useEffect(() => {
+    const previous = useUiStore.getState();
+    useUiStore.setState({ theme, density, reducedMotion });
+    return () => {
+      useUiStore.setState({
+        theme: previous.theme,
+        density: previous.density,
+        reducedMotion: previous.reducedMotion,
+      });
+    };
+  }, [theme, density, reducedMotion]);
+
+  return <>{children}</>;
+}
+
+function appShellStory(
+  overrides: Partial<{ theme: ThemeChoice; density: Density; reducedMotion: boolean }> = {},
+): Story {
+  return {
+    // `render` fully replaces the composed body below; these args exist only
+    // to satisfy `Story`'s required-props typing, which is keyed to
+    // `CognitiveCockpitDashboard` (this file's one `meta.component`) rather
+    // than to `CognitiveAppShell` itself.
+    args: { state: "success", identity: IDENTITY },
+    render: () => (
+      <AppShellAppearanceFrame
+        theme={overrides.theme ?? "light"}
+        density={overrides.density ?? "comfortable"}
+        reducedMotion={overrides.reducedMotion ?? false}
+      >
+        <CognitiveAppShell identity={APP_SHELL_IDENTITY} searchItems={SEARCH_ITEMS} notificationCount={2}>
+          <CognitiveCockpitDashboard
+            state="success"
+            identity={IDENTITY}
+            mainCanvas={composedMainCanvas()}
+            contextRail={composedContextRail(IDENTITY)}
+          />
+        </CognitiveAppShell>
+      </AppShellAppearanceFrame>
+    ),
+  } satisfies Story;
+}
+
+export const AppShellIdle: Story = {
+  ...appShellStory(),
+  name: "idle",
+};
+
+export const AppShellNavigationOpen: Story = {
+  ...appShellStory(),
+  name: "navigation-open",
+  play: async ({ canvasElement }) => {
+    const hamburger = canvasElement.querySelector<HTMLButtonElement>(".cognitive-spotlight__hamburger");
+    hamburger?.click();
+  },
+};
+
+export const AppShellDark: Story = {
+  ...appShellStory({ theme: "dark" }),
+  name: "dark",
+};
+
+export const AppShellReducedMotion: Story = {
+  ...appShellStory({ reducedMotion: true }),
+  name: "reduced-motion",
+};
+
+export const AppShellW320: Story = {
+  ...appShellStory(),
+  name: "W320",
+  parameters: {
+    viewport: {
+      options: { w320: { name: "320px", styles: { width: "320px", height: "640px" }, type: "mobile" } },
+    },
+  },
+  globals: { viewport: { value: "w320", isRotated: false } },
+};
+
+export const AppShellW390: Story = {
+  ...appShellStory(),
+  name: "W390",
+  parameters: {
+    viewport: {
+      options: { w390: { name: "390px", styles: { width: "390px", height: "844px" }, type: "mobile" } },
+    },
+  },
+  globals: { viewport: { value: "w390", isRotated: false } },
+};
+
+export const AppShellW768: Story = {
+  ...appShellStory(),
+  name: "W768",
+  parameters: {
+    viewport: {
+      options: { w768: { name: "768px", styles: { width: "768px", height: "1024px" }, type: "tablet" } },
+    },
+  },
+  globals: { viewport: { value: "w768", isRotated: false } },
+};
+
+export const AppShellW1024: Story = {
+  ...appShellStory(),
+  name: "W1024",
+  parameters: {
+    viewport: {
+      options: { w1024: { name: "1024px", styles: { width: "1024px", height: "768px" }, type: "desktop" } },
+    },
+  },
+  globals: { viewport: { value: "w1024", isRotated: false } },
 };

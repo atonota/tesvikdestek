@@ -1,7 +1,14 @@
 /** Authenticated surfaces: dashboard, discovery, decision workspace, settings, ops. */
 
 import { useMemo, useState, type ReactNode } from "react";
-import { NavLink, useLocation, useNavigate, useParams, useSearchParams } from "react-router";
+import {
+  Link as RouterLink,
+  NavLink,
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router";
 
 import { SessionExpiredError, describeError, type ApprovalRecord } from "@/api/client";
 import {
@@ -16,7 +23,6 @@ import {
   useSnapshotsQuery,
 } from "@/api/queries";
 import {
-  AdaptiveShell,
   ApprovalForm,
   Badge,
   Button,
@@ -258,17 +264,22 @@ export function SettingsSectionNav() {
 }
 
 /**
- * The authenticated frame.
+ * The authenticated route's own content wrapper.
  *
- * `AdaptiveShell` replaces the older `AppShell` here: same landmarks, but a
- * layered header, a persistent right-hand context column at ≥64rem, and the
- * 320px controls (drawer, thumb bar, pinned conversion action) as first-class
- * layout rather than desktop-with-things-hidden.
+ * The old per-route adaptive frame used to render the workspace's header,
+ * drawer and bottom navigation from here, once per route. `CognitiveAppShell`
+ * now owns all of that, mounted once above every private route by
+ * `workspace-shell.tsx` - a
+ * route rendering its own header and drawer under that would be a second
+ * shell stacked inside the real one. `Shell` keeps only what is this route's
+ * own content: its title, its context rail and its pinned conversion action,
+ * each still carrying the meaning it did before, just without any chrome of
+ * its own.
  *
- * `contextRail` carries the assistant. It is passed per route rather than
- * mounted globally, because a rail with nothing in it is furniture a screen
- * reader user walks past on every page - the shell drops the landmark entirely
- * when a route has no context to offer.
+ * `contextRail` is still passed per route rather than mounted globally,
+ * because a rail with nothing in it is furniture a screen reader user walks
+ * past on every page - it is dropped entirely when a route has no context to
+ * offer.
  */
 export function Shell({
   children,
@@ -281,49 +292,54 @@ export function Shell({
   title?: string;
   conversionAction?: ConversionAction;
 }) {
-  const logout = useLogout();
-  const navigate = useNavigate();
   const demo = useDemoSession();
+  const hasRail = contextRail !== undefined && contextRail !== null;
+
   return (
-    <AdaptiveShell
-      navItems={APP_NAV}
-      {...(contextRail ? { contextRail } : {})}
-      {...(title ? { title } : {})}
-      {...(conversionAction ? { conversionAction } : {})}
-      headerUtilities={
-        <>
-          {/*
-            * The demo badge, in the header of every workspace screen.
-            *
-            * Here rather than on the dashboard alone, because the screenshot
-            * that ends up in somebody's deck is rarely the dashboard. It is a
-            * `warning` tone and it carries an `srDescription`: colour is never
-            * the only carrier in this design system, and "Demo" on its own does
-            * not tell a screen reader user that the figures are not theirs.
-            */}
-          {demo ? (
-            <Badge
-              tone="warning"
-              srDescription="Bu oturum bir arayüz demosudur; veriler örnektir ve sunucuya hiçbir kayıt yazılmaz."
+    <div className="dt-route-content" data-has-context-rail={hasRail}>
+      {demo ? (
+        <Badge
+          tone="warning"
+          srDescription="Bu oturum bir arayüz demosudur; veriler örnektir ve sunucuya hiçbir kayıt yazılmaz."
+        >
+          {demoBadgeLabel(demo.role)}
+        </Badge>
+      ) : null}
+
+      {title ? <p className="dt-route-content__title">{title}</p> : null}
+
+      <div className="dt-route-content__body">
+        <main id="ana-icerik" className="dt-route-content__main" tabIndex={-1}>
+          {children}
+        </main>
+
+        {hasRail ? (
+          <aside className="dt-route-content__aside" aria-label="Bağlam ve yardımcı">
+            {contextRail}
+          </aside>
+        ) : null}
+      </div>
+
+      {conversionAction ? (
+        <div className="dt-route-content__conversion">
+          {conversionAction.onRun ? (
+            <Button fullWidth onClick={conversionAction.onRun}>
+              {conversionAction.label}
+            </Button>
+          ) : (
+            <RouterLink
+              to={conversionAction.to ?? "#"}
+              className="dt-btn dt-btn--primary dt-btn--md dt-btn--block"
             >
-              {demoBadgeLabel(demo.role)}
-            </Badge>
+              {conversionAction.label}
+            </RouterLink>
+          )}
+          {conversionAction.hint ? (
+            <p className="dt-route-content__conversion-hint">{conversionAction.hint}</p>
           ) : null}
-          <Button
-            variant="ghost"
-            size="sm"
-            loading={logout.isPending}
-            onClick={() =>
-              logout.mutate(undefined, { onSuccess: () => void navigate("/giris") })
-            }
-          >
-            Çıkış
-          </Button>
-        </>
-      }
-    >
-      {children}
-    </AdaptiveShell>
+        </div>
+      ) : null}
+    </div>
   );
 }
 

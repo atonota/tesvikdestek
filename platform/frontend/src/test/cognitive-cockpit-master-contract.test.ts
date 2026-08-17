@@ -16,8 +16,10 @@ describe("00aa cognitive cockpit is the canonical Storybook and application surf
   const requiredModules = [
     "CognitiveCockpitDashboard.tsx",
     "CognitiveCockpitSkeleton.tsx",
+    "CognitiveAppShell.tsx",
     "CognitiveSpotlightHeader.tsx",
-    "CognitiveCommandDrawer.tsx",
+    "NavigationSheet.tsx",
+    "ModalLayerHost.tsx",
     "CognitiveAccountMenu.tsx",
     "cognitive-cockpit.css",
     "cognitive-cockpit.stories.tsx",

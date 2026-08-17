@@ -1,5 +1,5 @@
 /**
- * The cognitive cockpit — the clean-room `/panel` master surface.
+ * The cognitive cockpit — the clean-room `/panel` page content.
  *
  * Interaction and visual authority for this package is the design reference
  * with sha256 23c3729ad1856d056699d68503e2d92a0f996ba57f531fe1edc7e00bb85fd146,
@@ -7,22 +7,24 @@
  * against this product's own tokens, primitives and data — no prototype
  * markup, class name or inline style is copied.
  *
- * This component is presentational: `DashboardRoute` (`src/routes/app.tsx`)
+ * This component is presentational: `DashboardRoute` (`src/routes/panel.tsx`)
  * owns every query, computes the one read state below and passes real data
  * down. That is what lets Storybook drive all nine states from plain props,
  * with no query client and no network in the catalogue.
+ *
+ * It renders body content only. The header, navigation sheet and modal
+ * layers are `CognitiveAppShell`'s job, mounted once above every private
+ * route by `workspace-shell.tsx` — a dashboard that mounted its own header
+ * and drawer would be a second shell stacked under the real one.
  */
 
-import { useMemo, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 
-import { Badge, Button, EmptyState, ErrorState, OfflineBanner, PartialDataNotice, Sheet } from "@/foundation";
+import { Badge, Button, EmptyState, ErrorState, OfflineBanner, PartialDataNotice } from "@/foundation";
 import { useUiStore } from "@/store/ui";
 import { resolveContent, useContent } from "@/content";
 
-import { CognitiveAccountMenu } from "./CognitiveAccountMenu";
-import { CognitiveCommandDrawer } from "./CognitiveCommandDrawer";
 import { CognitiveCockpitSkeleton } from "./CognitiveCockpitSkeleton";
-import { CognitiveSpotlightHeader, type CockpitSearchItem } from "./CognitiveSpotlightHeader";
 
 import "./cognitive-cockpit.css";
 
@@ -57,10 +59,6 @@ export interface CognitiveCockpitDashboardProps {
   readonly identity: CockpitIdentity;
   readonly errorMessage?: string | null;
   readonly onRetry?: () => void;
-  readonly searchItems?: readonly CockpitSearchItem[];
-  readonly notificationCount?: number;
-  readonly onLogout?: () => void;
-  readonly loggingOut?: boolean;
   readonly updatedAt?: number | null;
   /** Freshness line under the H1 - when this browser last read the data. */
   readonly readAt?: string | null;
@@ -138,29 +136,11 @@ function CockpitPermissionBlock({ action }: { readonly action: string }) {
   );
 }
 
-/** Filters the search index by label or hint, in Turkish locale order. */
-function filterSearch(
-  items: readonly CockpitSearchItem[],
-  query: string,
-): readonly CockpitSearchItem[] {
-  const needle = query.trim().toLocaleLowerCase("tr");
-  if (needle === "") return [];
-  return items.filter(
-    (item) =>
-      item.label.toLocaleLowerCase("tr").includes(needle) ||
-      (item.hint ?? "").toLocaleLowerCase("tr").includes(needle),
-  );
-}
-
 export function CognitiveCockpitDashboard({
   state,
   identity,
   errorMessage = null,
   onRetry,
-  searchItems = [],
-  notificationCount = 0,
-  onLogout,
-  loggingOut = false,
   updatedAt = null,
   readAt = null,
   mainCanvas,
@@ -170,26 +150,7 @@ export function CognitiveCockpitDashboard({
   const density = useUiStore((store) => store.density);
   const reducedMotion = useUiStore((store) => store.reducedMotion);
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [spotlightOpen, setSpotlightOpen] = useState(false);
-  const [spotlightQuery, setSpotlightQuery] = useState("");
-
-  const searchResults = useMemo(
-    () => filterSearch(searchItems, spotlightQuery),
-    [searchItems, spotlightQuery],
-  );
-
-  /**
-   * The state actually rendered, once a live search is folded in.
-   *
-   * A read that succeeded is still `"no-result"` while the reader is looking
-   * at zero matches for what they typed — the underlying data state does not
-   * change, but the state this screen shows them does.
-   */
-  const effectiveState: CockpitReadState =
-    spotlightQuery.trim() !== "" && searchResults.length === 0 ? "no-result" : state;
-
-  const copy = stateCopyFor(effectiveState);
+  const copy = stateCopyFor(state);
 
   const identityAriaLabel = useContent("cockpit.identity.aria_label");
   const demoBadgeLabel = useContent("cockpit.badge.demo");
@@ -229,30 +190,6 @@ export function CognitiveCockpitDashboard({
         ) : null}
       </div>
 
-      <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
-        <CognitiveSpotlightHeader
-          open={spotlightOpen}
-          onOpenChange={setSpotlightOpen}
-          query={spotlightQuery}
-          onQueryChange={setSpotlightQuery}
-          results={searchResults}
-          notificationCount={notificationCount}
-          accountMenu={
-            <CognitiveAccountMenu
-              organisationLabel={identity.organisationLabel}
-              roleLabel={identity.roleLabel}
-              loggingOut={loggingOut}
-              {...(onLogout ? { onLogout } : {})}
-            />
-          }
-        />
-        <CognitiveCommandDrawer
-          organisationLabel={identity.organisationLabel}
-          roleLabel={identity.roleLabel}
-          onNavigate={() => setDrawerOpen(false)}
-        />
-      </Sheet>
-
       <main className="cognitive-cockpit__body">
         <div className="cognitive-cockpit__heading">
           <h1 className="cognitive-cockpit__title">{pageTitle}</h1>
@@ -279,23 +216,23 @@ export function CognitiveCockpitDashboard({
           <PartialDataNotice label={partialLabel} what={partialWhat} because={partialBecause} />
         ) : null}
 
-        {effectiveState === "loading" ? <CognitiveCockpitSkeleton /> : null}
-        {effectiveState === "permission" ? <CockpitPermissionBlock action={permissionAction} /> : null}
-        {effectiveState === "error" ? (
+        {state === "loading" ? <CognitiveCockpitSkeleton /> : null}
+        {state === "permission" ? <CockpitPermissionBlock action={permissionAction} /> : null}
+        {state === "error" ? (
           <ErrorState
             title={copy.title}
             message={errorMessage ?? copy.reason}
             {...(onRetry ? { onRetry, retryLabel } : {})}
           />
         ) : null}
-        {effectiveState === "empty" ? <EmptyState title={copy.title} reason={copy.reason} /> : null}
-        {effectiveState === "no-result" ? (
+        {state === "empty" ? <EmptyState title={copy.title} reason={copy.reason} /> : null}
+        {state === "no-result" ? (
           <p className="cognitive-cockpit__no-result" role="status">
             {copy.reason}
           </p>
         ) : null}
 
-        {["success", "stale", "partial", "offline"].includes(effectiveState) ? (
+        {["success", "stale", "partial", "offline"].includes(state) ? (
           <>
             <div className="cognitive-cockpit__main">{mainCanvas}</div>
             <div className="cognitive-cockpit__rail">{contextRail}</div>

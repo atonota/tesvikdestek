@@ -21,8 +21,18 @@ export {
   type CockpitSearchItem,
   type CognitiveSpotlightHeaderProps,
 } from "./CognitiveSpotlightHeader";
-export { CognitiveCommandDrawer, type CognitiveCommandDrawerProps } from "./CognitiveCommandDrawer";
 export { CognitiveAccountMenu, type CognitiveAccountMenuProps } from "./CognitiveAccountMenu";
+export {
+  CognitiveAppShell,
+  type CognitiveAppShellIdentity,
+  type CognitiveAppShellProps,
+} from "./CognitiveAppShell";
+export { NavigationSheet, type NavigationSheetProps } from "./NavigationSheet";
+export {
+  ModalLayerHost,
+  type ModalLayerLevel,
+  type ModalLayerHostProps,
+} from "./ModalLayerHost";
 export {
   CognitiveEvidenceRail,
   type CockpitEvidenceStatus,
