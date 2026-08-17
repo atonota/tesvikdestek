@@ -137,7 +137,6 @@ describe("every runtime form goes through the react-hook-form layer", () => {
    * obeyed.
    */
   const FORM_TEMPLATES = [
-    "AuthForm",
     "ProfileWorkspace",
     "EligibilityWizard",
     "ApprovalForm",

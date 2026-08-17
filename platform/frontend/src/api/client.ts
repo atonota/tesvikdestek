@@ -143,6 +143,27 @@ async function request(path: string, init: RequestInit = {}): Promise<Response> 
     throw new SessionExpiredError(path);
   }
   if (!response.ok) {
+    /*
+     * The one narrow exception: `POST /cikis` already did its job by the
+     * time `fetch` followed its `303`.
+     *
+     * The backend answers a logout with a redirect to `/`, and the write it
+     * describes - the session is gone - happened on the server before that
+     * redirect was even sent. What happens to the *destination* afterwards
+     * is a second, unrelated request the browser makes automatically, and in
+     * the dev Vite server that destination can answer 404 - Vite's history
+     * fallback does not cover every path a FastAPI-only backend would serve.
+     * Without this check that unrelated 404 became `ApiError(404, "/cikis")`,
+     * which `describeError` renders as "Kayıt bulunamadı." - turning a
+     * completed logout into a screen that looks like a broken one.
+     *
+     * Scoped to exactly `AUTH_PATHS.logout` and to a response that actually
+     * `redirected`: a `POST /cikis` that fails outright - no redirect at all
+     * - still throws below, same as any other failed request.
+     */
+    if (path === AUTH_PATHS.logout && response.redirected) {
+      return response;
+    }
     throw new ApiError(`İstek başarısız (${response.status})`, response.status, path);
   }
   return response;

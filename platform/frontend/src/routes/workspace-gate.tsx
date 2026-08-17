@@ -15,7 +15,7 @@ import { Navigate, Outlet, useLocation, useNavigate } from "react-router";
 
 import { ApiError, SessionExpiredError, describeError } from "@/api/client";
 import { useDecisionsQuery } from "@/api/queries";
-import { useContent } from "@/content";
+import { CognitiveAuthGate } from "@/components/cognitive-auth";
 import {
   DEMO_ROLE_PARAM,
   isStaticDemoOnly,
@@ -26,7 +26,6 @@ import {
   withDemoRole,
   withoutDemoRole,
 } from "@/demo";
-import { ErrorState, Link, Skeleton, SkeletonCard } from "@/foundation";
 
 /** Same rule `QueryBoundary` uses: an unauthenticated or forbidden read means "no session". */
 function isSessionError(error: unknown): boolean {
@@ -59,7 +58,6 @@ function StaticDemoGate() {
   const location = useLocation();
   const demo = useDemoSession();
   const navigate = useNavigate();
-  const loadingLabel = useContent("cockpit.gate.loading.demo");
 
   const roleFromUrl = parseDemoRole(new URLSearchParams(location.search).get(DEMO_ROLE_PARAM));
   const rebuildable = roleFromUrl !== null && !wasDemoEndedHere();
@@ -79,11 +77,7 @@ function StaticDemoGate() {
 
   if (demo === null) {
     if (rebuildable) {
-      return (
-        <Skeleton label={loadingLabel}>
-          <SkeletonCard lines={3} />
-        </Skeleton>
-      );
+      return <CognitiveAuthGate state="loading-demo" />;
     }
     return (
       <Navigate
@@ -101,52 +95,22 @@ function ServerSessionGate() {
   const session = useDecisionsQuery();
   const returnTo = `${location.pathname}${location.search}`;
 
-  const loadingLabel = useContent("cockpit.gate.loading.session");
-  const requiredTitle = useContent("cockpit.gate.session_required.title");
-  const requiredReason = useContent("cockpit.gate.session_required.reason");
-  const loginAction = useContent("cockpit.gate.session_required.login_action");
-  const registerAction = useContent("cockpit.gate.session_required.register_action");
-  const failedTitle = useContent("cockpit.gate.server_error.title");
-  const failedHeading = useContent("cockpit.gate.server_error.heading");
-  const failedFootnote = useContent("cockpit.gate.server_error.footnote");
-  const retryLabel = useContent("cockpit.action.retry");
-  const detailSummaryLabel = useContent("cockpit.gate.server_error.detail_summary");
-
   if (session.isPending) {
-    return (
-      <Skeleton label={loadingLabel}>
-        <SkeletonCard lines={3} />
-      </Skeleton>
-    );
+    return <CognitiveAuthGate state="loading-session" />;
   }
 
   if (session.isError && isSessionError(session.error)) {
-    return (
-      <div className="fd-stack">
-        <h1>{requiredTitle}</h1>
-        <p>{requiredReason}</p>
-        <div className="fd-row">
-          <Link to={loginHref(returnTo)}>{loginAction}</Link>
-          <Link to="/kayit">{registerAction}</Link>
-        </div>
-      </div>
-    );
+    return <CognitiveAuthGate state="session-required" loginHref={loginHref(returnTo)} />;
   }
 
   if (session.isError) {
     return (
-      <div className="fd-stack">
-        <h1>{failedTitle}</h1>
-        <ErrorState
-          title={failedHeading}
-          message={describeError(session.error)}
-          detail={session.error instanceof Error ? session.error.message : undefined}
-          detailSummaryLabel={detailSummaryLabel}
-          onRetry={() => void session.refetch()}
-          retryLabel={retryLabel}
-        />
-        <p className="fd-muted">{failedFootnote}</p>
-      </div>
+      <CognitiveAuthGate
+        state="server-error"
+        errorMessage={describeError(session.error)}
+        errorDetail={session.error instanceof Error ? session.error.message : undefined}
+        onRetry={() => void session.refetch()}
+      />
     );
   }
 

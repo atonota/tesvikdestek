@@ -2,7 +2,7 @@
  * The single import surface for the component system.
  *
  * Everything named in `registry.ts` is re-exported here, plus the product
- * surfaces that are not part of the 75-component system.
+ * surfaces that are not part of the 73-component system.
  */
 
 export * from "./primitives";
@@ -14,8 +14,8 @@ export * from "./templates";
 
 /**
  * The data-grid system. Exported from the same barrel as everything else, but
- * deliberately not counted in the 75-component registry: it is one subsystem
- * with a stable public surface, not seventy-five more named parts.
+ * deliberately not counted in the 73-component registry: it is one subsystem
+ * with a stable public surface, not seventy-three more named parts.
  */
 export * from "./data-grid";
 

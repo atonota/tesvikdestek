@@ -5,8 +5,6 @@ import { useNavigate, useParams } from "react-router";
 
 import { useProgramsQuery, useSnapshotsQuery } from "@/api/queries";
 import {
-  AuthShell,
-  Button,
   Card,
   CatalogList,
   DefinitionList,
@@ -16,9 +14,8 @@ import {
   OpportunityDetail,
   PublicLanding,
   PublicShell,
-  Stepper,
 } from "@/components";
-import { DISCLAIMER } from "@/domain/outcomes";
+import { CognitiveAuthOnboarding } from "@/components/cognitive-auth";
 import { describeError } from "@/api/client";
 import { readSourceRegistry } from "@/components";
 import { QueryBoundary } from "./QueryBoundary";
@@ -165,52 +162,18 @@ export function PublicProgramDetailRoute() {
   );
 }
 
-const ONBOARDING_STEPS = [
-  { id: "ne", label: "Bu nedir" },
-  { id: "sinir", label: "Sınırlar" },
-  { id: "hesap", label: "Hesap" },
-];
+const ONBOARDING_STEP_COUNT = 3;
 
 export function OnboardingRoute() {
   const [step, setStep] = useState(0);
   const navigate = useNavigate();
 
   return (
-    <AuthShell
-      title="Başlarken"
-      description="Üç kısa adım. İlerlemeniz sunucuda tutulmaz; sayfayı yenilerseniz baştan başlarsınız."
-    >
-      <Stepper steps={ONBOARDING_STEPS} currentIndex={step} />
-      {step === 0 ? (
-        <p>
-          Bu sistem, resmî kaynaklardan derlenmiş kurallarla her destek programı için bir{" "}
-          <strong>ön değerlendirme</strong> üretir ve gerekçesini gösterir.
-        </p>
-      ) : null}
-      {step === 1 ? (
-        <div className="dt-stack">
-          <p>Şunları yapmaz:</p>
-          <ul className="dt-list">
-            <li>Resmî kuruma başvuru göndermez.</li>
-            <li>Alacağınız parayı hesaplamaz.</li>
-            <li>Bilinmeyen tarihi tahmin etmez.</li>
-          </ul>
-          <p className="dt-muted">{DISCLAIMER}</p>
-        </div>
-      ) : null}
-      {step === 2 ? (
-        <p>Devam etmek için bir hesap oluşturun. Kayıt, bir organizasyon ve bir kullanıcı yaratır.</p>
-      ) : null}
-      <div className="dt-row">
-        <Button variant="secondary" disabled={step === 0} onClick={() => setStep(step - 1)}>
-          Geri
-        </Button>
-        {step < ONBOARDING_STEPS.length - 1 ? (
-          <Button onClick={() => setStep(step + 1)}>İleri</Button>
-        ) : (
-          <Button onClick={() => void navigate("/kayit")}>Hesap oluştur</Button>
-        )}
-      </div>
-    </AuthShell>
+    <CognitiveAuthOnboarding
+      step={step}
+      onBack={() => setStep(step - 1)}
+      onNext={() => setStep(Math.min(step + 1, ONBOARDING_STEP_COUNT - 1))}
+      onFinish={() => void navigate("/kayit")}
+    />
   );
 }

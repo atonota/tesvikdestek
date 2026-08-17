@@ -30,16 +30,16 @@ describe("gate 1 - the application shell mounts a routed, accessible document", 
 });
 
 describe("gate 2 - the master component system is complete and categorised", () => {
-  it("exports exactly the 75 named components in the six documented levels", async () => {
+  it("exports exactly the 73 named components in the six documented levels", async () => {
     const registry = await import("@/components/registry");
 
     expect(registry.COMPONENT_LEVELS.primitives).toHaveLength(14);
     expect(registry.COMPONENT_LEVELS.composites).toHaveLength(16);
     expect(registry.COMPONENT_LEVELS.patterns).toHaveLength(10);
-    expect(registry.COMPONENT_LEVELS.shells).toHaveLength(5);
+    expect(registry.COMPONENT_LEVELS.shells).toHaveLength(4);
     expect(registry.COMPONENT_LEVELS.domain).toHaveLength(18);
-    expect(registry.COMPONENT_LEVELS.templates).toHaveLength(12);
-    expect(registry.ALL_COMPONENT_NAMES).toHaveLength(75);
+    expect(registry.COMPONENT_LEVELS.templates).toHaveLength(11);
+    expect(registry.ALL_COMPONENT_NAMES).toHaveLength(73);
   });
 
   it("actually exports every registered name as a real component", async () => {

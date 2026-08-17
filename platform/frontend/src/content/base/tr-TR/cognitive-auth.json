@@ -1,0 +1,713 @@
+{
+  "schemaVersion": 1,
+  "namespace": "cognitive-auth",
+  "locale": "tr-TR",
+  "revision": 1,
+  "status": "published",
+  "source": {
+    "kind": "repository-json",
+    "ref": "cognitive-auth-v1"
+  },
+  "entries": [
+    {
+      "id": "auth.header.brand_tile",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "DT",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.header.brand_word",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "DestekTeşvik",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.header.search.placeholder",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Ara",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.header.search.trigger",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Ara",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.header.search.label",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Site içinde ara",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.header.search.close",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Aramayı kapat",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.header.search.no_result",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Sonuç yok",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.header.search.shortcut",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "⌘K",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.header.menu.open",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Ara",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.search.programs.label",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Programlar",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.search.how.label",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Nasıl çalışır",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.search.login.label",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Giriş",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.search.register.label",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kayıt ol",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.a11y.skip_link",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "İçeriğe geç",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.login.title",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Giriş",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.login.description",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Oturum sunucu tarafında tutulur; tarayıcıda jeton saklanmaz.",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.login.footer",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Hesabınız yok mu? Kayıt olun",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.register.title",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Hesap oluştur",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.register.description",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kayıt bir organizasyon ve bir kullanıcı yaratır. Çok kullanıcılı ekip bu sürümde yoktur.",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.register.footer",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Zaten hesabınız var mı? Giriş yapın",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.credential.email_label",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "E-posta",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.credential.password_label",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Parola",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.credential.password_hint",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "En az 12 karakter.",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.credential.org_label",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Organizasyon adı",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.credential.submit_login",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Giriş yap",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.credential.submit_register",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Hesap oluştur",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.demo.title",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Tek tıkla demo",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.demo.notice",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu bir arayüz demosudur. Aşağıdaki iki seçenek yalnızca bir etiket ve inceleme bağlamı seçer: her ikisi de aynı ekranları, aynı gezinmeyi ve aynı örnek veriyi açar. Bir yetkilendirme vermez ve hiçbir ekranı kısıtlamaz; backend'de rol modeli yoktur ve bu hesaplar hiçbir sunucuda tanımlı değildir. Demoya geçmeden önce varsa açık sunucu oturumunuz gerçekten kapatılır. Demo sırasında hiçbir kayıt sunucuya yazılmaz.",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.demo.notice_short",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Arayüz demosu: yetki vermez, sunucuya kayıt yazmaz.",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.demo.notice_summary",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Demo hakkında ayrıntılı bilgi",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.demo.divider",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Ya da kendi hesabınızla girin",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.demo.role_prefix",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Etiket:",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.demo.email_label",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Demo e-posta",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.demo.password_label",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Demo parola",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.demo.credential_note",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu bilgiler gizli değildir ve hiçbir sunucuda tanımlı bir hesaba ait değildir. Düğmeye basabilir ya da bu e-posta ve parolayı aşağıdaki forma yazabilirsiniz; ikisi de aynı demoyu açar ve hiçbir bilgi sunucuya gönderilmez.",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.demo.loading_label",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Demo açılıyor",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.static.notice",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu sayfa statik bir yayındır: arkasında sunucu yoktur. Gerçek giriş ve kayıt burada çalışmaz ve denendiğinde hiçbir bilgi gönderilmez. Bu yayında yalnızca demo girişi kullanılabilir: bir demo kartını seçebilir ya da kartta yazan demo e-posta ve parolayı aşağıdaki forma yazabilirsiniz.",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.onboarding.title",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Başlarken",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.onboarding.description",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Üç kısa adım. İlerlemeniz sunucuda tutulmaz; sayfayı yenilerseniz baştan başlarsınız.",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.onboarding.step_what",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu nedir",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.onboarding.step_limits",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Sınırlar",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.onboarding.step_account",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Hesap",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.onboarding.what_body",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu sistem, resmî kaynaklardan derlenmiş kurallarla her destek programı için bir ön değerlendirme üretir ve gerekçesini gösterir.",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.onboarding.limits_intro",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Şunları yapmaz:",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.onboarding.limit_application",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Resmî kuruma başvuru göndermez.",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.onboarding.limit_calculation",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Alacağınız parayı hesaplamaz.",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.onboarding.limit_date",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bilinmeyen tarihi tahmin etmez.",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.onboarding.account_body",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Devam etmek için bir hesap oluşturun. Kayıt, bir organizasyon ve bir kullanıcı yaratır.",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.onboarding.back",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Geri",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.onboarding.next",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "İleri",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.onboarding.finish",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Hesap oluştur",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.onboarding.progress_label",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kayıt adımları",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.gate.loading.session",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Oturum doğrulanıyor",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.gate.loading.demo",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Demo yeniden kuruluyor",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.gate.session_required.title",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Oturum gerekli",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.gate.session_required.reason",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu ekran organizasyonunuza ait verileri gösterir ve yalnızca giriş yaptıktan sonra açılır. Giriş yaptığınızda buraya geri dönersiniz.",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.gate.session_required.login_action",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Giriş yap",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.gate.session_required.register_action",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Hesap oluştur",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.gate.server_error.title",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Çalışma alanı açılamadı",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.gate.server_error.heading",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Sunucu yanıt vermedi",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.gate.server_error.footnote",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Bu bir oturum sorunu değildir ve verinizin boş olduğu anlamına gelmez; sunucu bu isteği yanıtlayamadı. Okunamayan veri bu ekranda sıfır olarak gösterilmez.",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.gate.server_error.detail_summary",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Teknik ayrıntı",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.workbench.rail.eyebrow",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "DestekTeşvik",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.workbench.rail.title",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Kural izi ve resmî kaynak kanıtıyla ön değerlendirme",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.workbench.rail.body",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Her karar hangi kurala ve hangi resmî kaynağa dayandığını gösterir. Sonuçlar ön değerlendirmedir; resmî kurum kararı değildir.",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.workbench.role_switch.label",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Demo profili",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.workbench.reveal.summary",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Demo bilgilerini göster",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.workbench.real.toggle_open",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Gerçek hesapla gir",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.workbench.real.toggle_close",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Formu gizle",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    },
+    {
+      "id": "auth.gate.action.retry",
+      "namespace": "cognitive-auth",
+      "locale": "tr-TR",
+      "revision": 1,
+      "status": "published",
+      "kind": "text",
+      "value": "Tekrar dene",
+      "source": { "kind": "repository-json", "ref": "cognitive-auth-v1" }
+    }
+  ]
+}

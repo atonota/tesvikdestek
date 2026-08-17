@@ -1,0 +1,603 @@
+/**
+ * The cognitive auth family's own stylesheet.
+ *
+ * Adaptive-fluid: every size is a `clamp()` inside a `@container` query keyed
+ * to `.cognitive-auth`'s own inline size, never a media query tied to the
+ * screen. Radii stay at or under `var(--fd-radius-lg)` (12px), except the
+ * Spotlight search, which is allowed the same pill/rounded-panel radius the
+ * workspace header uses. Every colour is a `var(--fd-*)` semantic token. No
+ * visible text drops below `1rem`. At the container's narrowest width the
+ * canvas is one column, edge to edge, with no fixed pixel width to overflow.
+ */
+
+.cognitive-auth {
+  container-type: inline-size;
+  container-name: cognitive-auth;
+
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100vh;
+  min-inline-size: 0;
+  background: var(--fd-color-bg);
+  color: var(--fd-color-fg);
+  font-family: var(--fd-font-sans);
+  font-size: max(1rem, var(--fd-font-size-base));
+  font-weight: var(--fd-font-weight-regular);
+}
+
+.cognitive-auth__skip-link {
+  position: absolute;
+  inset-block-start: -100px;
+  inset-inline-start: 0;
+  z-index: 100;
+  padding: 0.5rem 1rem;
+  background: var(--fd-color-primary);
+  color: var(--fd-color-primary-fg);
+  border-radius: var(--fd-radius, 8px);
+}
+
+.cognitive-auth__skip-link:focus {
+  inset-block-start: 0.5rem;
+  inset-inline-start: 0.5rem;
+}
+
+/* -------------------------------------------------------------- header --- */
+
+.cognitive-auth__header {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  padding: clamp(0.75rem, 2vw, 1.25rem) clamp(1rem, 3vw, 2rem);
+  border-block-end: 1px solid var(--fd-color-line);
+  background: var(--fd-color-surface);
+}
+
+.cognitive-auth__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.cognitive-auth__brand-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  border-radius: var(--fd-radius, 8px);
+  background: var(--fd-color-primary);
+  color: var(--fd-color-primary-fg);
+  font-weight: var(--fd-font-weight-bold);
+  font-size: var(--fd-font-size-sm);
+}
+
+.cognitive-auth__brand-word {
+  font-weight: var(--fd-font-weight-medium);
+  font-size: var(--fd-font-size-lg);
+}
+
+@container cognitive-auth (max-width: 26rem) {
+  .cognitive-auth__brand-word {
+    display: none;
+  }
+}
+
+.cognitive-auth__search {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cognitive-auth__search-panel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  inline-size: 9.5rem;
+  max-inline-size: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--fd-color-line);
+  border-radius: var(--fd-radius-search, 22px);
+  background: var(--fd-color-surface-sunken);
+  transition: inline-size var(--fd-motion-duration, 150ms) ease, border-radius var(--fd-motion-duration, 150ms) ease;
+}
+
+.cognitive-auth__search-panel[data-open="true"] {
+  inline-size: min(28rem, 100%);
+  border-radius: var(--fd-radius-spotlight-open, 16px);
+  border-color: var(--fd-color-focus);
+}
+
+.cognitive-auth__search-panel input {
+  flex: 1;
+  min-inline-size: 0;
+  border: none;
+  background: transparent;
+  color: var(--fd-color-fg);
+  font-size: var(--fd-font-size-base);
+  outline: none;
+}
+
+.cognitive-auth__search-panel kbd {
+  font-size: var(--fd-font-size-xs);
+  color: var(--fd-color-fg-muted);
+  border: 1px solid var(--fd-color-line);
+  border-radius: var(--fd-radius-sm, 4px);
+  padding: 0.0625rem 0.375rem;
+}
+
+.cognitive-auth__search-close {
+  display: inline-flex;
+  border: none;
+  background: transparent;
+  color: var(--fd-color-fg-muted);
+  cursor: pointer;
+}
+
+.cognitive-auth__search-results {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: calc(100% + 0.25rem);
+  z-index: 20;
+  list-style: none;
+  margin: 0;
+  padding: 0.375rem;
+  border: 1px solid var(--fd-color-line);
+  border-radius: var(--fd-radius, 8px);
+  background: var(--fd-color-surface);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+  max-block-size: 16rem;
+  overflow-y: auto;
+}
+
+.cognitive-auth__search-results li a {
+  display: block;
+  padding: 0.5rem 0.625rem;
+  border-radius: var(--fd-radius-sm, 4px);
+  color: var(--fd-color-fg);
+}
+
+.cognitive-auth__search-results li a:hover,
+.cognitive-auth__search-results li a:focus-visible {
+  background: var(--fd-color-hover);
+}
+
+.cognitive-auth__search-empty {
+  padding: 0.5rem 0.625rem;
+  color: var(--fd-color-fg-muted);
+}
+
+/* -------------------------------------------------------------- canvas --- */
+
+.cognitive-auth__canvas {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: clamp(1.5rem, 4vw, 3.5rem) clamp(1rem, 3vw, 2rem);
+}
+
+.cognitive-auth__panel {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  inline-size: 100%;
+  min-inline-size: 0;
+  max-inline-size: 34rem;
+}
+
+.cognitive-auth__title {
+  font-size: clamp(1.5rem, 2vw + 1rem, 2.25rem);
+  font-weight: var(--fd-font-weight-bold);
+  margin: 0;
+}
+
+.cognitive-auth__lede {
+  color: var(--fd-color-fg-muted);
+  margin: 0;
+}
+
+.cognitive-auth__notice {
+  border: 1px solid var(--fd-color-line);
+  border-radius: var(--fd-radius, 8px);
+  background: var(--fd-color-accent-soft);
+  padding: clamp(0.75rem, 1.5vw, 1rem);
+  margin: 0;
+}
+
+/* ----------------------------------------------------------- workbench --- */
+
+.cognitive-auth__workbench {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  min-inline-size: 0;
+}
+
+.cognitive-auth__rail {
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  padding-inline-end: clamp(1rem, 2vw, 2rem);
+  border-inline-end: 1px solid var(--fd-color-line);
+}
+
+.cognitive-auth__rail-eyebrow {
+  color: var(--fd-color-fg-muted);
+  font-size: var(--fd-font-size-sm);
+  font-weight: var(--fd-font-weight-medium);
+}
+
+.cognitive-auth__rail-title {
+  margin: 0;
+  font-size: clamp(1.25rem, 1.5vw + 0.75rem, 1.75rem);
+  font-weight: var(--fd-font-weight-bold);
+}
+
+.cognitive-auth__rail-body {
+  margin: 0;
+  color: var(--fd-color-fg-muted);
+}
+
+.cognitive-auth__console {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  min-inline-size: 0;
+}
+
+/* -------------------------------------------------------- role switch --- */
+
+.cognitive-auth__role-switch {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid var(--fd-color-line);
+  border-radius: var(--fd-radius, 8px);
+  background: var(--fd-color-surface-sunken);
+}
+
+.cognitive-auth__role-option {
+  min-block-size: var(--fd-target-touch, 44px);
+  padding: 0.375rem 0.875rem;
+  border: none;
+  border-radius: var(--fd-radius-sm, 4px);
+  background: transparent;
+  color: var(--fd-color-fg-muted);
+  font-weight: var(--fd-font-weight-medium);
+  font-size: var(--fd-font-size-base);
+  cursor: pointer;
+  transition: background-color var(--fd-motion-duration, 150ms) ease, color var(--fd-motion-duration, 150ms) ease;
+}
+
+.cognitive-auth__role-option[data-selected="true"] {
+  background: var(--fd-color-surface);
+  color: var(--fd-color-fg);
+}
+
+/* ---------------------------------------------------------------- demo --- */
+
+.cognitive-auth__demo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-inline-size: 0;
+}
+
+.cognitive-auth__demo-title {
+  font-size: var(--fd-font-size-lg);
+  font-weight: var(--fd-font-weight-semibold, 600);
+  margin: 0;
+}
+
+/*
+ * The one-line trust statement that replaced the old wall-of-text notice.
+ *
+ * At a 320px-class container the full policy paragraph alone ran past
+ * 300px tall and pushed the primary demo action off the first screen - the
+ * defect a live-browser check at 320x800 caught. This line carries the same
+ * promise in one sentence; the full wording is still available, just no
+ * longer printed by default.
+ */
+.cognitive-auth__notice-short {
+  margin: 0;
+  color: var(--fd-color-fg-muted);
+  font-size: var(--fd-font-size-sm);
+}
+
+.cognitive-auth__notice-full summary {
+  cursor: pointer;
+  min-block-size: var(--fd-target-touch, 44px);
+  display: flex;
+  align-items: center;
+  color: var(--fd-color-fg-muted);
+  font-size: var(--fd-font-size-sm);
+}
+
+.cognitive-auth__notice-full[open] summary {
+  margin-block-end: 0.25rem;
+}
+
+.cognitive-auth__profile-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-inline-size: 0;
+}
+
+.cognitive-auth__profile-title {
+  margin: 0;
+  font-size: var(--fd-font-size-base);
+  font-weight: var(--fd-font-weight-semibold, 600);
+}
+
+.cognitive-auth__demo-summary {
+  color: var(--fd-color-fg-muted);
+  margin: 0;
+}
+
+.cognitive-auth__demo-emphasis {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+}
+
+.cognitive-auth__demo-credentials {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.375rem;
+  margin: 0;
+  font-size: var(--fd-font-size-sm);
+}
+
+.cognitive-auth__demo-credential {
+  min-inline-size: 0;
+}
+
+.cognitive-auth__demo-credential dt {
+  color: var(--fd-color-fg-muted);
+}
+
+.cognitive-auth__demo-credential dd {
+  margin: 0;
+  min-inline-size: 0;
+  font-family: var(--fd-font-mono);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.cognitive-auth__demo-credential-note {
+  color: var(--fd-color-fg-muted);
+  font-size: var(--fd-font-size-sm);
+  margin: 0;
+}
+
+.cognitive-auth__demo-action {
+  inline-size: 100%;
+  min-block-size: var(--fd-target-touch, 44px);
+  border: none;
+  border-radius: var(--fd-radius, 8px);
+  background: var(--fd-color-secondary);
+  color: var(--fd-color-secondary-fg);
+  font-weight: var(--fd-font-weight-medium);
+  font-size: var(--fd-font-size-base);
+  cursor: pointer;
+  transition: background-color var(--fd-motion-duration, 150ms) ease;
+}
+
+.cognitive-auth__demo-action:hover:not(:disabled) {
+  background: var(--fd-color-secondary-hover);
+}
+
+.cognitive-auth__demo-action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cognitive-auth__demo-action[aria-busy="true"] {
+  opacity: 0.85;
+}
+
+.cognitive-auth__divider {
+  font-size: var(--fd-font-size-sm);
+  color: var(--fd-color-fg-muted);
+  border-block-start: 1px solid var(--fd-color-line);
+  padding-block-start: 0.75rem;
+  margin: 0;
+}
+
+/* ------------------------------------------------------------- reveal --- */
+
+.cognitive-auth__reveal {
+  border: 1px solid var(--fd-color-line);
+  border-radius: var(--fd-radius, 8px);
+  padding: 0.625rem 0.75rem;
+}
+
+.cognitive-auth__reveal summary {
+  cursor: pointer;
+  font-weight: var(--fd-font-weight-medium);
+  min-block-size: var(--fd-target-touch, 44px);
+  display: flex;
+  align-items: center;
+}
+
+.cognitive-auth__reveal[open] summary {
+  margin-block-end: 0.5rem;
+}
+
+/* --------------------------------------------------------- real account --- */
+
+.cognitive-auth__real-account {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-inline-size: 0;
+}
+
+.cognitive-auth__real-toggle {
+  align-self: flex-start;
+  min-block-size: var(--fd-target-touch, 44px);
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--fd-color-line);
+  border-radius: var(--fd-radius, 8px);
+  background: transparent;
+  color: var(--fd-color-fg);
+  font-weight: var(--fd-font-weight-medium);
+  cursor: pointer;
+}
+
+.cognitive-auth__real-toggle:hover {
+  background: var(--fd-color-hover);
+}
+
+/* ---------------------------------------------------------------- form --- */
+
+.cognitive-auth__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-inline-size: 0;
+}
+
+.cognitive-auth__field-error {
+  color: var(--fd-color-danger);
+  background: var(--fd-color-danger-soft);
+  border-radius: var(--fd-radius, 8px);
+  padding: 0.625rem 0.75rem;
+  margin: 0;
+}
+
+.cognitive-auth__footer {
+  padding-block-start: 0.5rem;
+}
+
+/* ------------------------------------------------------------ skeleton --- */
+
+.cognitive-auth__skeleton {
+  border-radius: var(--fd-radius-lg, 12px);
+}
+
+.cognitive-auth__skeleton-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* -------------------------------------------------------- onboarding ----- */
+
+.cognitive-auth__stepper {
+  display: flex;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cognitive-auth__step {
+  flex: 1;
+  text-align: center;
+  padding: 0.5rem 0.25rem;
+  border-block-end: 2px solid var(--fd-color-line);
+  color: var(--fd-color-fg-muted);
+  font-size: var(--fd-font-size-sm);
+}
+
+.cognitive-auth__step[data-current="true"] {
+  border-block-end-color: var(--fd-color-primary);
+  color: var(--fd-color-fg);
+  font-weight: var(--fd-font-weight-medium);
+}
+
+.cognitive-auth__step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cognitive-auth__limits-list {
+  margin: 0;
+  padding-inline-start: 1.25rem;
+}
+
+.cognitive-auth__step-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-block-start: 0.5rem;
+}
+
+.cognitive-auth__step-button {
+  min-block-size: var(--fd-target-touch, 44px);
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--fd-radius, 8px);
+  border: 1px solid transparent;
+  font-weight: var(--fd-font-weight-medium);
+  cursor: pointer;
+}
+
+.cognitive-auth__step-button--primary {
+  background: var(--fd-color-primary);
+  color: var(--fd-color-primary-fg);
+}
+
+.cognitive-auth__step-button--secondary {
+  background: transparent;
+  border-color: var(--fd-color-line);
+  color: var(--fd-color-fg);
+}
+
+.cognitive-auth__step-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------- gate --- */
+
+.cognitive-auth__gate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-block-start: 0.5rem;
+}
+
+.cognitive-auth__gate-footnote {
+  color: var(--fd-color-fg-muted);
+  font-size: var(--fd-font-size-sm);
+}
+
+@container cognitive-auth (min-width: 40rem) {
+  .cognitive-auth__panel {
+    max-inline-size: 46rem;
+  }
+}
+
+@container cognitive-auth (min-width: 64rem) {
+  .cognitive-auth[data-mode="login"] .cognitive-auth__panel {
+    max-inline-size: 70rem;
+  }
+
+  .cognitive-auth[data-mode="login"] .cognitive-auth__workbench {
+    display: grid;
+    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+    align-items: start;
+    gap: clamp(1.5rem, 3vw, 3rem);
+  }
+
+  .cognitive-auth[data-mode="login"] .cognitive-auth__rail {
+    display: flex;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cognitive-auth * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

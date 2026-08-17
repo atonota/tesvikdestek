@@ -283,7 +283,7 @@ describe("the master component layer follows the shadcn/ui code contract", () =>
     expect(source).toMatch(/cva\(/u);
   });
 
-  it("keeps the master layer out of the 75-component registry barrel", () => {
+  it("keeps the master layer out of the 73-component registry barrel", () => {
     /*
      * `@/components` already exports a `Button`, a `Card`, a `Badge` and a
      * `Tabs`. Re-exporting the master layer from the same barrel would be two

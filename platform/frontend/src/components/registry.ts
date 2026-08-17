@@ -3,7 +3,7 @@
  *
  * This list is the contract: a test asserts that every name here is really
  * exported from `@/components` and that the level counts are exactly
- * 14/16/10/5/18/12 = 75. It exists so "we have a design system" is a checkable
+ * 14/16/10/4/18/11 = 73. It exists so "we have a design system" is a checkable
  * claim rather than a slide.
  *
  * Components that are product surfaces rather than system parts -
@@ -74,7 +74,7 @@ export const COMPONENT_LEVELS = {
     "FormSubmitBarrier",
     "DisclaimerBlock",
   ],
-  shells: ["AppShell", "WorkspaceShell", "PublicShell", "AuthShell", "PrintShell"],
+  shells: ["AppShell", "WorkspaceShell", "PublicShell", "PrintShell"],
   domain: [
     "OutcomeBadge",
     "OutcomeDistribution",
@@ -99,7 +99,6 @@ export const COMPONENT_LEVELS = {
     "PublicLanding",
     "CatalogList",
     "OpportunityDetail",
-    "AuthForm",
     "ProfileWorkspace",
     "EligibilityWizard",
     "DecisionList",
@@ -127,7 +126,7 @@ export const ALL_COMPONENT_NAMES: readonly string[] = Object.values(COMPONENT_LE
 /**
  * Where each registered component is actually rendered.
  *
- * A design system's honest claim is not "we have 75 components" - it is "we
+ * A design system's honest claim is not "we have 73 components" - it is "we
  * know which of them the product uses and which of them it does not". Fourteen
  * of these are rendered nowhere in runtime code: they exist, they are covered
  * by tests and they have stories, and no route puts them on a screen.
@@ -193,10 +192,10 @@ export const COMPONENT_SURFACES: Readonly<Record<string, ComponentSurface>> =
 /* ------------------------------------------- the subsystems, classified too */
 
 /**
- * The three barrels whose components are outside the 75 and inside the product.
+ * The three barrels whose components are outside the 73 and inside the product.
  *
  * The classification above was exhaustive over the wrong universe. It covered
- * the 75 core names and stopped, which meant the data grid, the adaptive shell
+ * the 73 core names and stopped, which meant the data grid, the adaptive shell
  * and the form layer were not classified at all. Nothing recorded which of
  * them the product renders and which of them only Storybook does, so "is this
  * subsystem shipped?" was again a question with no mechanical answer.
@@ -247,10 +246,10 @@ export const SUBSYSTEM_COMPONENT_SURFACES: Readonly<Record<string, ComponentSurf
 };
 
 /**
- * The whole classified universe: the 75 and the five subsystems.
+ * The whole classified universe: the 73 and the five subsystems.
  *
- * A union rather than a new count. `ALL_COMPONENT_NAMES` and its 14/16/10/5/18/
- * 12 = 75 arithmetic is a separate published contract about the core system and
+ * A union rather than a new count. `ALL_COMPONENT_NAMES` and its 14/16/10/4/18/
+ * 11 = 73 arithmetic is a separate published contract about the core system and
  * is deliberately not inflated by the subsystems, which declare their own
  * capability ledgers.
  */
@@ -260,7 +259,7 @@ export const CLASSIFIED_COMPONENT_SURFACES: Readonly<Record<string, ComponentSur
 };
 
 /**
- * The cognitive cockpit, registered outside the 75-component count.
+ * The cognitive cockpit, registered outside the 73-component count.
  *
  * `src/components/cognitive-cockpit` is a master *surface* - one dashboard and
  * its own chrome - rather than a member of the primitives/composites/patterns/
@@ -271,6 +270,19 @@ export const CLASSIFIED_COMPONENT_SURFACES: Readonly<Record<string, ComponentSur
  * `skeleton-map.ts`.
  */
 export const COGNITIVE_COCKPIT_DASHBOARD = "CognitiveCockpitDashboard" as const;
+
+/**
+ * The cognitive auth family, registered outside the 73-component count.
+ *
+ * `src/components/cognitive-auth` is a master *surface* — the same kind of
+ * package `CognitiveCockpitDashboard` is, not a member of the
+ * primitives/composites/patterns/shells/domain/templates ladder — so it is
+ * named here for the same reason. It renders `/giris`, `/kayit`,
+ * `/onboarding` and the workspace gate's access states; the legacy
+ * `AuthShell`/`AuthForm` pair has been removed from `COMPONENT_LEVELS`
+ * entirely rather than kept as dead-but-registered code.
+ */
+export const COGNITIVE_AUTH_CARD = "CognitiveAuthCard" as const;
 
 /** The six states every pattern/page layer must be able to show. */
 export const DOCUMENTED_STATES = [

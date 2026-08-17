@@ -5,7 +5,7 @@ import { useNavigate, useSearchParams } from "react-router";
 
 import { describeError } from "@/api/client";
 import { useLogin, useRegister, useStartDemo } from "@/api/queries";
-import { AuthForm, AuthShell, Link } from "@/components";
+import { CognitiveAuthCard } from "@/components/cognitive-auth";
 import { DEMO_PROFILES, isStaticDemoOnly, matchDemoProfile } from "@/demo";
 
 /** The query parameter the workspace gate writes when it bounces a visitor. */
@@ -80,25 +80,19 @@ export function RegisterRoute() {
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <AuthShell
-      title="Hesap oluştur"
-      description="Kayıt bir organizasyon ve bir kullanıcı yaratır. Çok kullanıcılı ekip bu sürümde yoktur."
-      footer={<Link to="/giris">Zaten hesabınız var mı? Giriş yapın</Link>}
-    >
-      <AuthForm
-        mode="register"
-        staticDemoOnly={isStaticDemoOnly()}
-        submitting={register.isPending}
-        error={error}
-        onSubmit={(values) => {
-          setError(null);
-          register.mutate(values, {
-            onSuccess: () => void navigate("/giris?kayit=tamam"),
-            onError: (cause) => setError(describeError(cause)),
-          });
-        }}
-      />
-    </AuthShell>
+    <CognitiveAuthCard
+      mode="register"
+      staticDemoOnly={isStaticDemoOnly()}
+      submitting={register.isPending}
+      error={error}
+      onSubmit={(values) => {
+        setError(null);
+        register.mutate(values, {
+          onSuccess: () => void navigate("/giris?kayit=tamam"),
+          onError: (cause) => setError(describeError(cause)),
+        });
+      }}
+    />
   );
 }
 
@@ -119,15 +113,10 @@ export function LoginRoute() {
   const returnTo = safeReturnPath(params.get(RETURN_PARAM)) ?? DEFAULT_LANDING;
 
   return (
-    <AuthShell
-      title="Giriş"
-      description="Oturum sunucu tarafında tutulur; tarayıcıda jeton saklanmaz."
-      footer={<Link to="/kayit">Hesabınız yok mu? Kayıt olun</Link>}
-    >
-      <AuthForm
-        mode="login"
-        staticDemoOnly={isStaticDemoOnly()}
-        /*
+    <CognitiveAuthCard
+      mode="login"
+      staticDemoOnly={isStaticDemoOnly()}
+      /*
          * The credential form is busy during a *demo* entry too.
          *
          * Since a printed pair typed into that form opens a demo, the button
@@ -195,6 +184,5 @@ export function LoginRoute() {
           );
         }}
       />
-    </AuthShell>
   );
 }

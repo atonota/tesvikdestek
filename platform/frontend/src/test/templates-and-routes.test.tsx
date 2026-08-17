@@ -11,7 +11,6 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   ApprovalForm,
-  AuthForm,
   CapabilityMatrix,
   DecisionCompare,
   EligibilityWizard,
@@ -40,32 +39,6 @@ describe("PublicLanding", () => {
   it("drops the warning once sources are verified", () => {
     routed(<PublicLanding programCount={3} snapshotCount={3} verifiedSnapshotCount={3} />);
     expect(screen.queryByText(/hiçbir kaynak henüz/i)).not.toBeInTheDocument();
-  });
-});
-
-describe("AuthForm", () => {
-  it("collects registration fields and submits them", async () => {
-    const onSubmit = vi.fn();
-    render(<AuthForm mode="register" onSubmit={onSubmit} />);
-    await userEvent.type(screen.getByLabelText(/E-posta/), "a@b.com");
-    await userEvent.type(screen.getByLabelText(/Parola/), "cok-guclu-parola");
-    await userEvent.type(screen.getByLabelText(/Organizasyon/), "Örnek A.Ş.");
-    await userEvent.click(screen.getByRole("button", { name: "Hesap oluştur" }));
-    expect(onSubmit).toHaveBeenCalledWith({
-      eposta: "a@b.com",
-      parola: "cok-guclu-parola",
-      organizasyon: "Örnek A.Ş.",
-    });
-  });
-
-  it("omits the organisation field when logging in", () => {
-    render(<AuthForm mode="login" onSubmit={vi.fn()} />);
-    expect(screen.queryByLabelText(/Organizasyon/)).not.toBeInTheDocument();
-  });
-
-  it("announces a submission error", () => {
-    render(<AuthForm mode="login" onSubmit={vi.fn()} error="E-posta veya parola hatalı." />);
-    expect(screen.getByRole("alert")).toHaveTextContent("E-posta veya parola hatalı.");
   });
 });
 
@@ -214,6 +187,7 @@ describe("auth and settings routes", () => {
 
   it("login route lands on the dashboard", async () => {
     await renderAppAt("/giris");
+    await userEvent.click(await screen.findByRole("button", { name: "Gerçek hesapla gir" }));
     await userEvent.type(await screen.findByLabelText(/E-posta/), "biri@ornek.com.tr");
     await userEvent.type(screen.getByLabelText(/Parola/), "cok-guclu-parola-2026");
     await userEvent.click(screen.getByRole("button", { name: "Giriş yap" }));

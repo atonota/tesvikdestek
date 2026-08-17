@@ -45,7 +45,7 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { RouterProvider } from "react-router";
+import { MemoryRouter, RouterProvider } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { queryKeys } from "@/api/queries";
@@ -125,11 +125,26 @@ afterEach(() => {
   window.sessionStorage.clear();
 });
 
-/** Fill the real credential form and submit it, as a reviewer would. */
+/**
+ * Fill the real credential form and submit it, as a reviewer would.
+ *
+ * On `/giris` the form is behind the workbench's secondary "Gerçek hesapla
+ * gir" control - the console defaults to the demo role switch, not the
+ * credential fields - so this opens that control first when it is present.
+ * `/kayit` has no demo to default to, so its form is already open and the
+ * toggle does not exist; the query is a `queryByRole` for exactly that case.
+ */
 async function signInWith(eposta: string, parola: string): Promise<void> {
+  const toggle = screen.queryByRole("button", { name: "Gerçek hesapla gir" });
+  if (toggle) await userEvent.click(toggle);
   await userEvent.type(await screen.findByLabelText(/E-posta/u), eposta);
   await userEvent.type(screen.getByLabelText(/Parola/u), parola);
   await userEvent.click(screen.getByRole("button", { name: "Giriş yap" }));
+}
+
+/** Switch the login console's compact role switch to the named profile. */
+async function selectDemoRole(roleLabel: string): Promise<void> {
+  await userEvent.click(await screen.findByRole("button", { name: roleLabel }));
 }
 
 /** The app, mounted like `render-app.tsx` but with the client kept in hand. */
@@ -183,37 +198,61 @@ describe("the login screen offers two named demo profiles", () => {
     expect(DEMO_PROFILES.map((entry) => entry.id)).toEqual(["superadmin", "customer"]);
   });
 
-  it("shows a card for each, with its role named in words", async () => {
+  it("offers a compact role switch naming both roles, not two always-open cards", async () => {
     await renderApp("/giris");
     for (const entry of DEMO_PROFILES) {
-      const heading = await screen.findByRole("heading", { name: entry.title });
-      // Scoped to the card: the role name legitimately appears in the summary
-      // prose too, and a document-wide query cannot tell the two apart.
-      const card = heading.closest(".dt-demo__card");
-      expect(card).not.toBeNull();
-      expect(card?.textContent).toContain(entry.roleLabel);
+      expect(await screen.findByRole("button", { name: entry.roleLabel })).toBeInTheDocument();
+    }
+    // The old anatomy - a heading-per-card - is gone; there is exactly one
+    // profile preview mounted at a time.
+    expect(screen.queryAllByText(DEMO_PROFILES[1]!.title).length).toBeLessThanOrEqual(1);
+  });
+
+  it("previews only the selected profile, and switches when the role switch is used", async () => {
+    await renderApp("/giris");
+    // Superadmin is first in DEMO_PROFILES and is the default selection.
+    expect(await screen.findByRole("heading", { name: profile("superadmin").title })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: profile("customer").title })).not.toBeInTheDocument();
+
+    await selectDemoRole(profile("customer").roleLabel);
+
+    expect(await screen.findByRole("heading", { name: profile("customer").title })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: profile("superadmin").title })).not.toBeInTheDocument();
+  });
+
+  it("does not show either profile's e-mail or password by default", async () => {
+    await renderApp("/giris");
+    // `<details>` keeps its content in the DOM so it can be revealed without a
+    // remount; the browser hides it visually until opened, which is the claim
+    // under test here - not whether the text exists in the tree at all.
+    for (const entry of DEMO_PROFILES) {
+      await selectDemoRole(entry.roleLabel);
+      expect(await screen.findByText(entry.email)).not.toBeVisible();
+      expect(screen.getByText(entry.password)).not.toBeVisible();
     }
   });
 
-  it("shows the demo e-mail and password on screen rather than hiding them", async () => {
+  it("reveals the selected profile's e-mail and password behind an explicit disclosure", async () => {
     await renderApp("/giris");
-    for (const entry of DEMO_PROFILES) {
-      expect(await screen.findByText(entry.email)).toBeInTheDocument();
-      expect(screen.getByText(entry.password)).toBeInTheDocument();
-    }
+    const superadmin = profile("superadmin");
+    await userEvent.click(await screen.findByText("Demo bilgilerini göster"));
+    expect(await screen.findByText(superadmin.email)).toBeVisible();
+    expect(screen.getByText(superadmin.password)).toBeVisible();
+    // The other profile is not even mounted - only one preview at a time.
+    expect(screen.queryByText(profile("customer").email)).not.toBeInTheDocument();
   });
 
-  it("gives each profile one distinct, full-width action", async () => {
+  it("gives the selected profile one full-width demo action, not one button per profile", async () => {
     await renderApp("/giris");
-    const actions = await Promise.all(
-      DEMO_PROFILES.map((entry) => screen.findByRole("button", { name: entry.actionLabel })),
-    );
-    // Distinct: two buttons with the same name are two buttons nobody can tell
-    // apart, on the one screen where picking the wrong one is the whole risk.
-    expect(new Set(actions.map((button) => button.textContent))).toHaveProperty("size", 2);
-    for (const button of actions) {
-      expect(button.className).toContain("dt-btn--block");
-    }
+    const superadminAction = await screen.findByRole("button", { name: profile("superadmin").actionLabel });
+    expect(superadminAction.className).toContain("cognitive-auth__demo-action");
+    // Only one demo action button exists at a time.
+    expect(screen.queryByRole("button", { name: profile("customer").actionLabel })).not.toBeInTheDocument();
+
+    await selectDemoRole(profile("customer").roleLabel);
+
+    expect(await screen.findByRole("button", { name: profile("customer").actionLabel })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: profile("superadmin").actionLabel })).not.toBeInTheDocument();
   });
 
   /**
@@ -291,8 +330,10 @@ describe("the login screen offers two named demo profiles", () => {
     expect(notice.textContent).toMatch(/yetkilendirme|rol modeli|backend/iu);
   });
 
-  it("leaves the manual credential form exactly where it was", async () => {
+  it("keeps the manual credential form reachable, behind the real-account control", async () => {
     await renderApp("/giris");
+    expect(screen.queryByLabelText(/E-posta/u)).not.toBeInTheDocument();
+    await userEvent.click(await screen.findByRole("button", { name: "Gerçek hesapla gir" }));
     expect(await screen.findByLabelText(/E-posta/u)).toBeInTheDocument();
     expect(screen.getByLabelText(/Parola/u)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Giriş yap" })).toBeInTheDocument();
@@ -312,6 +353,7 @@ describe("one click opens the application", () => {
 
   it("returns the customer to the safe path they were bounced from", async () => {
     await renderApp(`/giris?donus=${encodeURIComponent("/organizasyon/hazirlik")}`);
+    await selectDemoRole(profile("customer").roleLabel);
     await userEvent.click(
       await screen.findByRole("button", { name: profile("customer").actionLabel }),
     );
@@ -414,6 +456,7 @@ describe("a demo session is not a server session and sends no request pretending
     cleanups.push(() => server.events.removeListener("request:start", listener));
 
     await renderApp("/giris");
+    await selectDemoRole(profile("customer").roleLabel);
     await userEvent.click(
       await screen.findByRole("button", { name: profile("customer").actionLabel }),
     );
@@ -439,41 +482,65 @@ describe("a demo session is not a server session and sends no request pretending
   });
 
   /*
-   * Two assertions, deliberately split, because they are two different claims.
+   * Three assertions, deliberately split, because they are three different
+   * safety claims about the same pending state.
    *
-   * The first is about the template and is checked directly on it: given a
-   * profile mid-entry, the *other* action must be disabled rather than merely
-   * un-busy. Driving this through the whole application would mean holding a
-   * request open inside a shared MSW server while the rest of the suite runs
-   * beside it - which is slow, and worse, non-deterministic for every other
-   * file. A component claim gets a component test.
+   * The first is that the *active* action is disabled, not merely marked
+   * busy - a second click on a request already in flight would fire a second
+   * mutation racing the first, and `aria-busy` alone never stopped a click.
    *
-   * The second is about the route: that `demoStarting` is fed by the real
-   * mutation's pending state rather than by a decorative local flag. That is a
-   * wiring claim, and it is checked by reading the wiring.
+   * The second is that the role switch itself is disabled while a demo is
+   * opening - the selected role must not be able to change mid-flight, which
+   * would otherwise leave the in-flight mutation racing a UI that has since
+   * moved on to a different profile.
+   *
+   * The third proves the second has teeth: with the switch disabled, a click
+   * on the customer role does not reach it, so the customer action never
+   * becomes visible while superadmin's demo is opening.
+   *
+   * Driving this through the whole application would mean holding a request
+   * open inside a shared MSW server while the rest of the suite runs beside
+   * it - which is slow, and worse, non-deterministic for every other file. A
+   * component claim gets a component test; the route's wiring of
+   * `demoStarting` to the real mutation's pending state is a separate claim,
+   * checked below by reading the wiring.
    */
-  it("disables the other role's action while one is being opened", async () => {
-    const { AuthForm } = await import("@/components");
+  it("disables the active demo action and the role switch while a demo is opening", async () => {
+    const { CognitiveAuthCard } = await import("@/components/cognitive-auth/CognitiveAuthCard");
     render(
-      <AuthForm
-        mode="login"
-        onSubmit={() => {}}
-        demoProfiles={DEMO_PROFILES}
-        onDemoStart={() => {}}
-        demoStarting="superadmin"
-      />,
+      <MemoryRouter>
+        <CognitiveAuthCard
+          mode="login"
+          onSubmit={() => {}}
+          demoProfiles={DEMO_PROFILES}
+          onDemoStart={() => {}}
+          demoStarting="superadmin"
+        />
+      </MemoryRouter>,
     );
 
-    // A busy Button renders its `loadingLabel` in place of its children, so
-    // the chosen card is found by that name rather than by its idle one -
-    // which is itself the announcement the loading state is there to make.
+    // The active demo action: busy *and* disabled, so a duplicate click
+    // cannot fire a second mutation.
     const chosen = screen.getByRole("button", { name: /Demo açılıyor/u });
-    const other = screen.getByRole("button", { name: profile("customer").actionLabel });
-
     expect(chosen).toHaveAttribute("aria-busy", "true");
     expect(chosen).toBeDisabled();
-    expect(other).toBeDisabled();
-    expect(other).not.toHaveAttribute("aria-busy");
+
+    // The role switch: every option disabled while a demo is mid-flight.
+    const customerRoleOption = screen.getByRole("button", {
+      name: profile("customer").roleLabel,
+    });
+    expect(customerRoleOption).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: profile("superadmin").roleLabel }),
+    ).toBeDisabled();
+
+    // The switch has teeth: clicking the disabled role option does not
+    // select it, so its demo action never becomes reachable.
+    await userEvent.click(customerRoleOption);
+    expect(
+      screen.queryByRole("button", { name: profile("customer").actionLabel }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Demo açılıyor/u })).toBeInTheDocument();
   });
 
   it("feeds that busy state from the real mutation, not a cosmetic flag", () => {
@@ -619,9 +686,7 @@ describe("leaving the demo really leaves it", () => {
     server.events.on("request:start", listener);
     cleanups.push(() => server.events.removeListener("request:start", listener));
 
-    await userEvent.type(await screen.findByLabelText(/E-posta/u), "biri@ornek.com.tr");
-    await userEvent.type(screen.getByLabelText(/Parola/u), "cok-guclu-parola-2026");
-    await userEvent.click(screen.getByRole("button", { name: "Giriş yap" }));
+    await signInWith("biri@ornek.com.tr", "cok-guclu-parola-2026");
 
     await screen.findByRole("heading", { level: 1, name: "Kokpit" });
     expect(sessionAtPost, "demo oturumu gerçek girişten sonra kapatılıyor").toBeNull();
@@ -931,11 +996,12 @@ describe("typing the printed credentials opens the same demo the card opens", ()
     expect(route).not.toMatch(/startDemoSession\(/u);
   });
 
-  it("says on screen that the printed credentials can be typed into the form", async () => {
+  it("says, once revealed, that the printed credentials can be typed into the form", async () => {
     await renderApp("/giris");
-    const notes = await screen.findAllByTestId("demo-kimlik-notu");
-    expect(notes.length).toBe(DEMO_PROFILES.length);
-    for (const note of notes) {
+    for (const entry of DEMO_PROFILES) {
+      await selectDemoRole(entry.roleLabel);
+      await userEvent.click(await screen.findByText("Demo bilgilerini göster"));
+      const note = await screen.findByTestId("demo-kimlik-notu");
       expect(note.textContent).toMatch(/forma|form alanlarına|aşağıdaki forma/iu);
       expect(note.textContent).toMatch(/yazabilir|girebilir|kopyalayabilir/iu);
       // The sentence this replaces said the opposite, and it was wrong.

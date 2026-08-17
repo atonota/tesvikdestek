@@ -1,5 +1,5 @@
 /**
- * Level 4 - shells (5).
+ * Level 4 - shells (4).
  *
  * Layout only. Shells decide where things sit at 320 / 768 / 1024 / 1440 and
  * own the document landmarks; they never fetch and never decide.
@@ -237,31 +237,6 @@ export function PublicShell({ children, navItems = [] }: PublicShellProps) {
           değildir ve resmî kurum kararı yerine geçmez.
         </p>
       </footer>
-    </div>
-  );
-}
-
-/* --------------------------------------------------------------- AuthShell */
-
-export interface AuthShellProps {
-  title: string;
-  description?: string;
-  children: ReactNode;
-  footer?: ReactNode;
-}
-
-/** Single column, max 480px. States: default · with-footer. */
-export function AuthShell({ title, description, children, footer }: AuthShellProps) {
-  useAppearance();
-  return (
-    <div className="dt-auth">
-      <SkipLink />
-      <main id="ana-icerik" className="dt-auth__card" tabIndex={-1}>
-        <h1 className="dt-auth__title">{title}</h1>
-        {description ? <p className="dt-muted">{description}</p> : null}
-        {children}
-        {footer ? <div className="dt-auth__footer">{footer}</div> : null}
-      </main>
     </div>
   );
 }

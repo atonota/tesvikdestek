@@ -264,4 +264,5 @@ export type MappedComponent = keyof typeof SKELETON_MAP;
  */
 export const CROSS_BARREL_SKELETON_PAIRINGS = {
   CognitiveCockpitDashboard: "CognitiveCockpitSkeleton",
+  CognitiveAuthCard: "CognitiveAuthSkeleton",
 } as const satisfies Record<string, string>;

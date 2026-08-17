@@ -19,17 +19,40 @@ export interface CockpitSearchItem {
   readonly to: string;
 }
 
+/** Overrides the master header's default (cockpit-namespaced) copy, for a variant reused outside the workspace shell. */
+export interface CognitiveSpotlightHeaderContentOverrides {
+  readonly brandTile?: string;
+  readonly brandWord?: string;
+  readonly searchPlaceholder?: string;
+  readonly searchLabel?: string;
+  readonly searchClose?: string;
+  readonly searchNoResult?: string;
+  readonly searchTrigger?: string;
+  readonly shortcut?: string;
+}
+
 export interface CognitiveSpotlightHeaderProps {
+  /**
+   * `"cockpit"` (default) is the signed-in workspace shell: hamburger,
+   * notifications and the account menu. `"public"` is the unauthenticated
+   * surface `cognitive-auth` renders — no drawer to open, no notifications and
+   * no signed-in identity, so those three are not rendered at all. Everything
+   * else, most importantly the in-place Spotlight expansion, is identical:
+   * this is the same component, not a second header that could drift from it.
+   */
+  readonly variant?: "cockpit" | "public";
   readonly open: boolean;
   readonly onOpenChange: (open: boolean) => void;
   readonly query: string;
   readonly onQueryChange: (value: string) => void;
   readonly results: readonly CockpitSearchItem[];
   readonly notificationCount?: number;
-  readonly accountMenu: ReactNode;
+  readonly accountMenu?: ReactNode;
+  readonly content?: CognitiveSpotlightHeaderContentOverrides;
 }
 
 export function CognitiveSpotlightHeader({
+  variant = "cockpit",
   open,
   onOpenChange,
   query,
@@ -37,24 +60,35 @@ export function CognitiveSpotlightHeader({
   results,
   notificationCount = 0,
   accountMenu,
+  content,
 }: CognitiveSpotlightHeaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const listboxId = useId();
+  const isPublic = variant === "public";
 
   const menuOpenLabel = useContent("cockpit.header.menu.open");
-  const brandTile = useContent("cockpit.header.brand.tile");
-  const brandWord = useContent("cockpit.header.brand.word");
-  const searchPlaceholder = useContent("cockpit.header.search.placeholder");
-  const searchLabel = useContent("cockpit.header.search.label");
-  const searchClose = useContent("cockpit.header.search.close");
-  const searchNoResult = useContent("cockpit.header.search.no_result");
-  const searchTrigger = useContent("cockpit.header.search.trigger");
+  const defaultBrandTile = useContent("cockpit.header.brand.tile");
+  const defaultBrandWord = useContent("cockpit.header.brand.word");
+  const defaultSearchPlaceholder = useContent("cockpit.header.search.placeholder");
+  const defaultSearchLabel = useContent("cockpit.header.search.label");
+  const defaultSearchClose = useContent("cockpit.header.search.close");
+  const defaultSearchNoResult = useContent("cockpit.header.search.no_result");
+  const defaultSearchTrigger = useContent("cockpit.header.search.trigger");
   const notificationsLabel = useContent("cockpit.header.notifications.label");
   const notificationsLabelWithCount = useContent("cockpit.header.notifications.label_with_count", {
     values: { count: String(notificationCount) },
   });
   const hintSeparator = useContent("cockpit.header.search.hint_separator");
-  const shortcut = useContent("cockpit.header.search.shortcut");
+  const defaultShortcut = useContent("cockpit.header.search.shortcut");
+
+  const brandTile = content?.brandTile ?? defaultBrandTile;
+  const brandWord = content?.brandWord ?? defaultBrandWord;
+  const searchPlaceholder = content?.searchPlaceholder ?? defaultSearchPlaceholder;
+  const searchLabel = content?.searchLabel ?? defaultSearchLabel;
+  const searchClose = content?.searchClose ?? defaultSearchClose;
+  const searchNoResult = content?.searchNoResult ?? defaultSearchNoResult;
+  const searchTrigger = content?.searchTrigger ?? defaultSearchTrigger;
+  const shortcut = content?.shortcut ?? defaultShortcut;
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -74,12 +108,14 @@ export function CognitiveSpotlightHeader({
   }, [open]);
 
   return (
-    <header className="cognitive-spotlight" data-open={open}>
-      <SheetTrigger asChild>
-        <button type="button" className="cognitive-spotlight__hamburger" aria-label={menuOpenLabel}>
-          <FoundationIcon name="menu" />
-        </button>
-      </SheetTrigger>
+    <header className="cognitive-spotlight" data-open={open} data-variant={variant}>
+      {isPublic ? null : (
+        <SheetTrigger asChild>
+          <button type="button" className="cognitive-spotlight__hamburger" aria-label={menuOpenLabel}>
+            <FoundationIcon name="menu" />
+          </button>
+        </SheetTrigger>
+      )}
 
       <span className="cognitive-spotlight__brand">
         <span className="cognitive-spotlight__brand-tile" aria-hidden="true">
@@ -145,18 +181,20 @@ export function CognitiveSpotlightHeader({
         </div>
       </div>
 
-      <button
-        type="button"
-        className="cognitive-spotlight__notifications"
-        aria-label={notificationCount > 0 ? notificationsLabelWithCount : notificationsLabel}
-      >
-        <FoundationIcon name="notifications" />
-        {notificationCount > 0 ? (
-          <Badge className="cognitive-spotlight__notifications-badge">{notificationCount}</Badge>
-        ) : null}
-      </button>
+      {isPublic ? null : (
+        <button
+          type="button"
+          className="cognitive-spotlight__notifications"
+          aria-label={notificationCount > 0 ? notificationsLabelWithCount : notificationsLabel}
+        >
+          <FoundationIcon name="notifications" />
+          {notificationCount > 0 ? (
+            <Badge className="cognitive-spotlight__notifications-badge">{notificationCount}</Badge>
+          ) : null}
+        </button>
+      )}
 
-      {accountMenu}
+      {isPublic ? null : accountMenu}
     </header>
   );
 }

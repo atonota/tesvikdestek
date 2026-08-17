@@ -4,7 +4,7 @@ import { createMemoryRouter, RouterProvider } from "react-router";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { useUiStore } from "@/store/ui";
-import { AppShell, AuthShell, PrintShell, PublicShell, WorkspaceShell } from "./shells";
+import { AppShell, PrintShell, PublicShell, WorkspaceShell } from "./shells";
 
 const NAV = [
   { to: "/panel", label: "Kokpit", shortLabel: "Kokpit", icon: "◧" },
@@ -115,7 +115,7 @@ describe("WorkspaceShell", () => {
   });
 });
 
-describe("PublicShell, AuthShell, PrintShell", () => {
+describe("PublicShell, PrintShell", () => {
   it("public shell carries the liability footer", () => {
     routed(
       <PublicShell navItems={[{ to: "/programlar", label: "Programlar" }]}>
@@ -125,17 +125,6 @@ describe("PublicShell, AuthShell, PrintShell", () => {
     );
     expect(screen.getByText(/bağlayıcı değildir/i)).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Site gezinme" })).toBeInTheDocument();
-  });
-
-  it("auth shell renders a single h1 and an optional footer", () => {
-    routed(
-      <AuthShell title="Giriş" description="Açıklama" footer={<span>alt</span>}>
-        <p>form</p>
-      </AuthShell>,
-      "/giris",
-    );
-    expect(screen.getByRole("heading", { level: 1, name: "Giriş" })).toBeInTheDocument();
-    expect(screen.getByText("alt")).toBeInTheDocument();
   });
 
   it("print shell keeps the title and drops navigation", () => {
